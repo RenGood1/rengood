@@ -32,12 +32,12 @@
         
         .curtain-left {
             left: 0;
-            clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
+            clip-path: polygon(0 0, 100% 0, 35% 100%, 0 100%);
         }
         
         .curtain-right {
             right: 0;
-            clip-path: polygon(15% 0, 100% 0, 100% 100%, 0 100%);
+            clip-path: polygon(15% 0, 100% 0, 100% 100%, 85% 100%);
         }
         
         .participant-card {
@@ -105,7 +105,7 @@
         <!-- Leaderboard -->
         <section class="mb-12">
             <h2 class="title-font text-3xl md:text-4xl text-white mb-6 flex items-center">
-                <i class="fas fa-crown text-red-600 mr-3"></i> Current Leaderboard
+                <i class="fas fa-crown text-yellow-600 mr-3"></i> Current Leaderboard
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-5 gap-4" id="leaderboard">
                 <!-- Participants will be inserted here by JavaScript -->
@@ -115,7 +115,7 @@
         <!-- Tasks -->
         <section>
             <h2 class="title-font text-3xl md:text-4xl text-white mb-6 flex items-center">
-                <i class="fas fa-tasks text-red-600 mr-3"></i> Current Tasks
+                <i class="fas fa-tasks text-yellow-600 mr-3"></i> Current Tasks
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="tasks-container">
                 <!-- Tasks will be inserted here by JavaScript -->
