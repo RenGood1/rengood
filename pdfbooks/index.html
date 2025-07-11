@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Book Reader</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .book-page {
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+        .book-page:hover {
+            transform: scale(1.02);
+        }
+        .page-turn {
+            animation: pageTurn 0.5s ease;
+        }
+        @keyframes pageTurn {
+            0% { transform: rotateY(0deg); }
+            50% { transform: rotateY(-90deg); }
+            100% { transform: rotateY(0deg); }
+        }
+        #pdf-container {
+            perspective: 1000px;
+        }
+        .dropzone {
+            border: 2px dashed #ccc;
+            transition: all 0.3s;
+        }
+        .dropzone.active {
+            border-color: #4f46e5;
+            background-color: #eef2ff;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="mb-8 text-center">
+            <h1 class="text-4xl font-bold text-indigo-700 mb-2">BookStyle PDF Reader</h1>
+            <p class="text-gray-600">Upload your PDF and read it like a book</p>
+        </header>
+
+        <!-- Main Content -->
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Upload Section -->
+            <div class="w-full lg:w-1/3 bg-white rounded-lg shadow-md p-6">
+                <div id="upload-section">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Upload PDF</h2>
+                    
+                    <div id="dropzone" class="dropzone rounded-lg p-8 mb-4 text-center cursor-pointer">
+                        <i class="fas fa-file-pdf text-5xl text-indigo-500 mb-4"></i>
+                        <p class="text-gray-600 mb-2">Drag & drop your PDF here</p>
+                        <p class="text-sm text-gray-500 mb-4">or</p>
+                        <label for="pdf-upload" class="bg-indigo-600 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-indigo-700 transition">
+                            Select PDF File
+                        </label>
+                        <input type="file" id="pdf-upload" accept=".pdf" class="hidden">
+                    </div>
+                    
+                    <div id="file-info" class="hidden bg-indigo-50 p-3 rounded-md mb-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-pdf text-indigo-500 mr-2"></i>
+                                <span id="file-name" class="font-medium text-gray-700"></span>
+                            </div>
+                            <button id="clear-file" class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="bookmark-section" class="hidden mt-6">
+                        <h3 class="font-medium text-gray-700 mb-2">Bookmark Options</h3>
+                        <div class="flex items-center space-x-2">
+                            <button id="save-bookmark" class="bg-indigo-600 text-white px-3 py-1 rounded-md text-sm hover:bg-indigo-700 transition">
+                                <i class="fas fa-bookmark mr-1"></i> Save Current Page
+                            </button>
+                            <button id="clear-bookmark" class="bg-gray-200 text-gray-700 px-3 py-1 rounded-md text-sm hover:bg-gray-300 transition">
+                                <i class="fas fa-trash-alt mr-1"></i> Clear Bookmark
+                            </button>
+                        </div>
+                        <p id="bookmark-status" class="text-sm text-gray-500 mt-2"></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Reader Section -->
+            <div class="w-full lg:w-2/3">
+                <div id="reader-section" class="hidden bg-white rounded-lg shadow-md p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 id="book-title" class="text-xl font-semibold text-gray-800">Reading: <span id="current-book-title"></span></h2>
+                        <div class="flex items-center space-x-2">
+                            <span id="current-page" class="text-gray-600">Page: 1</span>
+                            <span id="total-pages" class="text-gray-600">of 0</span>
+                        </div>
+                    </div>
+                    
+                    <div id="pdf-container" class="relative min-h-[500px] flex items-center justify-center bg-gray-50 rounded-lg mb-4">
+                        <div id="pdf-viewer" class="w-full flex justify-center">
+                            <!-- PDF pages will be rendered here -->
+                        </div>
+                        
+                        <div id="loading" class="absolute inset-0 flex items-center justify-center bg-gray-50 bg-opacity-75 hidden">
+                            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <button id="prev-page" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            <i class="fas fa-arrow-left mr-2"></i> Previous
+                        </button>
+                        
+                        <div class="flex items-center space-x-2">
+                            <input type="range" id="page-slider" min="1" value="1" class="w-40 md:w-64" disabled>
+                            <span class="text-gray-600 text-sm">Page <span id="slider-page">1</span></span>
+                        </div>
+                        
+                        <button id="next-page" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            Next <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="mt-4 flex justify-center space-x-4">
+                        <button id="zoom-in" class="bg-gray-200 text-gray-700 p-2 rounded-md hover:bg-gray-300 transition">
+                            <i class="fas fa-search-plus"></i>
+                        </button>
+                        <button id="zoom-out" class="bg-gray-200 text-gray-700 p-2 rounded-md hover:bg-gray-300 transition">
+                            <i class="fas fa-search-minus"></i>
+                        </button>
+                        <button id="fit-width" class="bg-gray-200 text-gray-700 p-2 rounded-md hover:bg-gray-300 transition">
+                            <i class="fas fa-arrows-alt-h"></i> Fit Width
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="empty-state" class="bg-white rounded-lg shadow-md p-8 text-center">
+                    <i class="fas fa-book-open text-5xl text-gray-300 mb-4"></i>
+                    <h3 class="text-xl font-medium text-gray-600 mb-2">No PDF Selected</h3>
+                    <p class="text-gray-500 mb-4">Upload a PDF file to start reading</p>
+                    <label for="pdf-upload" class="bg-indigo-600 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-indigo-700 transition inline-block">
+                        <i class="fas fa-upload mr-2"></i> Upload PDF
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.worker.min.js';
+        
+        // DOM Elements
+        const pdfUpload = document.getElementById('pdf-upload');
+        const dropzone = document.getElementById('dropzone');
+        const fileInfo = document.getElementById('file-info');
+        const fileName = document.getElementById('file-name');
+        const clearFile = document.getElementById('clear-file');
+        const readerSection = document.getElementById('reader-section');
+        const emptyState = document.getElementById('empty-state');
+        const pdfViewer = document.getElementById('pdf-viewer');
+        const prevPageBtn = document.getElementById('prev-page');
+        const nextPageBtn = document.getElementById('next-page');
+        const currentPageSpan = document.getElementById('current-page');
+        const totalPagesSpan = document.getElementById('total-pages');
+        const pageSlider = document.getElementById('page-slider');
+        const sliderPage = document.getElementById('slider-page');
+        const zoomInBtn = document.getElementById('zoom-in');
+        const zoomOutBtn = document.getElementById('zoom-out');
+        const fitWidthBtn = document.getElementById('fit-width');
+        const loadingIndicator = document.getElementById('loading');
+        const bookmarkSection = document.getElementById('bookmark-section');
+        const saveBookmarkBtn = document.getElementById('save-bookmark');
+        const clearBookmarkBtn = document.getElementById('clear-bookmark');
+        const bookmarkStatus = document.getElementById('bookmark-status');
+        const currentBookTitle = document.getElementById('current-book-title');
+        
+        // Variables
+        let pdfDoc = null;
+        let currentPage = 1;
+        let totalPages = 0;
+        let scale = 1.0;
+        let savedPage = null;
+        let currentFileName = '';
+        
+        // Event Listeners
+        pdfUpload.addEventListener('change', handleFileSelect);
+        clearFile.addEventListener('click', clearPDF);
+        prevPageBtn.addEventListener('click', goToPrevPage);
+        nextPageBtn.addEventListener('click', goToNextPage);
+        pageSlider.addEventListener('input', goToPage);
+        zoomInBtn.addEventListener('click', zoomIn);
+        zoomOutBtn.addEventListener('click', zoomOut);
+        fitWidthBtn.addEventListener('click', fitToWidth);
+        saveBookmarkBtn.addEventListener('click', saveBookmark);
+        clearBookmarkBtn.addEventListener('click', clearBookmark);
+        
+        // Drag and Drop events
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzone.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            dropzone.classList.add('active');
+        }
+        
+        function unhighlight() {
+            dropzone.classList.remove('active');
+        }
+        
+        dropzone.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0 && files[0].type === 'application/pdf') {
+                pdfUpload.files = files;
+                handleFileSelect({ target: pdfUpload });
+            }
+        }
+        
+        // Functions
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            currentFileName = file.name;
+            fileName.textContent = file.name;
+            currentBookTitle.textContent = file.name.replace('.pdf', '');
+            fileInfo.classList.remove('hidden');
+            
+            const fileReader = new FileReader();
+            
+            fileReader.onload = function() {
+                const typedArray = new Uint8Array(this.result);
+                loadPDF(typedArray);
+            };
+            
+            fileReader.readAsArrayBuffer(file);
+        }
+        
+        function loadPDF(data) {
+            loadingIndicator.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            readerSection.classList.remove('hidden');
+            bookmarkSection.classList.remove('hidden');
+            
+            pdfjsLib.getDocument(data).promise.then(function(pdf) {
+                pdfDoc = pdf;
+                totalPages = pdf.numPages;
+                totalPagesSpan.textContent = totalPages;
+                pageSlider.max = totalPages;
+                
+                // Check for saved bookmark
+                checkBookmark();
+                
+                renderPage(currentPage);
+            }).catch(function(error) {
+                console.error('PDF loading error:', error);
+                alert('Error loading PDF. Please try another file.');
+                clearPDF();
+            });
+        }
+        
+        function renderPage(pageNum) {
+            loadingIndicator.classList.remove('hidden');
+            pdfViewer.innerHTML = '';
+            
+            pdfDoc.getPage(pageNum).then(function(page) {
+                const viewport = page.getViewport({ scale: scale });
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                
+                // Add book-like styling
+                canvas.classList.add('book-page', 'shadow-lg', 'rounded');
+                
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+                
+                page.render(renderContext).promise.then(function() {
+                    pdfViewer.appendChild(canvas);
+                    currentPage = pageNum;
+                    currentPageSpan.textContent = `Page: ${currentPage}`;
+                    sliderPage.textContent = currentPage;
+                    pageSlider.value = currentPage;
+                    
+                    // Update button states
+                    prevPageBtn.disabled = currentPage <= 1;
+                    nextPageBtn.disabled = currentPage >= totalPages;
+                    
+                    // Add page turn animation
+                    canvas.classList.add('page-turn');
+                    setTimeout(() => {
+                        canvas.classList.remove('page-turn');
+                    }, 500);
+                    
+                    loadingIndicator.classList.add('hidden');
+                });
+            });
+        }
+        
+        function goToPrevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPage(currentPage);
+            }
+        }
+        
+        function goToNextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderPage(currentPage);
+            }
+        }
+        
+        function goToPage() {
+            const pageNum = parseInt(pageSlider.value);
+            if (pageNum !== currentPage) {
+                currentPage = pageNum;
+                renderPage(currentPage);
+            }
+        }
+        
+        function zoomIn() {
+            scale += 0.25;
+            renderPage(currentPage);
+        }
+        
+        function zoomOut() {
+            if (scale > 0.5) {
+                scale -= 0.25;
+                renderPage(currentPage);
+            }
+        }
+        
+        function fitToWidth() {
+            // This would need more complex implementation for actual width fitting
+            scale = 1.0;
+            renderPage(currentPage);
+        }
+        
+        function clearPDF() {
+            pdfUpload.value = '';
+            fileInfo.classList.add('hidden');
+            readerSection.classList.add('hidden');
+            emptyState.classList.remove('hidden');
+            bookmarkSection.classList.add('hidden');
+            pdfDoc = null;
+            currentPage = 1;
+            totalPages = 0;
+            scale = 1.0;
+            currentFileName = '';
+        }
+        
+        function saveBookmark() {
+            if (!pdfDoc) return;
+            
+            const bookmarkData = {
+                fileName: currentFileName,
+                page: currentPage,
+                timestamp: new Date().getTime()
+            };
+            
+            localStorage.setItem('pdfBookmark', JSON.stringify(bookmarkData));
+            bookmarkStatus.textContent = `Bookmark saved for page ${currentPage}`;
+            bookmarkStatus.className = 'text-sm text-green-500 mt-2';
+            savedPage = currentPage;
+        }
+        
+        function clearBookmark() {
+            localStorage.removeItem('pdfBookmark');
+            bookmarkStatus.textContent = 'Bookmark cleared';
+            bookmarkStatus.className = 'text-sm text-gray-500 mt-2';
+            savedPage = null;
+        }
+        
+        function checkBookmark() {
+            const bookmark = localStorage.getItem('pdfBookmark');
+            if (bookmark) {
+                const bookmarkData = JSON.parse(bookmark);
+                if (bookmarkData.fileName === currentFileName) {
+                    savedPage = bookmarkData.page;
+                    bookmarkStatus.textContent = `Saved bookmark: page ${savedPage}`;
+                    bookmarkStatus.className = 'text-sm text-indigo-500 mt-2';
+                    
+                    // Go to saved page
+                    currentPage = savedPage;
+                    if (currentPage > totalPages) {
+                        currentPage = totalPages;
+                    }
+                    return;
+                }
+            }
+            bookmarkStatus.textContent = 'No bookmark saved for this file';
+            bookmarkStatus.className = 'text-sm text-gray-500 mt-2';
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if there's a PDF in localStorage (for more advanced implementation)
+        });
+    </script>
+</body>
+</html>
