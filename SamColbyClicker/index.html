@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sam & Colby Ghost Hunter Clicker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .haunted-bg {
+            background-image: url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?ixlib=rb-4.0.3&auto=format&fit=crop&w=1484&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .progress-bar {
+            height: 20px;
+            background-color: #4a5568;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #f56565;
+            transition: width 0.3s ease;
+        }
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="haunted-bg text-white min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-8">
+            <h1 style="text-shadow: 5px 5px 10px black;" class="text-4xl md:text-6xl font-bold mb-2 text-red-500 drop-shadow-lg">Sam & Colby Ghost Hunter Clicker</h1>
+            <p style="text-shadow: 0px 0px 20px red; color: black; font-weight: bold;" class="text-xl md:text-2xl text-gray-200">Explore haunted locations and grow your YouTube channel!</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Main Game Area -->
+            <div class="md:col-span-2 bg-gray-900 bg-opacity-80 rounded-xl p-6 shadow-xl">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold">Subscribers: <span id="subs" class="text-yellow-400">0</span></h2>
+                        <p class="text-gray-300">Subscribers per second: <span id="sps" class="text-green-400">0</span></p>
+                    </div>
+                    <div class="bg-red-900 bg-opacity-70 px-4 py-2 rounded-lg">
+                        <h3 class="text-lg">Current Location: <span id="location" class="font-bold">Abandoned House</span></h3>
+                    </div>
+                </div>
+
+                <div class="text-center mb-8">
+                    <button id="clickBtn" class="bg-red-700 hover:bg-red-600 text-white font-bold py-4 px-8 rounded-full text-xl md:text-2xl transition-all duration-300 transform hover:scale-105 pulse">
+                        <i class="fas fa-ghost mr-2"></i> Investigate!
+                    </button>
+                    <p class="mt-2 text-gray-300">Click to find paranormal evidence!</p>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold mb-2">Current Investigation Progress</h3>
+                    <div class="progress-bar">
+                        <div id="investigation-progress" class="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <p id="progress-text" class="text-right mt-1">0% complete</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-gray-800 bg-opacity-70 p-4 rounded-lg">
+                        <h4 class="font-bold mb-2">Equipment</h4>
+                        <div id="equipment" class="space-y-2">
+                            <!-- Equipment items will be added here -->
+                        </div>
+                    </div>
+                    <div class="bg-gray-800 bg-opacity-70 p-4 rounded-lg">
+                        <h4 class="font-bold mb-2">Team Members</h4>
+                        <div id="team" class="space-y-2">
+                            <!-- Team members will be added here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upgrades Area -->
+            <div class="bg-gray-900 bg-opacity-80 rounded-xl p-6 shadow-xl">
+                <h2 class="text-2xl font-bold mb-4 text-center">Upgrades</h2>
+                
+                <div class="mb-6">
+                    <h3 class="text-lg font-bold mb-2 border-b border-gray-700 pb-2">Locations</h3>
+                    <div id="locations" class="space-y-3">
+                        <!-- Location upgrades will be added here -->
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h3 class="text-lg font-bold mb-2 border-b border-gray-700 pb-2">Video Production</h3>
+                    <div id="production" class="space-y-3">
+                        <!-- Production upgrades will be added here -->
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold mb-2 border-b border-gray-700 pb-2">Special Items</h3>
+                    <div id="special" class="space-y-3">
+                        <!-- Special upgrades will be added here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for investigation complete -->
+        <div id="completeModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
+            <div class="bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4">
+                <div class="text-center">
+                    <i class="fas fa-trophy text-5xl text-yellow-400 mb-4"></i>
+                    <h3 class="text-2xl font-bold mb-2">Investigation Complete!</h3>
+                    <p id="modal-text" class="mb-4">You've successfully investigated the Abandoned House!</p>
+                    <p class="text-yellow-400 font-bold mb-4">+<span id="modal-reward">0</span> Subscribers!</p>
+                    <button id="closeModal" class="bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-6 rounded">
+                        Continue
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div><p style="text-align: center;">Made by RenG - 2025</p></div>
+
+    <script>
+        // Game state
+        const game = {
+            subs: 0,
+            subsPerClick: 1,
+            subsPerSecond: 0,
+            investigationProgress: 0,
+            investigationGoal: 100,
+            currentLocation: 0,
+            locations: [
+                { name: "Abandoned House", baseReward: 50, cost: 0, unlocked: true, progress: 0 },
+                { name: "Haunted Asylum", baseReward: 200, cost: 100, unlocked: false, progress: 0 },
+                { name: "Creepy Forest", baseReward: 500, cost: 500, unlocked: false, progress: 0 },
+                { name: "Cursed Prison", baseReward: 1000, cost: 2000, unlocked: false, progress: 0 },
+                { name: "Demon House", baseReward: 5000, cost: 10000, unlocked: false, progress: 0 }
+            ],
+            equipment: [
+                { name: "EMF Reader", description: "Detects electromagnetic fields", cost: 50, owned: false, effect: 0.2 },
+                { name: "Spirit Box", description: "Communicate with spirits", cost: 100, owned: false, effect: 0.5 },
+                { name: "Night Vision Camera", description: "See in the dark", cost: 200, owned: false, effect: 0.8 },
+                { name: "Thermal Camera", description: "Detect temperature changes", cost: 500, owned: false, effect: 1.5 },
+                { name: "Full Ghost Hunting Kit", description: "All equipment combined", cost: 1500, owned: false, effect: 3 }
+            ],
+            team: [
+                { name: "Jake", description: "Camera operator", cost: 300, owned: false, effect: 1 },
+                { name: "Corey", description: "Audio specialist", cost: 600, owned: false, effect: 2 },
+                { name: "Elton", description: "Editor", cost: 1200, owned: false, effect: 3 },
+                { name: "Seth", description: "Researcher", cost: 2500, owned: false, effect: 5 },
+                { name: "Celebrity Guest", description: "Special appearance", cost: 5000, owned: false, effect: 10 }
+            ],
+            production: [
+                { name: "Better Editing", description: "Increase subscriber gain", cost: 150, owned: false, effect: 0.5 },
+                { name: "Thumbnail Designer", description: "More clickable videos", cost: 300, owned: false, effect: 1 },
+                { name: "SEO Expert", description: "Better search rankings", cost: 700, owned: false, effect: 2 },
+                { name: "Sponsorships", description: "More revenue", cost: 1500, owned: false, effect: 4 },
+                { name: "Merchandise", description: "Passive income", cost: 3000, owned: false, effect: 8 }
+            ],
+            special: [
+                { name: "Ghost Encounter", description: "Viral moment", cost: 1000, owned: false, effect: 5, oneTime: true },
+                { name: "Paranormal Proof", description: "Undeniable evidence", cost: 3000, owned: false, effect: 15, oneTime: true },
+                { name: "Documentary Deal", description: "Major exposure", cost: 10000, owned: false, effect: 50, oneTime: true }
+            ]
+        };
+
+        // DOM elements
+        const subsEl = document.getElementById('subs');
+        const spsEl = document.getElementById('sps');
+        const locationEl = document.getElementById('location');
+        const clickBtn = document.getElementById('clickBtn');
+        const progressBar = document.getElementById('investigation-progress');
+        const progressText = document.getElementById('progress-text');
+        const equipmentEl = document.getElementById('equipment');
+        const teamEl = document.getElementById('team');
+        const locationsEl = document.getElementById('locations');
+        const productionEl = document.getElementById('production');
+        const specialEl = document.getElementById('special');
+        const completeModal = document.getElementById('completeModal');
+        const modalText = document.getElementById('modal-text');
+        const modalReward = document.getElementById('modal-reward');
+        const closeModal = document.getElementById('closeModal');
+
+        // Initialize the game
+        function init() {
+            updateUI();
+            renderUpgrades();
+            renderEquipment();
+            renderTeam();
+            
+            // Game loop
+            setInterval(gameLoop, 1000);
+            
+            // Event listeners
+            clickBtn.addEventListener('click', handleClick);
+            closeModal.addEventListener('click', () => {
+                completeModal.classList.add('hidden');
+            });
+        }
+
+        // Main game loop
+        function gameLoop() {
+            // Add passive subscribers
+            game.subs += game.subsPerSecond;
+            
+            // Update UI
+            updateUI();
+        }
+
+        // Handle click event
+        function handleClick() {
+            // Add subscribers
+            game.subs += game.subsPerClick;
+            
+            // Add investigation progress
+            game.investigationProgress += 1 + (game.subsPerClick - 1) * 0.5;
+            
+            // Check if investigation is complete
+            if (game.investigationProgress >= game.investigationGoal) {
+                completeInvestigation();
+            }
+            
+            // Update UI
+            updateUI();
+        }
+
+        // Complete current investigation
+        function completeInvestigation() {
+            const location = game.locations[game.currentLocation];
+            const reward = location.baseReward * (1 + game.subsPerSecond * 0.1);
+            
+            // Add reward
+            game.subs += reward;
+            
+            // Update location progress
+            location.progress++;
+            
+            // Reset progress
+            game.investigationProgress = 0;
+            
+            // Show modal
+            modalText.textContent = `You've successfully investigated ${location.name}!`;
+            modalReward.textContent = Math.floor(reward);
+            completeModal.classList.remove('hidden');
+            
+            // Check if next location should be unlocked
+            if (game.currentLocation < game.locations.length - 1 && 
+                game.subs >= game.locations[game.currentLocation + 1].cost) {
+                game.locations[game.currentLocation + 1].unlocked = true;
+                renderUpgrades();
+            }
+        }
+
+        // Buy an equipment item
+        function buyEquipment(index) {
+            const item = game.equipment[index];
+            if (game.subs >= item.cost && !item.owned) {
+                game.subs -= item.cost;
+                item.owned = true;
+                game.subsPerClick += item.effect;
+                renderEquipment();
+                updateUI();
+            }
+        }
+
+        // Buy a team member
+        function buyTeam(index) {
+            const member = game.team[index];
+            if (game.subs >= member.cost && !member.owned) {
+                game.subs -= member.cost;
+                member.owned = true;
+                game.subsPerSecond += member.effect;
+                renderTeam();
+                updateUI();
+            }
+        }
+
+        // Buy a production upgrade
+        function buyProduction(index) {
+            const upgrade = game.production[index];
+            if (game.subs >= upgrade.cost && !upgrade.owned) {
+                game.subs -= upgrade.cost;
+                upgrade.owned = true;
+                game.subsPerSecond += upgrade.effect;
+                renderUpgrades();
+                updateUI();
+            }
+        }
+
+        // Buy a special item
+        function buySpecial(index) {
+            const item = game.special[index];
+            if (game.subs >= item.cost && !item.owned) {
+                game.subs -= item.cost;
+                item.owned = true;
+                game.subsPerSecond += item.effect;
+                if (item.oneTime) {
+                    item.effect = 0; // One-time bonus
+                }
+                renderUpgrades();
+                updateUI();
+            }
+        }
+
+        // Change location
+        function changeLocation(index) {
+            if (game.locations[index].unlocked) {
+                game.currentLocation = index;
+                game.investigationGoal = game.locations[index].baseReward * 2;
+                game.investigationProgress = 0;
+                locationEl.textContent = game.locations[index].name;
+                updateUI();
+            }
+        }
+
+        // Update UI elements
+        function updateUI() {
+            subsEl.textContent = Math.floor(game.subs);
+            spsEl.textContent = game.subsPerSecond.toFixed(1);
+            
+            // Update progress bar
+            const progressPercent = (game.investigationProgress / game.investigationGoal) * 100;
+            progressBar.style.width = `${progressPercent}%`;
+            progressText.textContent = `${Math.floor(progressPercent)}% complete`;
+            
+            // Update location name if it changed
+            locationEl.textContent = game.locations[game.currentLocation].name;
+        }
+
+        // Render equipment items
+        function renderEquipment() {
+            equipmentEl.innerHTML = '';
+            game.equipment.forEach((item, index) => {
+                const itemEl = document.createElement('div');
+                itemEl.className = `flex justify-between items-center p-2 rounded ${item.owned ? 'bg-green-900 bg-opacity-50' : 'bg-gray-700 hover:bg-gray-600 cursor-pointer'}`;
+                itemEl.onclick = () => !item.owned && buyEquipment(index);
+                
+                const infoEl = document.createElement('div');
+                infoEl.innerHTML = `
+                    <h5 class="font-bold">${item.name}</h5>
+                    <p class="text-sm text-gray-300">${item.description}</p>
+                `;
+                
+                const costEl = document.createElement('div');
+                costEl.className = 'text-right';
+                costEl.innerHTML = item.owned ? 
+                    '<span class="text-green-400"><i class="fas fa-check"></i> Owned</span>' :
+                    `<span class="text-yellow-400">${item.cost} subs</span>`;
+                
+                itemEl.appendChild(infoEl);
+                itemEl.appendChild(costEl);
+                equipmentEl.appendChild(itemEl);
+            });
+        }
+
+        // Render team members
+        function renderTeam() {
+            teamEl.innerHTML = '';
+            game.team.forEach((member, index) => {
+                const memberEl = document.createElement('div');
+                memberEl.className = `flex justify-between items-center p-2 rounded ${member.owned ? 'bg-green-900 bg-opacity-50' : 'bg-gray-700 hover:bg-gray-600 cursor-pointer'}`;
+                memberEl.onclick = () => !member.owned && buyTeam(index);
+                
+                const infoEl = document.createElement('div');
+                infoEl.innerHTML = `
+                    <h5 class="font-bold">${member.name}</h5>
+                    <p class="text-sm text-gray-300">${member.description}</p>
+                `;
+                
+                const costEl = document.createElement('div');
+                costEl.className = 'text-right';
+                costEl.innerHTML = member.owned ? 
+                    '<span class="text-green-400"><i class="fas fa-check"></i> Hired</span>' :
+                    `<span class="text-yellow-400">${member.cost} subs</span>`;
+                
+                memberEl.appendChild(infoEl);
+                memberEl.appendChild(costEl);
+                teamEl.appendChild(memberEl);
+            });
+        }
+
+        // Render all upgrades
+        function renderUpgrades() {
+            renderLocations();
+            renderProduction();
+            renderSpecial();
+        }
+
+        // Render location upgrades
+        function renderLocations() {
+            locationsEl.innerHTML = '';
+            game.locations.forEach((loc, index) => {
+                const locEl = document.createElement('div');
+                locEl.className = `flex justify-between items-center p-3 rounded ${loc.unlocked ? (game.currentLocation === index ? 'bg-red-900 bg-opacity-70' : 'bg-gray-700 hover:bg-gray-600 cursor-pointer') : 'bg-gray-800 bg-opacity-50'}`;
+                if (loc.unlocked) {
+                    locEl.onclick = () => changeLocation(index);
+                }
+                
+                const infoEl = document.createElement('div');
+                infoEl.innerHTML = `
+                    <h5 class="font-bold">${loc.name}</h5>
+                    <p class="text-sm text-gray-300">Reward: ${loc.baseReward} subs</p>
+                    ${loc.progress > 0 ? `<p class="text-xs text-green-400">Completed ${loc.progress} times</p>` : ''}
+                `;
+                
+                const costEl = document.createElement('div');
+                costEl.className = 'text-right';
+                costEl.innerHTML = loc.unlocked ? 
+                    (game.currentLocation === index ? '<span class="text-red-300">Current</span>' : '<span class="text-blue-300">Available</span>') :
+                    `<span class="text-yellow-400">Unlock: ${loc.cost} subs</span>`;
+                
+                locEl.appendChild(infoEl);
+                locEl.appendChild(costEl);
+                locationsEl.appendChild(locEl);
+            });
+        }
+
+        // Render production upgrades
+        function renderProduction() {
+            productionEl.innerHTML = '';
+            game.production.forEach((upgrade, index) => {
+                const upgradeEl = document.createElement('div');
+                upgradeEl.className = `flex justify-between items-center p-3 rounded ${upgrade.owned ? 'bg-green-900 bg-opacity-50' : 'bg-gray-700 hover:bg-gray-600 cursor-pointer'}`;
+                upgradeEl.onclick = () => !upgrade.owned && buyProduction(index);
+                
+                const infoEl = document.createElement('div');
+                infoEl.innerHTML = `
+                    <h5 class="font-bold">${upgrade.name}</h5>
+                    <p class="text-sm text-gray-300">${upgrade.description}</p>
+                    <p class="text-xs text-blue-300">+${upgrade.effect} subs/sec</p>
+                `;
+                
+                const costEl = document.createElement('div');
+                costEl.className = 'text-right';
+                costEl.innerHTML = upgrade.owned ? 
+                    '<span class="text-green-400"><i class="fas fa-check"></i> Owned</span>' :
+                    `<span class="text-yellow-400">${upgrade.cost} subs</span>`;
+                
+                upgradeEl.appendChild(infoEl);
+                upgradeEl.appendChild(costEl);
+                productionEl.appendChild(upgradeEl);
+            });
+        }
+
+        // Render special items
+        function renderSpecial() {
+            specialEl.innerHTML = '';
+            game.special.forEach((item, index) => {
+                const itemEl = document.createElement('div');
+                itemEl.className = `flex justify-between items-center p-3 rounded ${item.owned ? 'bg-green-900 bg-opacity-50' : 'bg-gray-700 hover:bg-gray-600 cursor-pointer'}`;
+                itemEl.onclick = () => !item.owned && buySpecial(index);
+                
+                const infoEl = document.createElement('div');
+                infoEl.innerHTML = `
+                    <h5 class="font-bold">${item.name}</h5>
+                    <p class="text-sm text-gray-300">${item.description}</p>
+                    <p class="text-xs text-purple-300">+${item.effect} subs/sec</p>
+                `;
+                
+                const costEl = document.createElement('div');
+                costEl.className = 'text-right';
+                costEl.innerHTML = item.owned ? 
+                    '<span class="text-green-400"><i class="fas fa-check"></i> Owned</span>' :
+                    `<span class="text-yellow-400">${item.cost} subs</span>`;
+                
+                itemEl.appendChild(infoEl);
+                itemEl.appendChild(costEl);
+                specialEl.appendChild(itemEl);
+            });
+        }
+
+        // Start the game
+        init();
+    </script>
+</body>
+</html>
