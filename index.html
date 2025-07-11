@@ -3,546 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Help's Murder Party</title>
+    <title>Ren Good | Frontend Developer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;600&display=swap');
-        
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #0f172a;
-            color: #f8fafc;
+            font-family: 'Rajdhani', sans-serif;
+            background-color: #000;
+            color: #fff;
             overflow-x: hidden;
         }
-        
-        .title-font {
-            font-family: 'Playfair Display', serif;
+        h1, h2 {
+            font-family: 'Orbitron', sans-serif;
         }
-        
-        .crime-scene {
-            background: radial-gradient(circle, rgba(15,23,42,0.8) 0%, rgba(15,23,42,1) 100%), 
-                        url('https://images.unsplash.com/photo-1519046904884-53103b34b206?ixlib=rb-4.0.3') no-repeat center center;
-            background-size: cover;
+        .glow {
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
         }
-        
-        .suspect-card {
-            transition: all 0.3s ease;
-            transform-style: preserve-3d;
+        .glow-box {
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
         }
-        
-        .suspect-card:hover {
-            transform: translateY(-5px) rotateX(5deg);
-            box-shadow: 0 20px 25px -5px rgba(220, 38, 38, 0.3);
+        .pulse {
+            animation: pulse 2s infinite;
         }
-        
-        .blood-splatter {
-            position: absolute;
-            opacity: 0.1;
-            z-index: -1;
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
         }
-        
-        .typewriter {
+        .scanline {
+            position: relative;
             overflow: hidden;
-            border-right: .15em solid #f43f5e;
-            white-space: nowrap;
-            letter-spacing: .15em;
-            animation: typing 3.5s steps(40, end), blink-caret .75s step-end infinite;
         }
-        
-        @keyframes typing {
-            from { width: 0 }
-            to { width: 100% }
+        .scanline::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: rgba(255, 0, 0, 0.5);
+            animation: scan 8s linear infinite;
         }
-        
-        @keyframes blink-caret {
-            from, to { border-color: transparent }
-            50% { border-color: #f43f5e; }
-        }
-        
-        .clue-reveal {
-            animation: clueReveal 1s ease-out forwards;
-        }
-        
-        @keyframes clueReveal {
-            0% { opacity: 0; transform: scale(0.8); }
-            100% { opacity: 1; transform: scale(1); }
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
         }
     </style>
 </head>
-<body class="min-h-screen">
-    <!-- Blood splatter decorative elements -->
-    <div class="blood-splatter top-10 left-10 w-20 h-20 bg-red-500 rounded-full"></div>
-    <div class="blood-splatter top-1/3 right-20 w-32 h-32 bg-red-600 rounded-full"></div>
-    <div class="blood-splatter bottom-20 left-1/4 w-24 h-24 bg-red-700 rounded-full"></div>
-    
-    <!-- Main Game Container -->
-    <div class="container mx-auto px-4 py-8">
-        <!-- Header -->
-        <header class="text-center mb-12 relative z-10">
-            <h1 class="title-font text-5xl md:text-7xl font-bold mb-4 text-rose-500">
-                HELP'S MURDER PARTY
-            </h1>
-            <p class="text-xl md:text-2xl text-slate-300 mb-6 typewriter">
-                A love island turned deadly...
-            </p>
-            <div class="w-full max-w-2xl mx-auto bg-slate-800 bg-opacity-70 rounded-lg p-6 shadow-lg border border-rose-900">
-                <div class="flex items-center justify-center space-x-4 mb-4">
-                    <img src="https://i.ibb.co/rK1LzJ9R/image-2025-06-25-173131554.png?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80" 
-                         alt="Detective Help" 
-                         class="w-20 h-20 rounded-full border-4 border-rose-500 object-cover">
-                    <div>
-                        <h2 class="text-2xl font-bold text-rose-400">Detective Help</h2>
-                        <p class="text-slate-400">Homicide Division</p>
-                    </div>
+<body class="min-h-screen flex flex-col">
+    <header class="border-b border-red-500/20">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex justify-between items-center">
+                <h1 class="text-3xl md:text-4xl font-bold glow text-red-500">REN GOOD</h1>
+                <div class="hidden md:flex space-x-1">
+                    <span class="text-red-500 font-mono text-sm">FRONTEND_DEV</span>
+                    <span class="text-gray-500 animate-pulse">|</span>
+                    <span class="text-gray-400 font-mono text-sm">and more.</span>
                 </div>
-                <p class="text-slate-300 text-center">
-                    "Welcome to Paradise Island, where romance meets revenge. 
-                    Someone turned this dating show into a killing game. 
-                    Help me find the murderer before another contestant dies."
-                </p>
-            </div>
-        </header>
-        
-        <!-- Crime Scene Section -->
-        <section class="crime-scene rounded-xl p-6 md:p-10 mb-12 border border-rose-900 shadow-xl relative overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-b from-transparent to-slate-900 z-0"></div>
-            <div class="relative z-10">
-                <h2 class="title-font text-3xl md:text-4xl font-bold mb-6 text-rose-400 flex items-center">
-                    <i class="fas fa-skull mr-4"></i> Crime Scene
-                </h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="bg-slate-800 bg-opacity-80 rounded-lg p-6 border border-slate-700">
-                        <h3 class="text-xl font-bold text-rose-300 mb-4 flex items-center">
-                            <i class="fas fa-user-slash mr-2"></i> Victim: Beniffer Lewis
-                        </h3>
-                        <div class="flex items-start mb-4">
-                            <img src="https://i.ibb.co/qL2CW78R/image-2025-06-25-173318296.png?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80" 
-                                 alt="Beniffer Lewis" 
-                                 class="w-16 h-16 rounded-full border-2 border-rose-600 mr-4 object-cover">
-                            <div>
-                                <p class="text-slate-300"><span class="font-bold">Age:</span> 28</p>
-                                <p class="text-slate-300"><span class="font-bold">Occupation:</span> Investment Banker</p>
-                                <p class="text-slate-300"><span class="font-bold">Status:</span> Deceased</p>
-                            </div>
-                        </div>
-                        <p class="text-slate-400 italic">
-                            "Found in the hot tub with a cocktail glass in hand - poisoned. The show's golden boy was everyone's favorite... and someone's target."
-                        </p>
-                    </div>
-                    
-                    <div class="bg-slate-800 bg-opacity-80 rounded-lg p-6 border border-slate-700">
-                        <h3 class="text-xl font-bold text-rose-300 mb-4 flex items-center">
-                            <i class="fas fa-search mr-2"></i> Initial Findings
-                        </h3>
-                        <ul class="space-y-2 text-slate-300">
-                            <li class="flex items-start">
-                                <i class="fas fa-fingerprint text-rose-400 mt-1 mr-2"></i>
-                                <span>Time of death: Between 9-11 PM during the cocktail party</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-flask text-rose-400 mt-1 mr-2"></i>
-                                <span>Cause: Poison (cyanide) in his champagne</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-clock text-rose-400 mt-1 mr-2"></i>
-                                <span>No signs of struggle - knew the killer</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fas fa-map-marker-alt text-rose-400 mt-1 mr-2"></i>
-                                <span>Security cameras were mysteriously offline</span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Suspects Section -->
-        <section class="mb-16">
-            <h2 class="title-font text-3xl md:text-4xl font-bold mb-8 text-center text-rose-400">
-                <i class="fas fa-users mr-4"></i> The Suspects
-            </h2>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Suspect 1 -->
-                <div class="suspect-card bg-slate-800 rounded-xl p-6 border border-slate-700 hover:border-rose-500 cursor-pointer transition-all duration-300" 
-                     onclick="revealClue('clue1')">
-                    <div class="flex items-center mb-4">
-                        <img src="https://i.ibb.co/4BFkvSQ/image-2025-06-25-173411281.png?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80" 
-                             alt="Smoofy Rynn" 
-                             class="w-16 h-16 rounded-full border-2 border-rose-500 mr-4 object-cover">
-                        <div>
-                            <h3 class="text-xl font-bold text-rose-300">Smoofy Rynn</h3>
-                            <p class="text-slate-400">Influencer & Ben's Date</p>
-                        </div>
-                    </div>
-                    <p class="text-slate-300 mb-4">
-                        "I saw him drinking alone before the party. He seemed... distracted."
-                    </p>
-                    <div class="flex justify-between text-sm text-slate-500">
-                        <span><i class="fas fa-heart text-rose-400 mr-1"></i> Romantic Link</span>
-                        <span><i class="fas fa-bolt text-yellow-400 mr-1"></i> High Temper</span>
-                    </div>
-                    <div id="clue1" class="hidden mt-4 p-3 bg-slate-700 rounded-lg text-slate-300 border-l-4 border-rose-500">
-                        <p><i class="fas fa-clue text-rose-400 mr-2"></i> <strong>Clue:</strong> Found crying in her room with a torn photo of Ben and another woman.</p>
-                    </div>
-                </div>
-                
-                <!-- Suspect 2 -->
-                <div class="suspect-card bg-slate-800 rounded-xl p-6 border border-slate-700 hover:border-rose-500 cursor-pointer transition-all duration-300" 
-                     onclick="revealClue('clue2')">
-                    <div class="flex items-center mb-4">
-                        <img src="https://i.ibb.co/359D3yjp/image-2025-06-25-173543792.png?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80" 
-                             alt="Harm CraazyK" 
-                             class="w-16 h-16 rounded-full border-2 border-rose-500 mr-4 object-cover">
-                        <div>
-                            <h3 class="text-xl font-bold text-rose-300">Harm CraazyK</h3>
-                            <p class="text-slate-400">Personal Trainer</p>
-                        </div>
-                    </div>
-                    <p class="text-slate-300 mb-4">
-                        "We had a fight earlier about the competition. But murder? That's not my style."
-                    </p>
-                    <div class="flex justify-between text-sm text-slate-500">
-                        <span><i class="fas fa-dumbbell text-blue-400 mr-1"></i> Physically Strong</span>
-                        <span><i class="fas fa-money-bill-wave text-green-400 mr-1"></i> Financial Issues</span>
-                    </div>
-                    <div id="clue2" class="hidden mt-4 p-3 bg-slate-700 rounded-lg text-slate-300 border-l-4 border-rose-500">
-                        <p><i class="fas fa-clue text-rose-400 mr-2"></i> <strong>Clue:</strong> Security saw him near the bar where the poisoned glass was prepared.</p>
-                    </div>
-                </div>
-                
-                <!-- Suspect 3 -->
-                <div class="suspect-card bg-slate-800 rounded-xl p-6 border border-slate-700 hover:border-rose-500 cursor-pointer transition-all duration-300" 
-                     onclick="revealClue('clue3')">
-                    <div class="flex items-center mb-4">
-                        <img src="https://i.ibb.co/nsSZwdrn/image-2025-06-25-173637966.png?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80" 
-                             alt="Waffles Starla" 
-                             class="w-16 h-16 rounded-full border-2 border-rose-500 mr-4 object-cover">
-                        <div>
-                            <h3 class="text-xl font-bold text-rose-300">Waffles Starla</h3>
-                            <p class="text-slate-400">Show Producer</p>
-                        </div>
-                    </div>
-                    <p class="text-slate-300 mb-4">
-                        "Ratings were down. A little drama helps, but this... this is too much."
-                    </p>
-                    <div class="flex justify-between text-sm text-slate-500">
-                        <span><i class="fas fa-video text-purple-400 mr-1"></i> Production Access</span>
-                        <span><i class="fas fa-lock text-red-400 mr-1"></i> Camera Control</span>
-                    </div>
-                    <div id="clue3" class="hidden mt-4 p-3 bg-slate-700 rounded-lg text-slate-300 border-l-4 border-rose-500">
-                        <p><i class="fas fa-clue text-rose-400 mr-2"></i> <strong>Clue:</strong> Her laptop shows searches for "undetectable poisons" from last week.</p>
-                    </div>
-                </div>
-                
-                <!-- Suspect 4 -->
-                <div class="suspect-card bg-slate-800 rounded-xl p-6 border border-slate-700 hover:border-rose-500 cursor-pointer transition-all duration-300" 
-                     onclick="revealClue('clue4')">
-                    <div class="flex items-center mb-4">
-                        <img src="https://i.ibb.co/Q7QsrS9x/image-2025-06-25-173735725.png?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80" 
-                             alt="Kay Yak" 
-                             class="w-16 h-16 rounded-full border-2 border-rose-500 mr-4 object-cover">
-                        <div>
-                            <h3 class="text-xl font-bold text-rose-300">Kay Yak</h3>
-                            <p class="text-slate-400">Bartender</p>
-                        </div>
-                    </div>
-                    <p class="text-slate-300 mb-4">
-                        "I served him his usual drink. I don't know how it got poisoned!"
-                    </p>
-                    <div class="flex justify-between text-sm text-slate-500">
-                        <span><i class="fas fa-cocktail text-pink-400 mr-1"></i> Drink Access</span>
-                        <span><i class="fas fa-heart-broken text-red-400 mr-1"></i> Secret Affair</span>
-                    </div>
-                    <div id="clue4" class="hidden mt-4 p-3 bg-slate-700 rounded-lg text-slate-300 border-l-4 border-rose-500">
-                        <p><i class="fas fa-clue text-rose-400 mr-2"></i> <strong>Clue:</strong> Her fingerprints are on the cyanide container found in the trash.</p>
-                    </div>
-                </div>
-                
-                <!-- Suspect 5 -->
-                <div class="suspect-card bg-slate-800 rounded-xl p-6 border border-slate-700 hover:border-rose-500 cursor-pointer transition-all duration-300" 
-                     onclick="revealClue('clue5')">
-                    <div class="flex items-center mb-4">
-                        <img src="https://i.ibb.co/jPLGmBkf/image-2025-06-25-173821825.png?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80" 
-                             alt="Dr. Rustic Naps" 
-                             class="w-16 h-16 rounded-full border-2 border-rose-500 mr-4 object-cover">
-                        <div>
-                            <h3 class="text-xl font-bold text-rose-300">Dr. Rustic Naps</h3>
-                            <p class="text-slate-400">Show Psychologist</p>
-                        </div>
-                    </div>
-                    <p class="text-slate-300 mb-4">
-                        "Ben was unstable. I warned production, but they wouldn't listen."
-                    </p>
-                    <div class="flex justify-between text-sm text-slate-500">
-                        <span><i class="fas fa-brain text-indigo-400 mr-1"></i> Psychological Insight</span>
-                        <span><i class="fas fa-pills text-blue-400 mr-1"></i> Medical Knowledge</span>
-                    </div>
-                    <div id="clue5" class="hidden mt-4 p-3 bg-slate-700 rounded-lg text-slate-300 border-l-4 border-rose-500">
-                        <p><i class="fas fa-clue text-rose-400 mr-2"></i> <strong>Clue:</strong> Her medical bag contains syringes that match puncture wounds on Ben's arm.</p>
-                    </div>
-                </div>
-                
-                <!-- Suspect 6 -->
-                <div class="suspect-card bg-slate-800 rounded-xl p-6 border border-slate-700 hover:border-rose-500 cursor-pointer transition-all duration-300" 
-                     onclick="revealClue('clue6')">
-                    <div class="flex items-center mb-4">
-                        <img src="https://i.ibb.co/m5Pt04fR/image-2025-06-25-173932344.png?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80" 
-                             alt="Olive Vex" 
-                             class="w-16 h-16 rounded-full border-2 border-rose-500 mr-4 object-cover">
-                        <div>
-                            <h3 class="text-xl font-bold text-rose-300">Olive Vex</h3>
-                            <p class="text-slate-400">Contestant</p>
-                        </div>
-                    </div>
-                    <p class="text-slate-300 mb-4">
-                        "I barely knew him. Why would I want him dead?"
-                    </p>
-                    <div class="flex justify-between text-sm text-slate-500">
-                        <span><i class="fas fa-book text-green-400 mr-1"></i> Chemistry Student</span>
-                        <span><i class="fas fa-ghost text-purple-400 mr-1"></i> Mysterious Past</span>
-                    </div>
-                    <div id="clue6" class="hidden mt-4 p-3 bg-slate-700 rounded-lg text-slate-300 border-l-4 border-rose-500">
-                        <p><i class="fas fa-clue text-rose-400 mr-2"></i> <strong>Clue:</strong> Her real name is Olive Lewis - Ben's estranged sister.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Evidence Board -->
-        <section class="mb-16 bg-slate-800 bg-opacity-80 rounded-xl p-6 border border-slate-700">
-            <h2 class="title-font text-3xl md:text-4xl font-bold mb-8 text-center text-rose-400">
-                <i class="fas fa-clipboard-list mr-4"></i> Evidence Board
-            </h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-slate-900 p-4 rounded-lg border border-slate-700">
-                    <h3 class="text-xl font-bold text-rose-300 mb-3 flex items-center">
-                        <i class="fas fa-glass-cheers mr-2"></i> The Poisoned Drink
-                    </h3>
-                    <p class="text-slate-300 mb-2">
-                        Champagne glass with traces of cyanide. Only Ben's and Kay's fingerprints.
-                    </p>
-                    <div class="text-sm text-slate-500 flex items-center">
-                        <i class="fas fa-clock mr-2"></i> Last poured at 8:45 PM
-                    </div>
-                </div>
-                
-                <div class="bg-slate-900 p-4 rounded-lg border border-slate-700">
-                    <h3 class="text-xl font-bold text-rose-300 mb-3 flex items-center">
-                        <i class="fas fa-envelope mr-2"></i> Anonymous Note
-                    </h3>
-                    <p class="text-slate-300 mb-2 italic">
-                        "The truth about Ben will come out. He won't survive this island."
-                    </p>
-                    <div class="text-sm text-slate-500 flex items-center">
-                        <i class="fas fa-calendar mr-2"></i> Found day before murder
-                    </div>
-                </div>
-                
-                <div class="bg-slate-900 p-4 rounded-lg border border-slate-700">
-                    <h3 class="text-xl font-bold text-rose-300 mb-3 flex items-center">
-                        <i class="fas fa-laptop mr-2"></i> Production Notes
-                    </h3>
-                    <p class="text-slate-300 mb-2">
-                        Email from Waffles: "If Ben leaves, the show fails. Do whatever it takes."
-                    </p>
-                    <div class="text-sm text-slate-500 flex items-center">
-                        <i class="fas fa-trash mr-2"></i> Recovered from trash
-                    </div>
-                </div>
-                
-                <div class="bg-slate-900 p-4 rounded-lg border border-slate-700">
-                    <h3 class="text-xl font-bold text-rose-300 mb-3 flex items-center">
-                        <i class="fas fa-syringe mr-2"></i> Medical Anomaly
-                    </h3>
-                    <p class="text-slate-300 mb-2">
-                        Ben had sedatives in his system - not self-administered.
-                    </p>
-                    <div class="text-sm text-slate-500 flex items-center">
-                        <i class="fas fa-user-md mr-2"></i> Only Dr. Rustic had access
-                    </div>
-                </div>
-                
-                <div class="bg-slate-900 p-4 rounded-lg border border-slate-700">
-                    <h3 class="text-xl font-bold text-rose-300 mb-3 flex items-center">
-                        <i class="fas fa-dna mr-2"></i> Hidden Relationship
-                    </h3>
-                    <p class="text-slate-300 mb-2">
-                        DNA test confirms Olive is biologically related to Ben.
-                    </p>
-                    <div class="text-sm text-slate-500 flex items-center">
-                        <i class="fas fa-secret mr-2"></i> Buried in medical records
-                    </div>
-                </div>
-                
-                <div class="bg-slate-900 p-4 rounded-lg border border-slate-700">
-                    <h3 class="text-xl font-bold text-rose-300 mb-3 flex items-center">
-                        <i class="fas fa-camera mr-2"></i> Camera Footage
-                    </h3>
-                    <p class="text-slate-300 mb-2">
-                        30 seconds recovered showing Harm near bar alone at 8:50 PM.
-                    </p>
-                    <div class="text-sm text-slate-500 flex items-center">
-                        <i class="fas fa-video-slash mr-2"></i> Rest deleted
-                    </div>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Solve the Case Section -->
-        <section class="bg-slate-800 bg-opacity-80 rounded-xl p-8 border border-rose-900 shadow-lg">
-            <h2 class="title-font text-3xl md:text-4xl font-bold mb-6 text-center text-rose-400">
-                <i class="fas fa-gavel mr-4"></i> Solve the Case
-            </h2>
-            
-            <div class="max-w-2xl mx-auto">
-                <div class="mb-6">
-                    <label for="suspectSelect" class="block text-lg font-medium text-rose-300 mb-2">
-                        Who do you think is the murderer?
-                    </label>
-                    <select id="suspectSelect" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 text-slate-300 focus:ring-2 focus:ring-rose-500 focus:border-rose-500">
-                        <option value="">Select a suspect...</option>
-                        <option value="smoofy">Smoofy Rynn</option>
-                        <option value="harm">Harm CraazyK</option>
-                        <option value="waffles">Waffles Starla</option>
-                        <option value="kay">Kay Yak</option>
-                        <option value="rustic">Dr. Rustic Naps</option>
-                        <option value="olive">Olive Vex</option>
-                    </select>
-                </div>
-                
-                <div class="mb-6">
-                    <label for="motiveInput" class="block text-lg font-medium text-rose-300 mb-2">
-                        What was the motive?
-                    </label>
-                    <input type="text" id="motiveInput" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 text-slate-300 focus:ring-2 focus:ring-rose-500 focus:border-rose-500" placeholder="Enter the motive...">
-                </div>
-                
-                <div class="mb-6">
-                    <label for="methodInput" class="block text-lg font-medium text-rose-300 mb-2">
-                        How was the murder committed?
-                    </label>
-                    <textarea id="methodInput" rows="3" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 text-slate-300 focus:ring-2 focus:ring-rose-500 focus:border-rose-500" placeholder="Describe the method..."></textarea>
-                </div>
-                
-                <button onclick="solveCase()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center">
-                    <i class="fas fa-paper-plane mr-2"></i> Submit Your Solution
-                </button>
-            </div>
-        </section>
-        
-        <!-- Footer -->
-        <footer class="mt-16 text-center text-slate-500 pb-8">
-            <p>Help's Murder Party - A mystery game by Detective Help</p>
-            <p class="text-sm mt-2">All suspects are innocent until proven guilty... or are they?</p>
-        </footer>
-    </div>
-    
-    <!-- Solution Modal -->
-    <div id="solutionModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
-        <div class="bg-slate-800 rounded-xl p-8 max-w-2xl w-full mx-4 border border-rose-700 relative">
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
-                <i class="fas fa-times text-2xl"></i>
-            </button>
-            
-            <div id="correctSolution" class="hidden">
-                <h3 class="title-font text-3xl font-bold text-green-400 mb-4">
-                    <i class="fas fa-trophy mr-2"></i> Case Solved!
-                </h3>
-                <p class="text-slate-300 mb-4">
-                    "Brilliant detective work! You've uncovered the truth behind Beniffer Lewis's murder. YOU WIN DUCKY AS A WIFE!!! ( if you're not Help, you still win Ducky. share.)"
-                </p>
-                <div class="bg-slate-700 rounded-lg p-4 mb-6">
-                    <p class="font-bold text-rose-300">The murderer was Olive Vex (real name Olive Lewis).</p>
-                    <p class="text-slate-300 mt-2">
-                        Seeking revenge for her brother abandoning their family after their parents' death, 
-                        she infiltrated the show. She poisoned his drink after Dr. Rustic sedated him, 
-                        knowing production would cover up any scandal.
-                    </p>
-                </div>
-                <button onclick="closeModal()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg transition duration-300">
-                    Close Case
-                </button>
-            </div>
-            
-            <div id="wrongSolution" class="hidden">
-                <h3 class="title-font text-3xl font-bold text-rose-400 mb-4">
-                    <i class="fas fa-exclamation-triangle mr-2"></i> Incorrect Solution
-                </h3>
-                <p class="text-slate-300 mb-4">
-                    "Good attempt, but the evidence doesn't support your conclusion. Keep investigating!"
-                </p>
-                <div class="bg-slate-700 rounded-lg p-4 mb-6">
-                    <p class="text-slate-300">
-                        Review the clues carefully. Look for connections between the evidence and suspects' motives.
-                        The truth is there - you just need to piece it together.
-                    </p>
-                </div>
-                <button onclick="closeModal()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold py-2 px-6 rounded-lg transition duration-300">
-                    Back to Investigation
-                </button>
             </div>
         </div>
-    </div>
+    </header>
+
+    <main class="flex-grow scanline">
+        <div class="container mx-auto px-4 py-12 md:py-24">
+            <div class="max-w-3xl mx-auto text-center">
+                <h2 class="text-4xl md:text-6xl font-bold mb-6 glow">
+                    <span class="text-white">CRAFTING</span> 
+                    <span class="text-red-500">DIGITAL</span> 
+                    <span class="text-white">EXPERIENCES</span>
+                </h2>
+                
+                <p class="text-xl md:text-2xl text-gray-300 mb-12 leading-relaxed">
+                    I build sleek, performant interfaces with cutting-edge tech. 
+                    <span class="text-red-400">JavaScript enthusiast</span> and 
+                    <span class="text-red-400">UI perfectionist</span>.
+                </p>
+                
+                <div class="glow-box bg-black border border-red-900/50 rounded-lg p-6 mb-12">
+                    <div class="flex justify-center space-x-8 text-2xl">
+                        <p>Contact me:</p>
+
+                         <a href="mailto:renatogoodc@outlook.com" class="text-gray-400 hover:text-red-500 transition-colors duration-300" aria-label="GitHub">
+                            <i class="fa-solid fa-envelope-open-text"></i>
+                        </a>
+                        <p>Donate:</p>
+                        <a href="https://www.paypal.com/paypalme/rengood" class="text-gray-400 hover:text-red-500 transition-colors duration-300" aria-label="GitHub">
+                            <i class="fab fa-paypal"></i>
+                        </a>
+                        <!-- <a href="mailto:" class="text-gray-400 hover:text-red-500 transition-colors duration-300" aria-label="Twitter">
+                            <i class="fab fa-email"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-red-500 transition-colors duration-300" aria-label="LinkedIn">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-red-500 transition-colors duration-300" aria-label="Codepen">
+                            <i class="fab fa-codepen"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-red-500 transition-colors duration-300" aria-label="Discord">
+                            <i class="fab fa-discord"></i>
+                        </a> -->
+                    </div>
+                </div>
+                
+                <div class="relative">
+                    <div class="absolute -inset-1 bg-gradient-to-r from-red-600 to-red-900 rounded-lg blur opacity-25"></div>
+                    <div class="relative bg-black border border-red-900/50 rounded-lg p-4">
+                        <p class="font-mono text-red-400 text-sm md:text-base">
+                            <span class="text-gray-500">$</span> npm run dev 
+                            <span class="text-gray-500 animate-pulse">|</span> 
+                            <span class="text-gray-400">Building the future, one component at a time</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="border-t border-red-500/20 py-6">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-500 text-sm mb-4 md:mb-0">
+                    &copy; <span id="year"></span> Ren Good. All systems operational.
+                </p>
+                <div class="flex space-x-4">
+                    <span class="text-gray-600 text-xs font-mono">VERSION 2.0.1</span>
+                    <span class="text-red-500 text-xs font-mono pulse">ONLINE</span>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <script>
-        // Reveal clue when clicking on suspect card
-        function revealClue(clueId) {
-            const clueElement = document.getElementById(clueId);
-            if (clueElement.classList.contains('hidden')) {
-                clueElement.classList.remove('hidden');
-                clueElement.classList.add('clue-reveal');
-            } else {
-                clueElement.classList.add('hidden');
-                clueElement.classList.remove('clue-reveal');
-            }
-        }
+        // Set current year in footer
+        document.getElementById('year').textContent = new Date().getFullYear();
         
-        // Solve case function
-        function solveCase() {
-            const suspect = document.getElementById('suspectSelect').value;
-            const modal = document.getElementById('solutionModal');
-            const correctSolution = document.getElementById('correctSolution');
-            const wrongSolution = document.getElementById('wrongSolution');
+        // Add terminal-like typing effect
+        const terminalText = document.querySelector('.font-mono');
+        if (terminalText) {
+            const originalText = terminalText.textContent;
+            terminalText.textContent = '';
             
-            modal.classList.remove('hidden');
-            
-            // Check if solution is correct (Olive is the murderer)
-            if (suspect === 'olive') {
-                correctSolution.classList.remove('hidden');
-                wrongSolution.classList.add('hidden');
-            } else {
-                correctSolution.classList.add('hidden');
-                wrongSolution.classList.remove('hidden');
-            }
+            let i = 0;
+            const typing = setInterval(() => {
+                if (i < originalText.length) {
+                    terminalText.textContent += originalText.charAt(i);
+                    i++;
+                } else {
+                    clearInterval(typing);
+                }
+            }, 50);
         }
-        
-        // Close modal
-        function closeModal() {
-            document.getElementById('solutionModal').classList.add('hidden');
-        }
-        
-        // Add some interactive elements
-        document.addEventListener('DOMContentLoaded', () => {
-            // Add click sound effect to suspect cards
-            const cards = document.querySelectorAll('.suspect-card');
-            cards.forEach(card => {
-                card.addEventListener('click', () => {
-                    // Play a subtle sound effect (in a real game)
-                    console.log('Clue revealed!');
-                });
-            });
-            
-            // Add typewriter effect to subtitle
-            setTimeout(() => {
-                document.querySelector('.typewriter').style.animation = 'none';
-                document.querySelector('.typewriter').style.borderRight = 'none';
-            }, 3500);
-        });
     </script>
 </body>
 </html>
