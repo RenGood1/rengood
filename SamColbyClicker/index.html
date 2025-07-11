@@ -135,7 +135,12 @@
             </div>
         </div>
     </div>
-    <div><p style="text-align: center;">Made by RenG - 2025</p></div>
+    <div style="text-align: center;">
+        <p>Made by RenG - 2025</p>
+        <button onclick="resetGame()" class="bg-gray-700 hover:bg-gray-600 text-white py-1 px-3 rounded mt-2 text-sm">
+            Reset Game
+        </button>
+    </div>
 
     <script>
         // Game state
@@ -198,8 +203,23 @@
         const modalReward = document.getElementById('modal-reward');
         const closeModal = document.getElementById('closeModal');
 
+        // Save game state to localStorage
+        function saveGame() {
+            localStorage.setItem('samAndColbyClickerSave', JSON.stringify(game));
+        }
+
+        // Load game state from localStorage
+        function loadGame() {
+            const saved = localStorage.getItem('samAndColbyClickerSave');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                Object.assign(game, parsed);
+            }
+        }
+
         // Initialize the game
         function init() {
+            loadGame();
             updateUI();
             renderUpgrades();
             renderEquipment();
@@ -252,6 +272,9 @@
             // Update location progress
             location.progress++;
             
+            // Save game
+            saveGame();
+            
             // Reset progress
             game.investigationProgress = 0;
             
@@ -277,6 +300,7 @@
                 game.subsPerClick += item.effect;
                 renderEquipment();
                 updateUI();
+                saveGame();
             }
         }
 
@@ -289,6 +313,7 @@
                 game.subsPerSecond += member.effect;
                 renderTeam();
                 updateUI();
+                saveGame();
             }
         }
 
@@ -301,6 +326,7 @@
                 game.subsPerSecond += upgrade.effect;
                 renderUpgrades();
                 updateUI();
+                saveGame();
             }
         }
 
@@ -316,6 +342,7 @@
                 }
                 renderUpgrades();
                 updateUI();
+                saveGame();
             }
         }
 
@@ -327,6 +354,7 @@
                 game.investigationProgress = 0;
                 locationEl.textContent = game.locations[index].name;
                 updateUI();
+                saveGame();
             }
         }
 
@@ -484,6 +512,14 @@
                 itemEl.appendChild(costEl);
                 specialEl.appendChild(itemEl);
             });
+        }
+
+        // Reset game
+        function resetGame() {
+            if (confirm('Are you sure you want to reset all progress?')) {
+                localStorage.removeItem('samAndColbyClickerSave');
+                location.reload();
+            }
         }
 
         // Start the game
