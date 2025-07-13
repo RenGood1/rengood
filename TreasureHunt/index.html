@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treasure Hunt Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .hint-box {
+            transition: all 0.3s ease;
+            transform: scale(0.95);
+        }
+        .hint-box:hover {
+            transform: scale(1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        .locked {
+            filter: grayscale(80%);
+            opacity: 0.7;
+        }
+        .unlock-animation {
+            animation: unlock 0.5s ease;
+        }
+        @keyframes unlock {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .shake {
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-900 to-purple-900 min-h-screen text-white">
+    <div class="container mx-auto px-4 py-12 max-w-4xl">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 text-yellow-300">Treasure Hunt Challenge</h1>
+            <p class="text-lg text-blue-200">Solve each puzzle to unlock the next clue. Only the worthy will reach the final treasure!</p>
+            <div class="mt-6 flex justify-center">
+                <div class="w-24 h-2 bg-yellow-400 rounded-full"></div>
+            </div>
+        </header>
+
+        <div class="bg-black bg-opacity-40 backdrop-blur-sm rounded-xl p-6 shadow-2xl border border-blue-400 border-opacity-30">
+            <div class="mb-8 text-center">
+                <div class="inline-block p-4 bg-yellow-600 bg-opacity-20 rounded-lg border border-yellow-400 border-opacity-50">
+                    <i class="fas fa-lock-open text-3xl text-yellow-300 mb-2"></i>
+                    <p class="font-mono">Hints unlocked: <span id="unlocked-count">1</span>/7</p>
+                </div>
+            </div>
+
+            <!-- Hint 1 (always visible) -->
+            <div class="hint-box bg-gradient-to-br from-blue-800 to-blue-600 rounded-lg p-6 mb-6 relative" id="hint1">
+                <div class="absolute -top-3 -left-3 bg-yellow-400 text-blue-900 font-bold px-3 py-1 rounded-full text-sm">1</div>
+                <h3 class="text-xl font-bold mb-3 text-yellow-300">First Clue</h3>
+                <p class="mb-4">I have keys but no locks, I have space but no room, you can enter but not go outside. What am I?</p>
+                <div class="flex items-center">
+                    <input type="text" id="answer1" placeholder="Your answer..." class="flex-grow px-4 py-2 rounded-l-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400">
+                    <button onclick="checkAnswer(1)" class="bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-bold px-4 py-2 rounded-r-lg transition">
+                        Submit
+                    </button>
+                </div>
+                <p id="feedback1" class="mt-2 text-sm italic hidden"></p>
+            </div>
+
+            <!-- Hint 2 (locked initially) -->
+            <div class="hint-box bg-gradient-to-br from-purple-800 to-purple-600 rounded-lg p-6 mb-6 relative locked" id="hint2">
+                <div class="absolute -top-3 -left-3 bg-yellow-400 text-purple-900 font-bold px-3 py-1 rounded-full text-sm">2</div>
+                <div class="absolute inset-0 bg-black bg-opacity-60 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-lock text-3xl text-yellow-300"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3 text-yellow-300">Second Clue</h3>
+                <p class="mb-4">The more you take, the more you leave behind. What am I?</p>
+                <div class="flex items-center">
+                    <input type="text" id="answer2" placeholder="Your answer..." class="flex-grow px-4 py-2 rounded-l-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400" disabled>
+                    <button class="bg-gray-500 text-gray-900 font-bold px-4 py-2 rounded-r-lg cursor-not-allowed" disabled>
+                        Locked
+                    </button>
+                </div>
+                <p id="feedback2" class="mt-2 text-sm italic hidden"></p>
+            </div>
+
+            <!-- Hint 3 -->
+            <div class="hint-box bg-gradient-to-br from-green-800 to-green-600 rounded-lg p-6 mb-6 relative locked" id="hint3">
+                <div class="absolute -top-3 -left-3 bg-yellow-400 text-green-900 font-bold px-3 py-1 rounded-full text-sm">3</div>
+                <div class="absolute inset-0 bg-black bg-opacity-60 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-lock text-3xl text-yellow-300"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3 text-yellow-300">Third Clue</h3>
+                <p class="mb-4">What has a heart that doesn't beat?</p>
+                <div class="flex items-center">
+                    <input type="text" id="answer3" placeholder="Your answer..." class="flex-grow px-4 py-2 rounded-l-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400" disabled>
+                    <button class="bg-gray-500 text-gray-900 font-bold px-4 py-2 rounded-r-lg cursor-not-allowed" disabled>
+                        Locked
+                    </button>
+                </div>
+                <p id="feedback3" class="mt-2 text-sm italic hidden"></p>
+            </div>
+
+            <!-- Hint 4 -->
+            <div class="hint-box bg-gradient-to-br from-red-800 to-red-600 rounded-lg p-6 mb-6 relative locked" id="hint4">
+                <div class="absolute -top-3 -left-3 bg-yellow-400 text-red-900 font-bold px-3 py-1 rounded-full text-sm">4</div>
+                <div class="absolute inset-0 bg-black bg-opacity-60 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-lock text-3xl text-yellow-300"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3 text-yellow-300">Fourth Clue</h3>
+                <p class="mb-4">I'm light as a feather, yet the strongest man can't hold me for more than a few minutes. What am I?</p>
+                <div class="flex items-center">
+                    <input type="text" id="answer4" placeholder="Your answer..." class="flex-grow px-4 py-2 rounded-l-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400" disabled>
+                    <button class="bg-gray-500 text-gray-900 font-bold px-4 py-2 rounded-r-lg cursor-not-allowed" disabled>
+                        Locked
+                    </button>
+                </div>
+                <p id="feedback4" class="mt-2 text-sm italic hidden"></p>
+            </div>
+
+            <!-- Hint 5 -->
+            <div class="hint-box bg-gradient-to-br from-indigo-800 to-indigo-600 rounded-lg p-6 mb-6 relative locked" id="hint5">
+                <div class="absolute -top-3 -left-3 bg-yellow-400 text-indigo-900 font-bold px-3 py-1 rounded-full text-sm">5</div>
+                <div class="absolute inset-0 bg-black bg-opacity-60 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-lock text-3xl text-yellow-300"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3 text-yellow-300">Fifth Clue</h3>
+                <p class="mb-4">What can you catch but not throw?</p>
+                <div class="flex items-center">
+                    <input type="text" id="answer5" placeholder="Your answer..." class="flex-grow px-4 py-2 rounded-l-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400" disabled>
+                    <button class="bg-gray-500 text-gray-900 font-bold px-4 py-2 rounded-r-lg cursor-not-allowed" disabled>
+                        Locked
+                    </button>
+                </div>
+                <p id="feedback5" class="mt-2 text-sm italic hidden"></p>
+            </div>
+
+            <!-- Hint 6 -->
+            <div class="hint-box bg-gradient-to-br from-pink-800 to-pink-600 rounded-lg p-6 mb-6 relative locked" id="hint6">
+                <div class="absolute -top-3 -left-3 bg-yellow-400 text-pink-900 font-bold px-3 py-1 rounded-full text-sm">6</div>
+                <div class="absolute inset-0 bg-black bg-opacity-60 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-lock text-3xl text-yellow-300"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3 text-yellow-300">Sixth Clue</h3>
+                <p class="mb-4">What has a neck but no head?</p>
+                <div class="flex items-center">
+                    <input type="text" id="answer6" placeholder="Your answer..." class="flex-grow px-4 py-2 rounded-l-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400" disabled>
+                    <button class="bg-gray-500 text-gray-900 font-bold px-4 py-2 rounded-r-lg cursor-not-allowed" disabled>
+                        Locked
+                    </button>
+                </div>
+                <p id="feedback6" class="mt-2 text-sm italic hidden"></p>
+            </div>
+
+            <!-- Final Treasure (Amazon link) -->
+            <div class="hint-box bg-gradient-to-br from-yellow-700 to-yellow-500 rounded-lg p-6 mb-6 relative locked" id="treasure">
+                <div class="absolute -top-3 -left-3 bg-yellow-400 text-yellow-900 font-bold px-3 py-1 rounded-full text-sm">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <div class="absolute inset-0 bg-black bg-opacity-60 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-lock text-3xl text-yellow-300"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3 text-yellow-300">The Treasure</h3>
+                <p class="mb-4">Congratulations! You've solved all the puzzles. Claim your reward!</p>
+                <div class="text-center">
+                    <a id="amazon-link" href="#" class="hidden bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-gray-900 font-bold px-6 py-3 rounded-lg inline-flex items-center transition transform hover:scale-105">
+                        <i class="fab fa-amazon mr-2"></i> Get Your Treasure on Amazon
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <footer class="mt-12 text-center text-blue-200 text-sm">
+            <p>© 2023 Treasure Hunt Challenge | Made with <i class="fas fa-heart text-red-400"></i> for puzzle lovers</p>
+        </footer>
+    </div>
+
+    <script>
+        // Answers for each hint (case insensitive)
+        const answers = {
+            1: "keyboard",
+            2: "footsteps",
+            3: "artichoke",
+            4: "breath",
+            5: "cold",
+            6: "bottle"
+        };
+
+        // Check answer function
+        function checkAnswer(hintNumber) {
+            const answerInput = document.getElementById(`answer${hintNumber}`);
+            const feedback = document.getElementById(`feedback${hintNumber}`);
+            const userAnswer = answerInput.value.trim().toLowerCase();
+            
+            if (userAnswer === "") {
+                answerInput.classList.add("shake");
+                setTimeout(() => answerInput.classList.remove("shake"), 500);
+                return;
+            }
+
+            if (userAnswer === answers[hintNumber]) {
+                // Correct answer
+                feedback.textContent = "Correct! Unlocking next clue...";
+                feedback.className = "mt-2 text-sm italic text-green-300";
+                feedback.classList.remove("hidden");
+                
+                // Disable current hint inputs
+                answerInput.disabled = true;
+                document.querySelector(`#hint${hintNumber} button`).disabled = true;
+                
+                // Unlock next hint after a delay
+                setTimeout(() => {
+                    if (hintNumber < 6) {
+                        unlockHint(hintNumber + 1);
+                    } else {
+                        unlockTreasure();
+                    }
+                }, 1000);
+            } else {
+                // Wrong answer
+                feedback.textContent = "Not quite! Try again.";
+                feedback.className = "mt-2 text-sm italic text-red-300";
+                feedback.classList.remove("hidden");
+                answerInput.classList.add("shake");
+                setTimeout(() => answerInput.classList.remove("shake"), 500);
+            }
+        }
+
+        // Unlock next hint
+        function unlockHint(hintNumber) {
+            const hintElement = document.getElementById(`hint${hintNumber}`);
+            const lockElement = hintElement.querySelector(".absolute.inset-0");
+            
+            // Play unlock animation
+            hintElement.classList.remove("locked");
+            hintElement.classList.add("unlock-animation");
+            
+            // Remove lock overlay after animation
+            setTimeout(() => {
+                lockElement.remove();
+                hintElement.querySelector("input").disabled = false;
+                const button = hintElement.querySelector("button");
+                button.disabled = false;
+                button.textContent = "Submit";
+                button.className = "bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-bold px-4 py-2 rounded-r-lg transition";
+                button.onclick = function() { checkAnswer(hintNumber); };
+                
+                // Update unlocked count
+                document.getElementById("unlocked-count").textContent = hintNumber;
+            }, 500);
+        }
+
+        // Unlock the final treasure
+        function unlockTreasure() {
+            const treasureElement = document.getElementById("treasure");
+            const lockElement = treasureElement.querySelector(".absolute.inset-0");
+            
+            // Play unlock animation
+            treasureElement.classList.remove("locked");
+            treasureElement.classList.add("unlock-animation");
+            
+            // Remove lock overlay after animation
+            setTimeout(() => {
+                lockElement.remove();
+                
+                // Show Amazon link
+                const amazonLink = document.getElementById("amazon-link");
+                amazonLink.classList.remove("hidden");
+                amazonLink.href = "https://www.amazon.com";
+                
+                // Update unlocked count
+                document.getElementById("unlocked-count").textContent = "7";
+            }, 500);
+        }
+    </script>
+</body>
+</html>

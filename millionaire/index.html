@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Who Wants To Be A Millionaire</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(255, 215, 0, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
+            }
+        }
+        
+        .option:hover {
+            transform: scale(1.02);
+            transition: transform 0.2s;
+        }
+        
+        .timer-ring {
+            stroke-dasharray: 283;
+            stroke-dashoffset: 283;
+            transition: stroke-dashoffset 1s linear;
+        }
+    </style>
+</head>
+<body class="text-white">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <div class="text-2xl font-bold bg-blue-900 px-4 py-2 rounded-lg">
+                <span class="text-yellow-400">WHO WANTS</span> TO BE A MILLIONAIRE
+            </div>
+            <div id="timer-container" class="hidden">
+                <div class="relative w-16 h-16">
+                    <svg class="w-full h-full" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="#2d3748" stroke-width="8"/>
+                        <circle id="timer-ring" class="timer-ring" cx="50" cy="50" r="45" fill="none" stroke="#f6ad55" stroke-width="8" stroke-linecap="round" transform="rotate(-90 50 50)"/>
+                    </svg>
+                    <div id="timer" class="absolute inset-0 flex items-center justify-center text-xl font-bold">30</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Player Registration -->
+        <div id="registration" class="bg-gray-800 rounded-xl p-8 shadow-2xl mb-8">
+            <h2 class="text-2xl font-bold mb-6 text-center text-yellow-400">Enter Your Name</h2>
+            <div class="flex flex-col items-center">
+                <input type="text" id="player-name" placeholder="Your Name" class="w-full max-w-md px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 mb-4">
+                <button id="start-game" class="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105">
+                    START GAME <i class="fas fa-play ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Game Area -->
+        <div id="game-area" class="hidden">
+            <!-- Question and Options -->
+            <div class="bg-gray-800 rounded-xl p-8 shadow-2xl mb-8">
+                <div class="flex justify-between items-center mb-6">
+                    <div id="question-number" class="bg-blue-900 text-white font-bold px-4 py-2 rounded-lg">Question 1</div>
+                    <div id="score" class="bg-yellow-500 text-gray-900 font-bold px-4 py-2 rounded-lg">$0</div>
+                </div>
+                
+                <div id="question" class="text-xl font-semibold mb-8 min-h-16">Loading question...</div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div id="option-a" class="option bg-blue-900 hover:bg-blue-800 cursor-pointer p-4 rounded-lg flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-yellow-500 text-gray-900 font-bold flex items-center justify-center mr-4">A</div>
+                        <div class="option-text">Option A</div>
+                    </div>
+                    <div id="option-b" class="option bg-blue-900 hover:bg-blue-800 cursor-pointer p-4 rounded-lg flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-yellow-500 text-gray-900 font-bold flex items-center justify-center mr-4">B</div>
+                        <div class="option-text">Option B</div>
+                    </div>
+                    <div id="option-c" class="option bg-blue-900 hover:bg-blue-800 cursor-pointer p-4 rounded-lg flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-yellow-500 text-gray-900 font-bold flex items-center justify-center mr-4">C</div>
+                        <div class="option-text">Option C</div>
+                    </div>
+                    <div id="option-d" class="option bg-blue-900 hover:bg-blue-800 cursor-pointer p-4 rounded-lg flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-yellow-500 text-gray-900 font-bold flex items-center justify-center mr-4">D</div>
+                        <div class="option-text">Option D</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Lifelines -->
+            <div class="bg-gray-800 rounded-xl p-6 shadow-2xl mb-8">
+                <h3 class="text-lg font-bold mb-4 text-yellow-400">Lifelines</h3>
+                <div class="grid grid-cols-3 gap-4">
+                    <button id="fifty-fifty" class="bg-purple-700 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed">
+                        50:50 <i class="fas fa-cut ml-1"></i>
+                    </button>
+                    <button id="audience-poll" class="bg-purple-700 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed">
+                        Audience <i class="fas fa-users ml-1"></i>
+                    </button>
+                    <button id="phone-a-friend" class="bg-purple-700 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed">
+                        Phone <i class="fas fa-phone ml-1"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Modal -->
+        <div id="game-over-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center hidden z-50">
+            <div class="bg-gray-800 rounded-xl p-8 max-w-md w-full mx-4 shadow-2xl text-center">
+                <h2 id="result-title" class="text-3xl font-bold mb-4 text-yellow-400">Game Over!</h2>
+                <p id="result-message" class="text-xl mb-6">You won $0!</p>
+                <div id="high-score" class="bg-yellow-500 text-gray-900 font-bold py-2 px-4 rounded-lg mb-6 hidden">
+                    NEW HIGH SCORE: $<span id="high-score-amount">0</span>
+                </div>
+                <button id="play-again" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-full transition mr-4">
+                    Play Again
+                </button>
+                <button id="quit-game" class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-full transition">
+                    Quit
+                </button>
+            </div>
+        </div>
+
+        <!-- High Scores -->
+        <div id="high-scores" class="bg-gray-800 rounded-xl p-6 shadow-2xl mt-8 hidden">
+            <h2 class="text-2xl font-bold mb-4 text-yellow-400">High Scores</h2>
+            <div id="scores-list" class="space-y-2">
+                <!-- Scores will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game variables
+        let currentQuestion = 0;
+        let score = 0;
+        let timer;
+        let timeLeft = 30;
+        let playerName = '';
+        let hasPlayed = localStorage.getItem('hasPlayed') === 'true';
+        let questions = [];
+        let usedLifelines = {
+            fiftyFifty: false,
+            audiencePoll: false,
+            phoneAFriend: false
+        };
+        
+        // Prize structure
+        const prizeStructure = [
+            100, 200, 300, 500, 1000, 
+            2000, 4000, 8000, 16000, 32000,
+            64000, 125000, 250000, 500000, 1000000
+        ];
+        
+        // Sample questions (in a real app, you'd fetch these from an API)
+        const sampleQuestions = [
+            {
+                question: "What is the capital of France?",
+                options: {
+                    A: "London",
+                    B: "Paris",
+                    C: "Berlin",
+                    D: "Madrid"
+                },
+                correctAnswer: "B",
+                difficulty: 1
+            },
+            {
+                question: "Which planet is known as the Red Planet?",
+                options: {
+                    A: "Venus",
+                    B: "Mars",
+                    C: "Jupiter",
+                    D: "Saturn"
+                },
+                correctAnswer: "B",
+                difficulty: 1
+            },
+            {
+                question: "Who painted the Mona Lisa?",
+                options: {
+                    A: "Vincent van Gogh",
+                    B: "Pablo Picasso",
+                    C: "Leonardo da Vinci",
+                    D: "Michelangelo"
+                },
+                correctAnswer: "C",
+                difficulty: 2
+            },
+            {
+                question: "What is the largest ocean on Earth?",
+                options: {
+                    A: "Atlantic Ocean",
+                    B: "Indian Ocean",
+                    C: "Arctic Ocean",
+                    D: "Pacific Ocean"
+                },
+                correctAnswer: "D",
+                difficulty: 2
+            },
+            {
+                question: "Which element has the chemical symbol 'O'?",
+                options: {
+                    A: "Gold",
+                    B: "Oxygen",
+                    C: "Osmium",
+                    D: "Oganesson"
+                },
+                correctAnswer: "B",
+                difficulty: 3
+            },
+            {
+                question: "In which year did World War II end?",
+                options: {
+                    A: "1943",
+                    B: "1945",
+                    C: "1947",
+                    D: "1950"
+                },
+                correctAnswer: "B",
+                difficulty: 3
+            },
+            {
+                question: "Who wrote 'To Kill a Mockingbird'?",
+                options: {
+                    A: "Harper Lee",
+                    B: "Mark Twain",
+                    C: "J.D. Salinger",
+                    D: "F. Scott Fitzgerald"
+                },
+                correctAnswer: "A",
+                difficulty: 4
+            },
+            {
+                question: "What is the currency of Japan?",
+                options: {
+                    A: "Yuan",
+                    B: "Won",
+                    C: "Yen",
+                    D: "Ringgit"
+                },
+                correctAnswer: "C",
+                difficulty: 4
+            },
+            {
+                question: "Which country is home to the kangaroo?",
+                options: {
+                    A: "New Zealand",
+                    B: "South Africa",
+                    C: "Australia",
+                    D: "Brazil"
+                },
+                correctAnswer: "C",
+                difficulty: 5
+            },
+            {
+                question: "What is the largest mammal in the world?",
+                options: {
+                    A: "Elephant",
+                    B: "Blue Whale",
+                    C: "Giraffe",
+                    D: "Polar Bear"
+                },
+                correctAnswer: "B",
+                difficulty: 5
+            }
+        ];
+        
+        // DOM elements
+        const registrationSection = document.getElementById('registration');
+        const gameArea = document.getElementById('game-area');
+        const playerNameInput = document.getElementById('player-name');
+        const startGameBtn = document.getElementById('start-game');
+        const questionNumberEl = document.getElementById('question-number');
+        const scoreEl = document.getElementById('score');
+        const questionEl = document.getElementById('question');
+        const optionA = document.getElementById('option-a');
+        const optionB = document.getElementById('option-b');
+        const optionC = document.getElementById('option-c');
+        const optionD = document.getElementById('option-d');
+        const gameOverModal = document.getElementById('game-over-modal');
+        const resultTitle = document.getElementById('result-title');
+        const resultMessage = document.getElementById('result-message');
+        const highScoreEl = document.getElementById('high-score');
+        const highScoreAmount = document.getElementById('high-score-amount');
+        const playAgainBtn = document.getElementById('play-again');
+        const quitGameBtn = document.getElementById('quit-game');
+        const highScoresSection = document.getElementById('high-scores');
+        const scoresList = document.getElementById('scores-list');
+        const timerContainer = document.getElementById('timer-container');
+        const timerEl = document.getElementById('timer');
+        const timerRing = document.getElementById('timer-ring');
+        const fiftyFiftyBtn = document.getElementById('fifty-fifty');
+        const audiencePollBtn = document.getElementById('audience-poll');
+        const phoneAFriendBtn = document.getElementById('phone-a-friend');
+        
+        // Initialize game
+        function initGame() {
+            // Shuffle questions and pick 15 (or fewer if not enough)
+            questions = [...sampleQuestions].sort(() => 0.5 - Math.random()).slice(0, 15);
+            
+            // Reset game state
+            currentQuestion = 0;
+            score = 0;
+            timeLeft = 30;
+            usedLifelines = {
+                fiftyFifty: false,
+                audiencePoll: false,
+                phoneAFriend: false
+            };
+            
+            // Reset lifeline buttons
+            fiftyFiftyBtn.disabled = false;
+            audiencePollBtn.disabled = false;
+            phoneAFriendBtn.disabled = false;
+            
+            // Show game area
+            registrationSection.classList.add('hidden');
+            gameArea.classList.remove('hidden');
+            timerContainer.classList.remove('hidden');
+            
+            // Load first question
+            loadQuestion();
+            
+            // Start timer
+            startTimer();
+        }
+        
+        // Load question
+        function loadQuestion() {
+            if (currentQuestion >= questions.length) {
+                endGame(true);
+                return;
+            }
+            
+            const question = questions[currentQuestion];
+            
+            // Update UI
+            questionNumberEl.textContent = `Question ${currentQuestion + 1}`;
+            questionEl.textContent = question.question;
+            
+            // Reset option styles
+            [optionA, optionB, optionC, optionD].forEach(option => {
+                option.classList.remove('bg-green-500', 'bg-red-500', 'opacity-50');
+                option.classList.add('bg-blue-900', 'hover:bg-blue-800');
+                option.style.pointerEvents = 'auto';
+            });
+            
+            // Set options
+            optionA.querySelector('.option-text').textContent = question.options.A;
+            optionB.querySelector('.option-text').textContent = question.options.B;
+            optionC.querySelector('.option-text').textContent = question.options.C;
+            optionD.querySelector('.option-text').textContent = question.options.D;
+            
+            // Set data attributes for correct answer
+            [optionA, optionB, optionC, optionD].forEach(option => {
+                option.dataset.correct = option.id === `option-${question.correctAnswer.toLowerCase()}`;
+            });
+            
+            // Reset timer
+            resetTimer();
+        }
+        
+        // Start timer
+        function startTimer() {
+            clearInterval(timer);
+            timeLeft = 30;
+            updateTimerDisplay();
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    timeUp();
+                }
+            }, 1000);
+        }
+        
+        // Reset timer
+        function resetTimer() {
+            clearInterval(timer);
+            timeLeft = 30;
+            updateTimerDisplay();
+            startTimer();
+        }
+        
+        // Update timer display
+        function updateTimerDisplay() {
+            timerEl.textContent = timeLeft;
+            const offset = (283 * (30 - timeLeft)) / 30;
+            timerRing.style.strokeDashoffset = 283 - offset;
+            
+            // Change color when time is running low
+            if (timeLeft <= 10) {
+                timerRing.style.stroke = '#f56565';
+            } else if (timeLeft <= 20) {
+                timerRing.style.stroke = '#f6ad55';
+            } else {
+                timerRing.style.stroke = '#68d391';
+            }
+        }
+        
+        // Time's up
+        function timeUp() {
+            // Disable all options
+            [optionA, optionB, optionC, optionD].forEach(option => {
+                option.style.pointerEvents = 'none';
+            });
+            
+            // Show correct answer
+            const correctOption = document.querySelector(`[data-correct="true"]`);
+            correctOption.classList.remove('bg-blue-900', 'hover:bg-blue-800');
+            correctOption.classList.add('bg-green-500');
+            
+            // End game after delay
+            setTimeout(() => {
+                endGame(false);
+            }, 2000);
+        }
+        
+        // Check answer
+        function checkAnswer(selectedOption) {
+            clearInterval(timer);
+            
+            // Disable all options
+            [optionA, optionB, optionC, optionD].forEach(option => {
+                option.style.pointerEvents = 'none';
+            });
+            
+            const isCorrect = selectedOption.dataset.correct === 'true';
+            
+            if (isCorrect) {
+                // Correct answer
+                selectedOption.classList.remove('bg-blue-900', 'hover:bg-blue-800');
+                selectedOption.classList.add('bg-green-500');
+                
+                // Update score
+                score = prizeStructure[currentQuestion];
+                scoreEl.textContent = `$${score}`;
+                
+                // Move to next question after delay
+                setTimeout(() => {
+                    currentQuestion++;
+                    loadQuestion();
+                }, 1500);
+            } else {
+                // Wrong answer
+                selectedOption.classList.remove('bg-blue-900', 'hover:bg-blue-800');
+                selectedOption.classList.add('bg-red-500');
+                
+                // Show correct answer
+                const correctOption = document.querySelector(`[data-correct="true"]`);
+                correctOption.classList.remove('bg-blue-900', 'hover:bg-blue-800');
+                correctOption.classList.add('bg-green-500');
+                
+                // End game after delay
+                setTimeout(() => {
+                    endGame(false);
+                }, 2000);
+            }
+        }
+        
+        // End game
+        function endGame(isWinner) {
+            clearInterval(timer);
+            
+            // Show game over modal
+            gameOverModal.classList.remove('hidden');
+            
+            if (isWinner) {
+                resultTitle.textContent = "Congratulations!";
+                resultMessage.textContent = `You won $1,000,000!`;
+                score = 1000000;
+            } else {
+                resultTitle.textContent = "Game Over!";
+                resultMessage.textContent = `You won $${score}!`;
+            }
+            
+            // Check for high score
+            const highScores = JSON.parse(localStorage.getItem('highScores')) || [];
+            const isHighScore = highScores.length < 5 || score > highScores[highScores.length - 1].score;
+            
+            if (isHighScore) {
+                highScoreEl.classList.remove('hidden');
+                highScoreAmount.textContent = score;
+            }
+            
+            // Save score if player provided a name
+            if (playerName.trim() !== '') {
+                saveScore(playerName, score);
+            }
+            
+            // Mark as played
+            localStorage.setItem('hasPlayed', 'true');
+        }
+        
+        // Save score
+        function saveScore(name, score) {
+            let highScores = JSON.parse(localStorage.getItem('highScores')) || [];
+            
+            // Add new score
+            highScores.push({ name, score });
+            
+            // Sort scores (highest first)
+            highScores.sort((a, b) => b.score - a.score);
+            
+            // Keep only top 5 scores
+            highScores = highScores.slice(0, 5);
+            
+            // Save to localStorage
+            localStorage.setItem('highScores', JSON.stringify(highScores));
+            
+            // Update high scores display
+            displayHighScores();
+        }
+        
+        // Display high scores
+        function displayHighScores() {
+            const highScores = JSON.parse(localStorage.getItem('highScores')) || [];
+            
+            if (highScores.length > 0) {
+                highScoresSection.classList.remove('hidden');
+                scoresList.innerHTML = '';
+                
+                highScores.forEach((entry, index) => {
+                    const scoreItem = document.createElement('div');
+                    scoreItem.className = 'flex justify-between items-center bg-gray-700 p-3 rounded-lg';
+                    scoreItem.innerHTML = `
+                        <span class="font-bold">${index + 1}. ${entry.name}</span>
+                        <span class="bg-yellow-500 text-gray-900 font-bold px-3 py-1 rounded-full">$${entry.score}</span>
+                    `;
+                    scoresList.appendChild(scoreItem);
+                });
+            }
+        }
+        
+        // 50:50 lifeline
+        function useFiftyFifty() {
+            const question = questions[currentQuestion];
+            const correctOption = question.correctAnswer;
+            let options = ['A', 'B', 'C', 'D'];
+            
+            // Remove correct option from options to hide
+            options = options.filter(opt => opt !== correctOption);
+            
+            // Randomly select one incorrect option to keep
+            const randomIndex = Math.floor(Math.random() * options.length);
+            options.splice(randomIndex, 1);
+            
+            // Hide the two remaining incorrect options
+            options.forEach(opt => {
+                const optionEl = document.getElementById(`option-${opt.toLowerCase()}`);
+                optionEl.classList.add('opacity-50');
+                optionEl.style.pointerEvents = 'none';
+            });
+            
+            // Disable lifeline
+            fiftyFiftyBtn.disabled = true;
+            usedLifelines.fiftyFifty = true;
+        }
+        
+        // Audience poll lifeline
+        function useAudiencePoll() {
+            const question = questions[currentQuestion];
+            const correctOption = question.correctAnswer;
+            
+            // Create a fake audience poll result
+            let percentages = {
+                A: Math.floor(Math.random() * 30),
+                B: Math.floor(Math.random() * 30),
+                C: Math.floor(Math.random() * 30),
+                D: Math.floor(Math.random() * 30)
+            };
+            
+            // Give the correct answer a higher percentage
+            percentages[correctOption] = 60 + Math.floor(Math.random() * 30);
+            
+            // Normalize to 100%
+            const total = Object.values(percentages).reduce((sum, val) => sum + val, 0);
+            for (let key in percentages) {
+                percentages[key] = Math.round((percentages[key] / total) * 100);
+            }
+            
+            // Show audience poll results (in a real game, this would be a visual chart)
+            alert(`Audience Poll Results:\nA: ${percentages.A}%\nB: ${percentages.B}%\nC: ${percentages.C}%\nD: ${percentages.D}%`);
+            
+            // Disable lifeline
+            audiencePollBtn.disabled = true;
+            usedLifelines.audiencePoll = true;
+        }
+        
+        // Phone a friend lifeline
+        function usePhoneAFriend() {
+            const question = questions[currentQuestion];
+            const correctOption = question.correctAnswer;
+            
+            // Create a fake friend response
+            const friendName = ["John", "Sarah", "Mike", "Emily", "David"][Math.floor(Math.random() * 5)];
+            const confidence = Math.floor(Math.random() * 30) + 70; // 70-100% confidence
+            
+            // The friend is more likely to know the correct answer
+            const isCorrect = Math.random() < 0.8; // 80% chance of being correct
+            
+            const answer = isCorrect ? correctOption : 
+                          ["A", "B", "C", "D"].filter(opt => opt !== correctOption)[Math.floor(Math.random() * 3)];
+            
+            // Show friend's response
+            alert(`${friendName} says: "I'm ${confidence}% sure the answer is ${answer}."`);
+            
+            // Disable lifeline
+            phoneAFriendBtn.disabled = true;
+            usedLifelines.phoneAFriend = true;
+        }
+        
+        // Event listeners
+        startGameBtn.addEventListener('click', () => {
+            playerName = playerNameInput.value.trim();
+            
+            if (playerName === '') {
+                alert('Please enter your name to start the game.');
+                return;
+            }
+            
+            initGame();
+        });
+        
+        optionA.addEventListener('click', () => checkAnswer(optionA));
+        optionB.addEventListener('click', () => checkAnswer(optionB));
+        optionC.addEventListener('click', () => checkAnswer(optionC));
+        optionD.addEventListener('click', () => checkAnswer(optionD));
+        
+        playAgainBtn.addEventListener('click', () => {
+            gameOverModal.classList.add('hidden');
+            if (hasPlayed) {
+                // Player already played once, show high scores
+                displayHighScores();
+                registrationSection.classList.remove('hidden');
+                gameArea.classList.add('hidden');
+                timerContainer.classList.add('hidden');
+            } else {
+                initGame();
+            }
+        });
+        
+        quitGameBtn.addEventListener('click', () => {
+            gameOverModal.classList.add('hidden');
+            displayHighScores();
+            registrationSection.classList.remove('hidden');
+            gameArea.classList.add('hidden');
+            timerContainer.classList.add('hidden');
+        });
+        
+        fiftyFiftyBtn.addEventListener('click', useFiftyFifty);
+        audiencePollBtn.addEventListener('click', useAudiencePoll);
+        phoneAFriendBtn.addEventListener('click', usePhoneAFriend);
+        
+        // Initialize
+        if (hasPlayed) {
+            playerNameInput.placeholder = "Enter name to view high scores";
+            displayHighScores();
+        }
+    </script>
+</body>
+</html>
