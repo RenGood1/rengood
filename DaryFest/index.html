@@ -323,7 +323,7 @@
                         <div id="poster-content" class="relative min-h-96 flex flex-col items-center justify-center">
                             <div class="text-center mb-8">
                                 <div class="rock-font text-4xl md:text-5xl text-white mb-2">DARYFEST 2025</div>
-                                <div class="text-xl text-yellow-300">The Ultimate Alternative Experience</div>
+                                <div class="text-xl text-yellow-300">The Ultimate Rusty Experience</div>
                             </div>
                             <div id="headliners" class="flex flex-wrap justify-center gap-4 mb-8"></div>
                             <div id="support-acts" class="flex flex-wrap justify-center gap-3"></div>
@@ -372,7 +372,7 @@
         <!-- Footer -->
         <footer class="mt-8 text-center text-gray-600 text-sm">
             <div class="inline-block px-4 py-2 bg-white rounded-md shadow-sm">
-                <i class="fas fa-heart text-red-500 mr-1"></i> Made with love for Dary's Birthday 2025 - by RenG
+                <i class="fas fa-heart text-red-500 mr-1"></i> Made with love for Dary's concert adventures
             </div>
         </footer>
     </div>
@@ -404,7 +404,7 @@
 
         async function saveConcertEntry() {
             const entry = {
-                id: Date.now(), // Unique ID for the entry
+                id: Date.now(),
                 bandName: document.getElementById('band-name').value,
                 concertDate: document.getElementById('concert-date').value,
                 venue: document.getElementById('concert-venue').value,
@@ -501,35 +501,171 @@
         }
 
         function getWeather() {
-            // ... (Weather functions remain the same)
+            const weatherWidget = document.getElementById('weather-widget-content');
+            if (!navigator.geolocation) {
+                weatherWidget.innerHTML = '<p>Geolocation is not supported by your browser.</p>';
+                return;
+            }
+
+            function success(position) {
+                const latitude  = position.coords.latitude;
+                const longitude = position.coords.longitude;
+                const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
+
+                fetch(apiUrl)
+                    .then(response => response.ok ? response.json() : Promise.reject('Weather data not available'))
+                    .then(data => {
+                        const { temperature, weathercode } = data.current_weather;
+                        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
+                            .then(res => res.json())
+                            .then(geoData => {
+                                const city = geoData.address.city || geoData.address.town || 'Your Location';
+                                weatherWidget.innerHTML = `
+                                    <div class="flex items-center justify-center">
+                                        <i class="fas ${getWeatherIcon(weathercode)} text-4xl text-yellow-500 mr-4"></i>
+                                        <div>
+                                            <div class="font-bold text-2xl">${Math.round(temperature)}°C</div>
+                                            <div class="text-gray-600">${city}</div>
+                                            <div class="text-sm text-gray-500">${getWeatherDescription(weathercode)}</div>
+                                        </div>
+                                    </div>`;
+                            });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching weather:', error);
+                        weatherWidget.innerHTML = '<p>Could not fetch weather data.</p>';
+                    });
+            }
+
+            function error() {
+                weatherWidget.innerHTML = '<p>Unable to retrieve your location.</p>';
+            }
+
+            navigator.geolocation.getCurrentPosition(success, error);
         }
-        
+
+        function getWeatherIcon(code) {
+            const icons = { '0': 'fa-sun', '1': 'fa-cloud-sun', '2': 'fa-cloud-sun', '3': 'fa-cloud', '45': 'fa-smog', '48': 'fa-smog', '51': 'fa-cloud-rain', '53': 'fa-cloud-rain', '55': 'fa-cloud-showers-heavy', '56': 'fa-snowflake', '57': 'fa-snowflake', '61': 'fa-cloud-rain', '63': 'fa-cloud-showers-heavy', '65': 'fa-cloud-showers-heavy', '66': 'fa-snowflake', '67': 'fa-snowflake', '71': 'fa-snowflake', '73': 'fa-snowflake', '75': 'fa-snowflake', '77': 'fa-snowflake', '80': 'fa-cloud-showers-heavy', '81': 'fa-cloud-showers-heavy', '82': 'fa-cloud-showers-heavy', '85': 'fa-snowflake', '86': 'fa-snowflake', '95': 'fa-bolt', '96': 'fa-bolt', '99': 'fa-bolt' };
+            return icons[code] || 'fa-question-circle';
+        }
+
+        function getWeatherDescription(code) {
+            const descriptions = { 0: 'Clear sky', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast', 45: 'Fog', 48: 'Rime fog', 51: 'Light drizzle', 53: 'Moderate drizzle', 55: 'Dense drizzle', 61: 'Slight rain', 63: 'Moderate rain', 65: 'Heavy rain', 71: 'Slight snow fall', 73: 'Moderate snow fall', 75: 'Heavy snow fall', 77: 'Snow grains', 80: 'Slight rain showers', 81: 'Rain showers', 82: 'Violent rain showers', 85: 'Slight snow showers', 86: 'Heavy snow showers', 95: 'Thunderstorm', 96: 'Thunderstorm, slight hail', 99: 'Thunderstorm, heavy hail' };
+            return descriptions[code] || 'Unknown';
+        }
+
         // --- Dream Fest Functions ---
         function addBandToPoster(element) {
-            // ... (Dream Fest functions remain the same)
+            const bandName = element.dataset.band;
+            const bandType = element.dataset.type;
+            const logoSrc = element.dataset.logoSrc;
+
+            if (document.querySelector(`#poster-content [data-band="${bandName}"]`)) {
+                alert(`${bandName} is already on the poster!`);
+                return;
+            }
+
+            const newElement = document.createElement('div');
+            newElement.dataset.band = bandName;
+            newElement.dataset.type = bandType;
+
+            if (bandType === 'headliner') {
+                newElement.className = 'bg-white bg-opacity-20 p-3 rounded-lg backdrop-blur-sm shadow-lg m-2';
+                newElement.innerHTML = `<img src="${logoSrc}" alt="${bandName}" class="h-24 mx-auto pointer-events-none"><div class="text-center text-white font-bold mt-2 pointer-events-none">${bandName}</div>`;
+                document.getElementById('headliners').appendChild(newElement);
+            } else {
+                newElement.className = 'bg-black bg-opacity-30 p-2 rounded-md backdrop-blur-sm shadow m-1';
+                newElement.innerHTML = `<img src="${logoSrc}" alt="${bandName}" class="h-16 mx-auto pointer-events-none"><div class="text-center text-white text-sm mt-1 pointer-events-none">${bandName}</div>`;
+                document.getElementById('support-acts').appendChild(newElement);
+            }
+            saveLineupToStorage();
         }
+        
         function addCustomHeadliner() {
-            // ... (Dream Fest functions remain the same)
+            const nameInput = document.getElementById('new-headliner-name');
+            const logoInput = document.getElementById('new-headliner-logo');
+            const name = nameInput.value.trim();
+            const logoFile = logoInput.files[0];
+            if (!name || !logoFile) {
+                alert('Please enter both band name and select a logo image');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                createBandButton(name, e.target.result, 'headliner');
+                nameInput.value = '';
+                logoInput.value = '';
+                saveCustomBands();
+            };
+            reader.readAsDataURL(logoFile);
         }
+
         function addCustomSupport() {
-            // ... (Dream Fest functions remain the same)
+            const nameInput = document.getElementById('new-support-name');
+            const logoInput = document.getElementById('new-support-logo');
+            const name = nameInput.value.trim();
+            const logoFile = logoInput.files[0];
+            if (!name || !logoFile) {
+                alert('Please enter both band name and select a logo image');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                createBandButton(name, e.target.result, 'support');
+                nameInput.value = '';
+                logoInput.value = '';
+                saveCustomBands();
+            };
+            reader.readAsDataURL(logoFile);
         }
+
         function createBandButton(name, logoSrc, type) {
-            // ... (Dream Fest functions remain the same)
+            const container = type === 'headliner' ? document.getElementById('headliners-list') : document.getElementById('support-acts-list');
+            const newBand = document.createElement('div');
+            newBand.className = 'band-logo bg-gray-100 p-2 rounded-md text-center cursor-pointer hover:bg-gray-200';
+            newBand.dataset.band = name;
+            newBand.dataset.type = type;
+            newBand.dataset.logoSrc = logoSrc;
+            newBand.setAttribute('onclick', 'addBandToPoster(this)');
+            newBand.innerHTML = `<img src="${logoSrc}" alt="${name}" class="${type === 'headliner' ? 'h-16' : 'h-12'} mx-auto mb-1 pointer-events-none"><div class="${type === 'headliner' ? 'text-sm' : 'text-xs'} font-semibold pointer-events-none">${name}</div>`;
+            container.appendChild(newBand);
         }
+
         function downloadPoster() {
-            // ... (Dream Fest functions remain the same)
+            const posterContent = document.getElementById('poster-content');
+            html2canvas(posterContent, { useCORS: true, allowTaint: true, backgroundColor: '#1a1a1a' })
+                .then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = 'daryfest-poster.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                });
         }
+
         function resetPoster() {
-            // ... (Dream Fest functions remain the same)
+            document.getElementById('headliners').innerHTML = '';
+            document.getElementById('support-acts').innerHTML = '';
+            localStorage.removeItem('festivalLineup');
         }
 
         // --- Local Storage Functions ---
         function saveCustomBands() {
-            // ... (saveCustomBands logic remains the same)
+            const customBands = [];
+            document.querySelectorAll('#headliners-list .band-logo, #support-acts-list .band-logo').forEach(el => {
+                customBands.push({ name: el.dataset.band, logo: el.dataset.logoSrc, type: el.dataset.type });
+            });
+            localStorage.setItem('customBands', JSON.stringify(customBands));
         }
+
         function saveLineupToStorage() {
-            // ... (saveLineupToStorage logic remains the same)
+            const lineup = { headliners: [], supportActs: [] };
+            document.querySelectorAll('#headliners [data-band]').forEach(el => {
+                lineup.headliners.push({ name: el.dataset.band, type: el.dataset.type, logoSrc: el.querySelector('img').src });
+            });
+            document.querySelectorAll('#support-acts [data-band]').forEach(el => {
+                lineup.supportActs.push({ name: el.dataset.band, type: el.dataset.type, logoSrc: el.querySelector('img').src });
+            });
+            localStorage.setItem('festivalLineup', JSON.stringify(lineup));
         }
 
         function loadSavedData() {
