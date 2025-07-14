@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dary's Ultimate Concert Journal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Rock+Salt&display=swap');
+        
+        body {
+            background-image: url('https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1000');
+            background-attachment: fixed;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        .journal-page {
+            background-color: #f5e9d9;
+            background-image: linear-gradient(to bottom, rgba(245, 233, 217, 0.8), rgba(245, 233, 217, 0.9)), 
+                              url('https://www.transparenttextures.com/patterns/notebook.png');
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .journal-page::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background-image: url('https://www.transparenttextures.com/patterns/rice-paper-3.png');
+            opacity: 0.1;
+            pointer-events: none;
+        }
+        
+        .torn-edge {
+            position: relative;
+        }
+        
+        .torn-edge::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="20" viewBox="0 0 100 20" preserveAspectRatio="none"><path d="M0,0 C20,20 30,10 50,20 C70,30 80,10 100,20 L100,0 L0,0 Z" fill="%23f5e9d9"/></svg>');
+            background-size: 100% 100%;
+            background-repeat: repeat-x;
+        }
+        
+        .sticker {
+            transform: rotate(-5deg);
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .sticker:hover {
+            transform: rotate(0deg) scale(1.1);
+            z-index: 10;
+        }
+        
+        .band-logo {
+            cursor: pointer; /* Changed from grab to pointer */
+            transition: all 0.2s ease;
+        }
+        
+        .poster-area {
+            background-color: #1a1a1a;
+            background-image: linear-gradient(to bottom, #333, #000);
+            min-height: 400px;
+            position: relative;
+        }
+        
+        .polaroid {
+            background: white;
+            padding: 15px 15px 60px 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transform: rotate(2deg);
+            transition: all 0.3s ease;
+        }
+        
+        .polaroid:hover {
+            transform: rotate(0deg) scale(1.05);
+        }
+        
+        .polaroid::after {
+            content: "";
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            right: 15px;
+            height: 30px;
+            background: rgba(0,0,0,0.1);
+            filter: blur(5px);
+            z-index: -1;
+        }
+        
+        .tab {
+            position: relative;
+            z-index: 1;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+        
+        .tab.active {
+            z-index: 3;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .tab-content {
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .handwriting {
+            font-family: 'Permanent Marker', cursive;
+        }
+        
+        .rock-font {
+            font-family: 'Rock Salt', cursive;
+        }
+        
+        .checklist-item {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .checklist-item::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 2px;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #333;
+            border-radius: 3px;
+        }
+        
+        .checklist-item.checked::after {
+            content: "✓";
+            position: absolute;
+            left: 5px;
+            top: 0;
+            color: green;
+            font-weight: bold;
+        }
+        
+        .star-rating input {
+            display: none;
+        }
+        
+        .star-rating label {
+            font-size: 24px;
+            color: #ccc;
+            cursor: pointer;
+        }
+        
+        .star-rating input:checked ~ label {
+            color: #ffcc00;
+        }
+        
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            color: #ffcc00;
+        }
+        
+        @media (max-width: 768px) {
+            .tab {
+                font-size: 0.8rem;
+                padding: 0.5rem;
+            }
+            
+            .rock-font {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-100 py-8 px-4">
+    <div class="container mx-auto max-w-6xl">
+        <!-- Header -->
+        <header class="mb-8 text-center relative">
+            <div class="inline-block px-6 py-3 bg-red-600 text-white rock-font text-3xl md:text-5xl transform -rotate-2 shadow-lg">
+                Dary's Ultimate Concert Journal
+            </div>
+            <div class="absolute top-0 right-0 sticker bg-yellow-200 text-black px-3 py-1 text-sm font-bold transform rotate-12">
+                <i class="fas fa-music mr-1"></i> Rock On!
+            </div>
+            <div class="absolute bottom-0 left-0 sticker bg-pink-200 text-black px-3 py-1 text-sm font-bold transform -rotate-6">
+                <i class="fas fa-star mr-1"></i> VIP Pass
+            </div>
+        </header>
+        
+        <!-- Main Content Tabs -->
+        <div class="mb-6 flex flex-wrap border-b border-gray-300">
+            <button class="tab bg-gray-200 px-4 py-2 mr-2 mb-2 active" onclick="openTab(event, 'concert-log')">
+                <i class="fas fa-book mr-2"></i> My Concert Log
+            </button>
+            <button class="tab bg-gray-200 px-4 py-2 mr-2 mb-2" onclick="openTab(event, 'command-center')">
+                <i class="fas fa-clipboard-list mr-2"></i> Command Center
+            </button>
+            <button class="tab bg-gray-200 px-4 py-2 mr-2 mb-2" onclick="openTab(event, 'dream-fest')">
+                <i class="fas fa-guitar mr-2"></i> Dream Fest
+            </button>
+        </div>
+        
+        <!-- Concert Log Tab -->
+        <div id="concert-log" class="tab-content journal-page p-6 torn-edge">
+            <h2 class="text-2xl font-bold mb-6 handwriting text-gray-800">
+                <i class="fas fa-book-open mr-2"></i> My Concert Adventures
+            </h2>
+            
+            <div class="mb-8">
+                <button onclick="openNewEntryForm()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md mb-4">
+                    <i class="fas fa-plus mr-2"></i> Add New Concert
+                </button>
+                
+                <form id="new-entry-form" class="hidden bg-white p-6 rounded-lg shadow-md mb-6">
+                    <h3 class="text-xl font-bold mb-4">New Concert Entry</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-gray-700 mb-2">Band Name</label>
+                            <input type="text" id="band-name" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2">Date</label>
+                            <input type="date" id="concert-date" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2">Venue</label>
+                            <input type="text" id="concert-venue" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2">Opening Acts</label>
+                            <input type="text" id="opening-acts" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2">Your Rating</label>
+                        <div class="star-rating">
+                            <input type="radio" id="star5" name="rating" value="5"><label for="star5" title="5 stars">★</label>
+                            <input type="radio" id="star4" name="rating" value="4"><label for="star4" title="4 stars">★</label>
+                            <input type="radio" id="star3" name="rating" value="3"><label for="star3" title="3 stars">★</label>
+                            <input type="radio" id="star2" name="rating" value="2"><label for="star2" title="2 stars">★</label>
+                            <input type="radio" id="star1" name="rating" value="1"><label for="star1" title="1 star">★</label>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2">Your Review</label>
+                        <textarea id="concert-review" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md"></textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2">Upload Photos</label>
+                        <input type="file" id="concert-photos" multiple class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="button" onclick="saveConcertEntry()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md mr-2">
+                            <i class="fas fa-save mr-2"></i> Save Entry
+                        </button>
+                        <button type="button" onclick="cancelNewEntry()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <div id="concert-entries" class="grid grid-cols-1 gap-6">
+                <!-- Saved concert entries will appear here -->
+            </div>
+        </div>
+        
+        <!-- Command Center Tab -->
+        <div id="command-center" class="tab-content journal-page p-6 hidden torn-edge">
+            <h2 class="text-2xl font-bold mb-6 handwriting text-gray-800">
+                <i class="fas fa-clipboard-list mr-2"></i> Before You Go Command Center
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+                        <h3 class="text-lg font-bold mb-3 flex items-center"><i class="fas fa-check-circle mr-2 text-green-600"></i> Essential Checklist</h3>
+                        <div id="checklist-items">
+                            <!-- Default checklist items are now added via JS -->
+                        </div>
+                        <div class="mt-4 flex">
+                            <input type="text" id="new-checklist-item" placeholder="Add new item" class="flex-grow px-3 py-2 border border-gray-300 rounded-l-md">
+                            <button onclick="addChecklistItem()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-r-md">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+                        <h3 class="text-lg font-bold mb-3 flex items-center">
+                            <i class="fas fa-cloud-sun mr-2 text-blue-500"></i> Local Weather
+                        </h3>
+                        <div id="weather-widget-content" class="text-center">
+                            <p>Fetching weather...</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md">
+                        <h3 class="text-lg font-bold mb-3 flex items-center"><i class="fas fa-tshirt mr-2 text-purple-600"></i> Outfit Planner</h3>
+                        <textarea id="outfit-planner" placeholder="Plan your outfit here..." rows="5" class="w-full px-3 py-2 border border-gray-300 rounded-md"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dream Fest Tab -->
+        <div id="dream-fest" class="tab-content journal-page p-6 hidden">
+            <h2 class="text-2xl font-bold mb-6 handwriting text-gray-800">
+                <i class="fas fa-guitar mr-2"></i> Create Your Dream Festival
+            </h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2">
+                    <div id="poster-area" class="poster-area rounded-lg p-4 mb-4 relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black opacity-30"></div>
+                        <div id="poster-content" class="relative min-h-96 flex flex-col items-center justify-center">
+                            <div class="text-center mb-8">
+                                <div class="rock-font text-4xl md:text-5xl text-white mb-2">DARYFEST 2025</div>
+                                <div class="text-xl text-yellow-300">The Ultimate Alternative Experience</div>
+                            </div>
+                            <div id="headliners" class="flex flex-wrap justify-center gap-4 mb-8"></div>
+                            <div id="support-acts" class="flex flex-wrap justify-center gap-3"></div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <button onclick="downloadPoster()" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-md mr-3">
+                            <i class="fas fa-download mr-2"></i> Download Poster
+                        </button>
+                        <button onclick="resetPoster()" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-md">
+                            <i class="fas fa-redo mr-2"></i> Reset
+                        </button>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+                        <h3 class="text-lg font-bold mb-3">Headliners</h3>
+                        <div class="mb-4 p-3 bg-gray-50 rounded-md">
+                            <h4 class="text-sm font-semibold mb-2">Add Custom Headliner</h4>
+                            <input type="text" id="new-headliner-name" placeholder="Band Name" class="w-full px-3 py-2 border border-gray-300 rounded-md mb-2">
+                            <input type="file" id="new-headliner-logo" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-md mb-2">
+                            <button onclick="addCustomHeadliner()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md w-full">
+                                <i class="fas fa-plus mr-1"></i> Add Headliner
+                            </button>
+                        </div>
+                        <div id="headliners-list" class="grid grid-cols-2 gap-3"></div>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-lg shadow-md">
+                        <h3 class="text-lg font-bold mb-3">Support Acts</h3>
+                        <div class="mb-4 p-3 bg-gray-50 rounded-md">
+                            <h4 class="text-sm font-semibold mb-2">Add Custom Support Act</h4>
+                            <input type="text" id="new-support-name" placeholder="Band Name" class="w-full px-3 py-2 border border-gray-300 rounded-md mb-2">
+                            <input type="file" id="new-support-logo" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-md mb-2">
+                            <button onclick="addCustomSupport()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md w-full">
+                                <i class="fas fa-plus mr-1"></i> Add Support Act
+                            </button>
+                        </div>
+                        <div id="support-acts-list" class="grid grid-cols-2 gap-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="mt-8 text-center text-gray-600 text-sm">
+            <div class="inline-block px-4 py-2 bg-white rounded-md shadow-sm">
+                <i class="fas fa-heart text-red-500 mr-1"></i> Made with love for Dary's concert adventures
+            </div>
+            <div class="mt-2">
+                <p>All your concert memories preserved forever</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // --- Core App Logic ---
+        function openTab(evt, tabName) {
+            const tabContents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.add("hidden");
+            }
+            const tabs = document.getElementsByClassName("tab");
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove("active");
+            }
+            document.getElementById(tabName).classList.remove("hidden");
+            evt.currentTarget.classList.add("active");
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelector(".tab").click();
+            loadSavedData();
+            getWeather(); // Fetch weather on page load
+        });
+
+        // --- Concert Log Functions (Placeholder) ---
+        function openNewEntryForm() { alert('Functionality to be added'); }
+        function cancelNewEntry() { alert('Functionality to be added'); }
+
+        // --- Command Center Functions ---
+        function toggleChecklistItem(element) {
+            element.classList.toggle('checked');
+            saveChecklist();
+        }
+
+        function addChecklistItem() {
+            const input = document.getElementById('new-checklist-item');
+            const text = input.value.trim();
+            if (text) {
+                const checklistContainer = document.getElementById('checklist-items');
+                const itemHTML = `<div class="checklist-item mb-2 cursor-pointer" onclick="toggleChecklistItem(this)">${text}</div>`;
+                checklistContainer.insertAdjacentHTML('beforeend', itemHTML);
+                input.value = '';
+                saveChecklist();
+            }
+        }
+        
+        function saveChecklist() {
+            const items = [];
+            document.querySelectorAll('#checklist-items .checklist-item').forEach(item => {
+                items.push({
+                    text: item.textContent.trim(),
+                    checked: item.classList.contains('checked')
+                });
+            });
+            localStorage.setItem('checklistItems', JSON.stringify(items));
+        }
+
+        function getWeather() {
+            const weatherWidget = document.getElementById('weather-widget-content');
+            if (!navigator.geolocation) {
+                weatherWidget.innerHTML = '<p>Geolocation is not supported by your browser.</p>';
+                return;
+            }
+
+            function success(position) {
+                const latitude  = position.coords.latitude;
+                const longitude = position.coords.longitude;
+                const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
+
+                fetch(apiUrl)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Weather data not available');
+                        return response.json();
+                    })
+                    .then(data => {
+                        const { temperature, weathercode } = data.current_weather;
+                        const weatherIcon = getWeatherIcon(weathercode);
+                        const weatherDescription = getWeatherDescription(weathercode);
+                        
+                        // Reverse geocoding to get city name
+                        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
+                            .then(res => res.json())
+                            .then(geoData => {
+                                const city = geoData.address.city || geoData.address.town || 'Your Location';
+                                weatherWidget.innerHTML = `
+                                    <div class="flex items-center justify-center">
+                                        <i class="fas ${weatherIcon} text-4xl text-yellow-500 mr-4"></i>
+                                        <div>
+                                            <div class="font-bold text-2xl">${Math.round(temperature)}°C</div>
+                                            <div class="text-gray-600">${city}</div>
+                                            <div class="text-sm text-gray-500">${weatherDescription}</div>
+                                        </div>
+                                    </div>`;
+                            });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching weather:', error);
+                        weatherWidget.innerHTML = '<p>Could not fetch weather data.</p>';
+                    });
+            }
+
+            function error() {
+                weatherWidget.innerHTML = '<p>Unable to retrieve your location.</p>';
+            }
+
+            weatherWidget.innerHTML = '<p>Requesting location access...</p>';
+            navigator.geolocation.getCurrentPosition(success, error);
+        }
+
+        function getWeatherIcon(code) {
+            if (code === 0) return 'fa-sun';
+            if (code >= 1 && code <= 3) return 'fa-cloud-sun';
+            if (code >= 45 && code <= 48) return 'fa-smog';
+            if (code >= 51 && code <= 67) return 'fa-cloud-showers-heavy';
+            if (code >= 71 && code <= 77) return 'fa-snowflake';
+            if (code >= 80 && code <= 82) return 'fa-cloud-showers-heavy';
+            if (code >= 95 && code <= 99) return 'fa-bolt';
+            return 'fa-question-circle';
+        }
+
+        function getWeatherDescription(code) {
+            const descriptions = {
+                0: 'Clear sky', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast',
+                45: 'Fog', 48: 'Depositing rime fog', 51: 'Light drizzle', 53: 'Moderate drizzle', 55: 'Dense drizzle',
+                56: 'Light freezing drizzle', 57: 'Dense freezing drizzle', 61: 'Slight rain', 63: 'Moderate rain', 65: 'Heavy rain',
+                66: 'Light freezing rain', 67: 'Heavy freezing rain', 71: 'Slight snow fall', 73: 'Moderate snow fall', 75: 'Heavy snow fall',
+                77: 'Snow grains', 80: 'Slight rain showers', 81: 'Moderate rain showers', 82: 'Violent rain showers',
+                85: 'Slight snow showers', 86: 'Heavy snow showers', 95: 'Thunderstorm', 96: 'Thunderstorm with slight hail', 99: 'Thunderstorm with heavy hail',
+            };
+            return descriptions[code] || 'Unknown weather';
+        }
+
+        // --- Dream Fest Functions ---
+        function addBandToPoster(element) {
+            const bandName = element.dataset.band;
+            const bandType = element.dataset.type;
+            const logoSrc = element.dataset.logoSrc;
+
+            if (document.querySelector(`#poster-content [data-band="${bandName}"]`)) {
+                alert(`${bandName} is already on the poster!`);
+                return;
+            }
+
+            const newElement = document.createElement('div');
+            newElement.dataset.band = bandName;
+            newElement.dataset.type = bandType;
+
+            if (bandType === 'headliner') {
+                newElement.className = 'bg-white bg-opacity-20 p-3 rounded-lg backdrop-blur-sm shadow-lg m-2';
+                newElement.innerHTML = `<img src="${logoSrc}" alt="${bandName}" class="h-24 mx-auto pointer-events-none"><div class="text-center text-white font-bold mt-2 pointer-events-none">${bandName}</div>`;
+                document.getElementById('headliners').appendChild(newElement);
+            } else {
+                newElement.className = 'bg-black bg-opacity-30 p-2 rounded-md backdrop-blur-sm shadow m-1';
+                newElement.innerHTML = `<img src="${logoSrc}" alt="${bandName}" class="h-16 mx-auto pointer-events-none"><div class="text-center text-white text-sm mt-1 pointer-events-none">${bandName}</div>`;
+                document.getElementById('support-acts').appendChild(newElement);
+            }
+            saveLineupToStorage();
+        }
+        
+        function addCustomHeadliner() {
+            const nameInput = document.getElementById('new-headliner-name');
+            const logoInput = document.getElementById('new-headliner-logo');
+            const name = nameInput.value.trim();
+            const logoFile = logoInput.files[0];
+            if (!name || !logoFile) {
+                alert('Please enter both band name and select a logo image');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                createBandButton(name, e.target.result, 'headliner');
+                nameInput.value = '';
+                logoInput.value = '';
+                saveCustomBands();
+            };
+            reader.readAsDataURL(logoFile);
+        }
+
+        function addCustomSupport() {
+            const nameInput = document.getElementById('new-support-name');
+            const logoInput = document.getElementById('new-support-logo');
+            const name = nameInput.value.trim();
+            const logoFile = logoInput.files[0];
+            if (!name || !logoFile) {
+                alert('Please enter both band name and select a logo image');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                createBandButton(name, e.target.result, 'support');
+                nameInput.value = '';
+                logoInput.value = '';
+                saveCustomBands();
+            };
+            reader.readAsDataURL(logoFile);
+        }
+
+        function createBandButton(name, logoSrc, type) {
+            const container = type === 'headliner' ? document.getElementById('headliners-list') : document.getElementById('support-acts-list');
+            const newBand = document.createElement('div');
+            newBand.className = 'band-logo bg-gray-100 p-2 rounded-md text-center cursor-pointer hover:bg-gray-200';
+            newBand.dataset.band = name;
+            newBand.dataset.type = type;
+            newBand.dataset.logoSrc = logoSrc;
+            newBand.setAttribute('onclick', 'addBandToPoster(this)');
+            newBand.innerHTML = `<img src="${logoSrc}" alt="${name}" class="${type === 'headliner' ? 'h-16' : 'h-12'} mx-auto mb-1 pointer-events-none"><div class="${type === 'headliner' ? 'text-sm' : 'text-xs'} font-semibold pointer-events-none">${name}</div>`;
+            container.appendChild(newBand);
+        }
+
+        function downloadPoster() {
+            const posterContent = document.getElementById('poster-content');
+            html2canvas(posterContent, { useCORS: true, allowTaint: true, backgroundColor: '#1a1a1a' })
+                .then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = 'daryfest-poster.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                });
+        }
+
+        function resetPoster() {
+            document.getElementById('headliners').innerHTML = '';
+            document.getElementById('support-acts').innerHTML = '';
+            localStorage.removeItem('festivalLineup');
+        }
+
+        // --- Local Storage Functions ---
+        function saveCustomBands() {
+            const customBands = [];
+            document.querySelectorAll('#headliners-list .band-logo, #support-acts-list .band-logo').forEach(el => {
+                customBands.push({ name: el.dataset.band, logo: el.dataset.logoSrc, type: el.dataset.type });
+            });
+            localStorage.setItem('customBands', JSON.stringify(customBands));
+        }
+
+        function saveLineupToStorage() {
+            const lineup = { headliners: [], supportActs: [] };
+            document.querySelectorAll('#headliners [data-band]').forEach(el => {
+                lineup.headliners.push({ name: el.dataset.band, type: el.dataset.type, logoSrc: el.querySelector('img').src });
+            });
+            document.querySelectorAll('#support-acts [data-band]').forEach(el => {
+                lineup.supportActs.push({ name: el.dataset.band, type: el.dataset.type, logoSrc: el.querySelector('img').src });
+            });
+            localStorage.setItem('festivalLineup', JSON.stringify(lineup));
+        }
+
+        function loadSavedData() {
+            // Load custom bands
+            const customBands = JSON.parse(localStorage.getItem('customBands')) || [];
+            customBands.forEach(band => createBandButton(band.name, band.logo, band.type));
+
+            // Load saved lineup
+            const lineup = JSON.parse(localStorage.getItem('festivalLineup')) || { headliners: [], supportActs: [] };
+            lineup.headliners.forEach(band => addBandToPoster({ dataset: band }));
+            lineup.supportActs.forEach(band => addBandToPoster({ dataset: band }));
+            
+            // Load checklist
+            const savedChecklist = JSON.parse(localStorage.getItem('checklistItems'));
+            const checklistContainer = document.getElementById('checklist-items');
+            checklistContainer.innerHTML = ''; // Clear defaults
+            const defaultItems = [
+                { text: 'Charge phone to 100%', checked: false },
+                { text: 'Download/print ticket', checked: false },
+                { text: 'Find earplugs', checked: false },
+                { text: 'Check venue bag policy', checked: false },
+                { text: 'Plan transportation', checked: false },
+                { text: 'Cash for merch', checked: false }
+            ];
+            const itemsToLoad = savedChecklist || defaultItems;
+            itemsToLoad.forEach(item => {
+                const checkedClass = item.checked ? 'checked' : '';
+                const itemHTML = `<div class="checklist-item mb-2 cursor-pointer ${checkedClass}" onclick="toggleChecklistItem(this)">${item.text}</div>`;
+                checklistContainer.insertAdjacentHTML('beforeend', itemHTML);
+            });
+
+            // Load outfit planner
+            document.getElementById('outfit-planner').value = localStorage.getItem('outfitPlanner') || '';
+            document.getElementById('outfit-planner').addEventListener('input', (e) => {
+                localStorage.setItem('outfitPlanner', e.target.value);
+            });
+        }
+    </script>
+</body>
+</html>
