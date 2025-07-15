@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eunbi's K-Pop Demon Hunters</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes demonAttack {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(-20px); }
+            100% { transform: translateX(0); }
+        }
+        @keyframes eunbiAttack {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(20px); }
+            100% { transform: translateX(0); }
+        }
+        @keyframes beat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .pulse-animation {
+            animation: pulse 1.5s infinite;
+        }
+        .slide-in {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+        .demon-attack {
+            animation: demonAttack 0.3s ease;
+        }
+        .eunbi-attack {
+            animation: eunbiAttack 0.3s ease;
+        }
+        .beat-animation {
+            animation: beat 0.5s ease;
+        }
+        .combo-text {
+            text-shadow: 0 0 5px #ff00ff, 0 0 10px #ff00ff;
+        }
+        .note {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: #ff00ff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 0 10px #ff00ff;
+        }
+        
+        @media (max-width: 768px) {
+            #rhythm-notes {
+                bottom: 120px;
+            }
+            #rhythm-buttons button {
+                font-size: 1.5rem;
+                padding: 1rem 0;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-pink-200 min-h-screen flex flex-col font-sans">
+    <div class="container mx-auto px-4 py-8 flex-grow flex flex-col">
+        <!-- Header -->
+        <header class="text-center mb-8 slide-in">
+            <h1 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600 mb-2">
+                K-POP DEMON HUNTERS
+            </h1>
+            <p class="text-lg md:text-xl">For my amazing friend <span class="font-bold text-pink-400">Eunbi</span> ♡</p>
+        </header>
+
+        <!-- Game Area -->
+        <div class="flex-grow flex flex-col md:flex-row gap-8">
+            <!-- Character Info -->
+            <div class="w-full md:w-1/3 bg-gray-800 rounded-xl p-6 shadow-lg flex flex-col items-center">
+                <div class="relative mb-6">
+                    <img src="https://i.ibb.co/3ygvNdX3/image-2025-07-14-221201262.png" alt="Eunbi" class="w-48 h-48 object-cover rounded-full border-4 border-pink-500 shadow-lg pulse-animation">
+                    <div class="absolute -bottom-2 -right-2 bg-pink-600 rounded-full w-12 h-12 flex items-center justify-center border-2 border-white shadow-lg">
+                        <i class="fas fa-star text-yellow-300 text-xl"></i>
+                    </div>
+                </div>
+                
+                <h2 class="text-2xl font-bold text-pink-400 mb-2">IDOL EUNBI</h2>
+                <p class="text-center mb-4">By day: K-Pop Star<br>By night: Demon Hunter</p>
+                
+                <div class="w-full bg-gray-700 rounded-full h-4 mb-2">
+                    <div id="health-bar" class="bg-green-500 h-4 rounded-full transition-all duration-300" style="width: 100%"></div>
+                </div>
+                <p class="text-sm mb-6">HP: <span id="health">100</span>/100</p>
+                
+                <div class="w-full bg-gray-700 rounded-full h-4 mb-2">
+                    <div id="energy-bar" class="bg-purple-500 h-4 rounded-full transition-all duration-300" style="width: 100%"></div>
+                </div>
+                <p class="text-sm">Energy: <span id="energy">100</span>/100</p>
+                
+                <div class="mt-6 text-center">
+                    <p class="text-lg font-bold text-pink-300">Special Moves</p>
+                    <div class="grid grid-cols-2 gap-2 mt-2">
+                        <button id="mic-attack" class="bg-pink-600 hover:bg-pink-700 text-white py-2 px-4 rounded-lg transition transform hover:scale-105">
+                            <i class="fas fa-microphone mr-2"></i>Mic Blast
+                        </button>
+                        <button id="dance-attack" class="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg transition transform hover:scale-105">
+                            <i class="fas fa-music mr-2"></i>Dance Combo
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Battle Area -->
+            <div class="w-full md:w-2/3 bg-gray-800 rounded-xl p-6 shadow-lg flex flex-col">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <p class="text-sm">Stage: <span class="font-bold">1</span></p>
+                        <p class="text-sm">Score: <span id="score" class="font-bold">0</span></p>
+                    </div>
+                    <div id="combo-display" class="bg-pink-900 bg-opacity-50 px-4 py-2 rounded-full hidden">
+                        <span id="combo-count" class="font-bold text-pink-300">0</span> COMBO!
+                    </div>
+                    <div>
+                        <p class="text-sm">Demons Defeated: <span id="demons-defeated" class="font-bold">0</span></p>
+                    </div>
+                </div>
+
+                <div class="flex-grow flex flex-col justify-center items-center relative">
+                    <!-- Rhythm Notes Container -->
+                    <div id="rhythm-notes" class="absolute bottom-32 left-0 right-0 h-20 flex justify-center items-center pointer-events-none"></div>
+                    
+                    <!-- Battle Zone -->
+                    <div class="relative w-full flex justify-center items-center mb-8">
+                        <div id="eunbi" class="z-10">
+                            <img src="https://i.ibb.co/3ygvNdX3/image-2025-07-14-221201262.png" alt="Eunbi" class="w-32 h-32 object-cover rounded-full border-4 border-pink-500 shadow-lg">
+                        </div>
+                        <div class="mx-8 text-4xl text-pink-400 animate-pulse">VS</div>
+                        <div id="demon" class="z-10">
+                            <img id="demon-img" src="https://i.ibb.co/Fkc5J5xb/image-2025-07-14-221334110.png" alt="Demon" class="w-32 h-32 object-cover rounded-full border-4 border-red-500 shadow-lg">
+                        </div>
+                    </div>
+                    
+                    <!-- Demon Health -->
+                    <div class="w-full max-w-md bg-gray-700 rounded-full h-4 mb-4">
+                        <div id="demon-health-bar" class="bg-red-500 h-4 rounded-full transition-all duration-300" style="width: 100%"></div>
+                    </div>
+                    <p class="text-sm mb-8">Demon HP: <span id="demon-health">100</span>/100</p>
+                    
+                    <!-- Action Buttons -->
+                    <div class="grid grid-cols-4 gap-4 w-full max-w-md">
+                        <!-- Rhythm buttons (hidden by default) -->
+                        <div id="rhythm-buttons" class="hidden fixed bottom-4 left-0 right-0 grid grid-cols-4 gap-4 px-4">
+                            <button data-note="A" class="bg-pink-600 text-white py-4 rounded-lg text-xl font-bold">A</button>
+                            <button data-note="S" class="bg-purple-600 text-white py-4 rounded-lg text-xl font-bold">S</button>
+                            <button data-note="D" class="bg-blue-600 text-white py-4 rounded-lg text-xl font-bold">D</button>
+                            <button data-note="F" class="bg-green-600 text-white py-4 rounded-lg text-xl font-bold">F</button>
+                        </div>
+                        <button id="attack-btn" class="bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-lg transition transform hover:scale-105 beat-animation">
+                            <i class="fas fa-bolt mr-2"></i>Attack
+                        </button>
+                        <button id="defend-btn" class="bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg transition transform hover:scale-105">
+                            <i class="fas fa-shield-alt mr-2"></i>Defend
+                        </button>
+                        <button id="heal-btn" class="bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg transition transform hover:scale-105">
+                            <i class="fas fa-heart mr-2"></i>Heal
+                        </button>
+                        <button id="rhythm-btn" class="bg-yellow-600 hover:bg-yellow-700 text-white py-3 px-4 rounded-lg transition transform hover:scale-105">
+                            <i class="fas fa-music mr-2"></i>Rhythm
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Messages -->
+        <div id="game-messages" class="mt-6 text-center text-lg"></div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 bg-gray-800 text-pink-300">
+        <p>Made with ♡ for Eunbi - The Ultimate K-Pop Demon Hunter</p>
+    </footer>
+
+    <script>
+        // Game State
+        const gameState = {
+            health: 100,
+            maxHealth: 100,
+            energy: 100,
+            maxEnergy: 100,
+            demonHealth: 100,
+            demonMaxHealth: 100,
+            score: 0,
+            combo: 0,
+            demonsDefeated: 0,
+            stage: 1,
+            isRhythmMode: false,
+            rhythmSequence: [],
+            currentRhythmIndex: 0,
+            demonAttackTimer: null,
+            demonTypes: [
+                { name: "Baby Saja", img: "https://i.ibb.co/B5yvQ2mz/image-2025-07-14-221511154.png", attack: 5 },
+                { name: "Jinu", img: "https://i.ibb.co/Fkc5J5xb/image-2025-07-14-221334110.png", attack: 8 },
+                { name: "Gwi-Ma", img: "https://i.ibb.co/84BZzx0S/image-2025-07-14-222140046.png", attack: 10 }
+            ],
+            currentDemon: null
+        };
+
+        // DOM Elements
+        const healthBar = document.getElementById('health-bar');
+        const healthText = document.getElementById('health');
+        const energyBar = document.getElementById('energy-bar');
+        const energyText = document.getElementById('energy');
+        const demonHealthBar = document.getElementById('demon-health-bar');
+        const demonHealthText = document.getElementById('demon-health');
+        const demonImg = document.getElementById('demon-img');
+        const scoreText = document.getElementById('score');
+        const comboDisplay = document.getElementById('combo-display');
+        const comboCount = document.getElementById('combo-count');
+        const demonsDefeatedText = document.getElementById('demons-defeated');
+        const gameMessages = document.getElementById('game-messages');
+        const attackBtn = document.getElementById('attack-btn');
+        const defendBtn = document.getElementById('defend-btn');
+        const healBtn = document.getElementById('heal-btn');
+        const rhythmBtn = document.getElementById('rhythm-btn');
+        const micAttackBtn = document.getElementById('mic-attack');
+        const danceAttackBtn = document.getElementById('dance-attack');
+        const rhythmNotes = document.getElementById('rhythm-notes');
+        const eunbiElement = document.getElementById('eunbi');
+        const demonElement = document.getElementById('demon');
+
+        // Initialize game
+        function initGame() {
+            spawnNewDemon();
+            startDemonAttackTimer();
+            updateUI();
+        }
+
+        // Spawn a new demon
+        function spawnNewDemon() {
+            const demonType = gameState.demonTypes[Math.floor(Math.random() * gameState.demonTypes.length)];
+            gameState.currentDemon = {
+                ...demonType,
+                health: gameState.demonMaxHealth
+            };
+            demonImg.src = gameState.currentDemon.img;
+            gameState.demonHealth = gameState.demonMaxHealth;
+            updateDemonUI();
+            
+            // Show message
+            showMessage(`A wild ${gameState.currentDemon.name} appears!`, 'text-red-400');
+        }
+
+        // Update all UI elements
+        function updateUI() {
+            // Health
+            const healthPercent = (gameState.health / gameState.maxHealth) * 100;
+            healthBar.style.width = `${healthPercent}%`;
+            healthText.textContent = gameState.health;
+            
+            // Energy
+            const energyPercent = (gameState.energy / gameState.maxEnergy) * 100;
+            energyBar.style.width = `${energyPercent}%`;
+            energyText.textContent = gameState.energy;
+            
+            // Demon health
+            updateDemonUI();
+            
+            // Score and combo
+            scoreText.textContent = gameState.score;
+            demonsDefeatedText.textContent = gameState.demonsDefeated;
+            
+            // Combo display
+            if (gameState.combo > 0) {
+                comboDisplay.classList.remove('hidden');
+                comboCount.textContent = gameState.combo;
+            } else {
+                comboDisplay.classList.add('hidden');
+            }
+            
+            // Disable buttons if needed
+            attackBtn.disabled = gameState.isRhythmMode;
+            defendBtn.disabled = gameState.isRhythmMode;
+            healBtn.disabled = gameState.isRhythmMode;
+            rhythmBtn.disabled = gameState.isRhythmMode;
+            micAttackBtn.disabled = gameState.energy < 30 || gameState.isRhythmMode;
+            danceAttackBtn.disabled = gameState.energy < 50 || gameState.isRhythmMode;
+        }
+
+        // Update demon UI
+        function updateDemonUI() {
+            const demonHealthPercent = (gameState.demonHealth / gameState.demonMaxHealth) * 100;
+            demonHealthBar.style.width = `${demonHealthPercent}%`;
+            demonHealthText.textContent = gameState.demonHealth;
+        }
+
+        // Show game message
+        function showMessage(message, colorClass = 'text-pink-300') {
+            gameMessages.innerHTML = '';
+            const messageElement = document.createElement('p');
+            messageElement.className = `${colorClass} font-bold slide-in`;
+            messageElement.textContent = message;
+            gameMessages.appendChild(messageElement);
+            
+            // Remove message after 3 seconds
+            setTimeout(() => {
+                messageElement.remove();
+            }, 3000);
+        }
+
+        // Player attacks
+        function playerAttack() {
+            if (gameState.isRhythmMode) return;
+            
+            const damage = Math.floor(Math.random() * 10) + 5 + gameState.combo;
+            gameState.demonHealth -= damage;
+            
+            // Animate attack
+            eunbiElement.classList.add('eunbi-attack');
+            setTimeout(() => {
+                eunbiElement.classList.remove('eunbi-attack');
+            }, 300);
+            
+            // Check if demon is defeated
+            if (gameState.demonHealth <= 0) {
+                gameState.demonHealth = 0;
+                demonDefeated();
+            }
+            
+            // Update combo
+            gameState.combo++;
+            gameState.score += damage + gameState.combo;
+            
+            showMessage(`Eunbi attacks for ${damage} damage!`, 'text-pink-400');
+            updateUI();
+        }
+
+        // Player defends
+        function playerDefend() {
+            if (gameState.isRhythmMode) return;
+            
+            // Reduce next demon attack by 50%
+            gameState.defending = true;
+            gameState.combo = 0;
+            
+            showMessage(`Eunbi takes a defensive stance!`, 'text-blue-400');
+            updateUI();
+        }
+
+        // Player heals
+        function playerHeal() {
+            if (gameState.isRhythmMode) return;
+            
+            const healAmount = Math.floor(Math.random() * 15) + 10;
+            gameState.health = Math.min(gameState.health + healAmount, gameState.maxHealth);
+            gameState.combo = 0;
+            
+            showMessage(`Eunbi heals for ${healAmount} HP!`, 'text-green-400');
+            updateUI();
+        }
+
+        // Special attack - Mic Blast
+        function micBlast() {
+            if (gameState.energy < 30 || gameState.isRhythmMode) return;
+            
+            const damage = Math.floor(Math.random() * 20) + 15;
+            gameState.demonHealth -= damage;
+            gameState.energy -= 30;
+            
+            // Animate attack
+            eunbiElement.classList.add('eunbi-attack');
+            setTimeout(() => {
+                eunbiElement.classList.remove('eunbi-attack');
+            }, 300);
+            
+            // Check if demon is defeated
+            if (gameState.demonHealth <= 0) {
+                gameState.demonHealth = 0;
+                demonDefeated();
+            }
+            
+            // Update combo
+            gameState.combo++;
+            gameState.score += damage * 2;
+            
+            showMessage(`Eunbi uses MIC BLAST for ${damage} damage!`, 'text-pink-400');
+            updateUI();
+        }
+
+        // Special attack - Dance Combo
+        function danceCombo() {
+            if (gameState.energy < 50 || gameState.isRhythmMode) return;
+            
+            const hits = 3 + Math.floor(Math.random() * 3);
+            let totalDamage = 0;
+            
+            for (let i = 0; i < hits; i++) {
+                const damage = Math.floor(Math.random() * 8) + 5;
+                totalDamage += damage;
+                gameState.demonHealth -= damage;
+                
+                // Check if demon is defeated
+                if (gameState.demonHealth <= 0) {
+                    gameState.demonHealth = 0;
+                    demonDefeated();
+                    break;
+                }
+            }
+            
+            gameState.energy -= 50;
+            
+            // Animate attack
+            eunbiElement.classList.add('eunbi-attack');
+            setTimeout(() => {
+                eunbiElement.classList.remove('eunbi-attack');
+            }, 300);
+            
+            // Update combo
+            gameState.combo += hits;
+            gameState.score += totalDamage * 1.5;
+            
+            showMessage(`Eunbi uses DANCE COMBO for ${hits} hits totaling ${totalDamage} damage!`, 'text-purple-400');
+            updateUI();
+        }
+
+        // Demon is defeated
+        function demonDefeated() {
+            clearInterval(gameState.demonAttackTimer);
+            
+            gameState.demonsDefeated++;
+            gameState.score += 500;
+            gameState.stage++;
+            gameState.demonMaxHealth += 20;
+            
+            showMessage(`${gameState.currentDemon.name} is defeated! Eunbi gains 500 points!`, 'text-yellow-400');
+            
+            // Spawn new demon after delay
+            setTimeout(() => {
+                spawnNewDemon();
+                startDemonAttackTimer();
+            }, 2000);
+        }
+
+        // Demon attacks player
+        function demonAttack() {
+            if (gameState.isRhythmMode) return;
+            
+            let damage = Math.floor(Math.random() * gameState.currentDemon.attack) + 5;
+            
+            // Reduce damage if defending
+            if (gameState.defending) {
+                damage = Math.floor(damage * 0.5);
+                gameState.defending = false;
+            }
+            
+            gameState.health -= damage;
+            
+            // Animate attack
+            demonElement.classList.add('demon-attack');
+            setTimeout(() => {
+                demonElement.classList.remove('demon-attack');
+            }, 300);
+            
+            // Check if player is defeated
+            if (gameState.health <= 0) {
+                gameState.health = 0;
+                gameOver();
+            }
+            
+            // Reset combo
+            gameState.combo = 0;
+            
+            showMessage(`${gameState.currentDemon.name} attacks for ${damage} damage!`, 'text-red-400');
+            updateUI();
+        }
+
+        // Start demon attack timer
+        function startDemonAttackTimer() {
+            gameState.demonAttackTimer = setInterval(() => {
+                demonAttack();
+            }, 3000);
+        }
+
+        // Game over
+        function gameOver() {
+            clearInterval(gameState.demonAttackTimer);
+            
+            showMessage(`Game Over! Final Score: ${gameState.score}`, 'text-red-500');
+            
+            // Disable all buttons
+            attackBtn.disabled = true;
+            defendBtn.disabled = true;
+            healBtn.disabled = true;
+            rhythmBtn.disabled = true;
+            micAttackBtn.disabled = true;
+            danceAttackBtn.disabled = true;
+            
+            // Show restart button
+            const restartBtn = document.createElement('button');
+            restartBtn.className = 'bg-pink-600 hover:bg-pink-700 text-white py-2 px-6 rounded-lg mt-4 transition transform hover:scale-105';
+            restartBtn.innerHTML = '<i class="fas fa-redo mr-2"></i>Play Again';
+            restartBtn.onclick = restartGame;
+            gameMessages.appendChild(restartBtn);
+        }
+
+        // Restart game
+        function restartGame() {
+            // Reset game state
+            gameState.health = gameState.maxHealth;
+            gameState.energy = gameState.maxEnergy;
+            gameState.demonHealth = gameState.demonMaxHealth;
+            gameState.score = 0;
+            gameState.combo = 0;
+            gameState.demonsDefeated = 0;
+            gameState.stage = 1;
+            gameState.isRhythmMode = false;
+            gameState.defending = false;
+            
+            // Clear messages
+            gameMessages.innerHTML = '';
+            
+            // Start new game
+            initGame();
+        }
+
+        // Rhythm game mode
+        function startRhythmGame() {
+            gameState.isRhythmMode = true;
+            gameState.rhythmSequence = generateRhythmSequence();
+            gameState.currentRhythmIndex = 0;
+            
+            showMessage(`Rhythm Mode! Tap the notes in time with the music!`, 'text-yellow-400');
+            updateUI();
+            
+            // Show rhythm buttons on mobile
+            const rhythmButtons = document.getElementById('rhythm-buttons');
+            if (window.innerWidth <= 768) { // Mobile detection
+                rhythmButtons.classList.remove('hidden');
+            }
+            
+            // Display first note
+            displayNextNote();
+        }
+
+        // Generate rhythm sequence
+        function generateRhythmSequence() {
+            const sequence = [];
+            const noteTypes = ['A', 'S', 'D', 'F'];
+            
+            for (let i = 0; i < 8; i++) {
+                sequence.push(noteTypes[Math.floor(Math.random() * noteTypes.length)]);
+            }
+            
+            return sequence;
+        }
+
+        // Display next note in rhythm sequence
+        function displayNextNote() {
+            rhythmNotes.innerHTML = '';
+            
+            if (gameState.currentRhythmIndex >= gameState.rhythmSequence.length) {
+                // Rhythm sequence complete
+                finishRhythmGame();
+                return;
+            }
+            
+            const note = document.createElement('div');
+            note.className = 'note';
+            note.textContent = gameState.rhythmSequence[gameState.currentRhythmIndex];
+            note.style.left = '50%';
+            note.style.transform = 'translateX(-50%)';
+            
+            // Add animation
+            note.style.animation = 'beat 0.5s ease infinite';
+            
+            rhythmNotes.appendChild(note);
+            
+            // Set timeout for note disappearance
+            setTimeout(() => {
+                if (gameState.isRhythmMode && rhythmNotes.contains(note)) {
+                    // Note missed
+                    note.remove();
+                    rhythmNoteMissed();
+                }
+            }, 1000);
+        }
+
+        // Player hits a rhythm note
+        function rhythmNoteHit() {
+            gameState.currentRhythmIndex++;
+            
+            // Add to score
+            gameState.score += 50 + (gameState.combo * 5);
+            gameState.combo++;
+            
+            // Show effect
+            const hitEffect = document.createElement('div');
+            hitEffect.className = 'absolute text-4xl font-bold text-pink-400 combo-text';
+            hitEffect.textContent = 'PERFECT!';
+            hitEffect.style.left = '50%';
+            hitEffect.style.transform = 'translateX(-50%)';
+            rhythmNotes.appendChild(hitEffect);
+            
+            setTimeout(() => {
+                hitEffect.remove();
+            }, 500);
+            
+            // Show next note
+            setTimeout(() => {
+                displayNextNote();
+            }, 300);
+        }
+
+        // Player misses a rhythm note
+        function rhythmNoteMissed() {
+            gameState.combo = 0;
+            
+            // Show effect
+            const missEffect = document.createElement('div');
+            missEffect.className = 'absolute text-2xl font-bold text-red-400';
+            missEffect.textContent = 'MISS!';
+            missEffect.style.left = '50%';
+            missEffect.style.transform = 'translateX(-50%)';
+            rhythmNotes.appendChild(missEffect);
+            
+            setTimeout(() => {
+                missEffect.remove();
+            }, 500);
+            
+            // Show next note
+            setTimeout(() => {
+                displayNextNote();
+            }, 300);
+        }
+
+        // Finish rhythm game
+        function finishRhythmGame() {
+            gameState.isRhythmMode = false;
+            
+            // Hide rhythm buttons
+            document.getElementById('rhythm-buttons').classList.add('hidden');
+            
+            // Deal damage based on performance
+            const hits = gameState.currentRhythmIndex;
+            const totalNotes = gameState.rhythmSequence.length;
+            const accuracy = hits / totalNotes;
+            
+            const damage = Math.floor(30 * accuracy);
+            gameState.demonHealth -= damage;
+            
+            // Check if demon is defeated
+            if (gameState.demonHealth <= 0) {
+                gameState.demonHealth = 0;
+                demonDefeated();
+            }
+            
+            showMessage(`Rhythm Mode Complete! ${hits}/${totalNotes} hits for ${damage} damage!`, 'text-yellow-400');
+            updateUI();
+        }
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (!gameState.isRhythmMode) return;
+            
+            const key = e.key.toUpperCase();
+            const currentNote = gameState.rhythmSequence[gameState.currentRhythmIndex];
+            
+            if (key === currentNote) {
+                rhythmNoteHit();
+            }
+        });
+
+        // Event listeners
+        attackBtn.addEventListener('click', playerAttack);
+        defendBtn.addEventListener('click', playerDefend);
+        healBtn.addEventListener('click', playerHeal);
+        rhythmBtn.addEventListener('click', startRhythmGame);
+        micAttackBtn.addEventListener('click', micBlast);
+        danceAttackBtn.addEventListener('click', danceCombo);
+        
+        // Rhythm button listeners
+        document.querySelectorAll('[data-note]').forEach(button => {
+            button.addEventListener('click', (e) => {
+                if (!gameState.isRhythmMode) return;
+                
+                const key = e.target.dataset.note;
+                const currentNote = gameState.rhythmSequence[gameState.currentRhythmIndex];
+                
+                if (key === currentNote) {
+                    rhythmNoteHit();
+                }
+            });
+        });
+
+        // Start the game
+        initGame();
+    </script>
+</body>
+</html>
