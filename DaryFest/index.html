@@ -163,7 +163,8 @@
             cursor: pointer;
         }
         
-        .star-rating input:checked ~ label {
+        .star-rating input:checked ~ label,
+        .star-rating .checked ~ label {
             color: #ffcc00;
         }
         
@@ -212,6 +213,17 @@
             margin: 0 auto 15px auto;
             border-radius: 5px;
         }
+
+        .checklist-item-wrapper .actions {
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.2s linear;
+        }
+
+        .checklist-item-wrapper:hover .actions {
+            visibility: visible;
+            opacity: 1;
+        }
         
         @media (max-width: 768px) {
             .tab {
@@ -220,6 +232,10 @@
             }
             .rock-font {
                 font-size: 1.5rem;
+            }
+            .checklist-item-wrapper .actions {
+                visibility: visible;
+                opacity: 1;
             }
         }
     </style>
@@ -258,11 +274,12 @@
                 <i class="fas fa-book-open mr-2"></i> My Concert Adventures
             </h2>
             <div class="mb-8">
-                <button onclick="openNewEntryForm()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md mb-4">
+                <button id="add-new-concert-btn" onclick="openNewEntryForm()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md mb-4">
                     <i class="fas fa-plus mr-2"></i> Add New Concert
                 </button>
                 <form id="new-entry-form" class="hidden bg-white p-6 rounded-lg shadow-md mb-6">
-                    <h3 class="text-xl font-bold mb-4">New Concert Entry</h3>
+                    <h3 id="form-title" class="text-xl font-bold mb-4">New Concert Entry</h3>
+                    <input type="hidden" id="editing-entry-id">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block text-gray-700 mb-2">Band Name</label>
@@ -296,7 +313,7 @@
                         <textarea id="concert-review" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md"></textarea>
                     </div>
                     <div class="mb-4">
-                        <label class="block text-gray-700 mb-2">Upload Photos</label>
+                        <label class="block text-gray-700 mb-2">Upload Photos (adding new photos will replace old ones)</label>
                         <input type="file" id="concert-photos" multiple accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-md">
                     </div>
                     <div class="flex justify-end">
@@ -439,56 +456,89 @@
 
         // --- Concert Log Functions ---
         function openNewEntryForm() {
+            document.getElementById('form-title').textContent = 'New Concert Entry';
+            document.getElementById('editing-entry-id').value = '';
+            document.getElementById('new-entry-form').reset();
             document.getElementById('new-entry-form').classList.remove('hidden');
+            document.getElementById('add-new-concert-btn').classList.add('hidden');
         }
 
         function cancelNewEntry() {
             document.getElementById('new-entry-form').classList.add('hidden');
+            document.getElementById('add-new-concert-btn').classList.remove('hidden');
             document.getElementById('new-entry-form').reset();
+            document.getElementById('editing-entry-id').value = '';
         }
 
         async function saveConcertEntry() {
-            const entry = {
-                id: Date.now(),
+            const editingId = document.getElementById('editing-entry-id').value;
+            const entries = JSON.parse(localStorage.getItem('concertEntries')) || [];
+            
+            const entryData = {
                 bandName: document.getElementById('band-name').value,
                 concertDate: document.getElementById('concert-date').value,
                 venue: document.getElementById('concert-venue').value,
                 openingActs: document.getElementById('opening-acts').value,
                 review: document.getElementById('concert-review').value,
                 rating: document.querySelector('.star-rating input:checked')?.value || '0',
-                photos: []
             };
 
-            if (!entry.bandName || !entry.concertDate || !entry.venue) {
+            if (!entryData.bandName || !entryData.concertDate || !entryData.venue) {
                 alert('Please fill in at least Band Name, Date, and Venue');
                 return;
             }
-
+            
             const photoFiles = document.getElementById('concert-photos').files;
-            if (photoFiles.length > 0) {
-                const photoPromises = Array.from(photoFiles).map(file => {
-                    return new Promise((resolve) => {
+
+            if (editingId) {
+                // --- UPDATE EXISTING ENTRY ---
+                const entryIndex = entries.findIndex(e => e.id == editingId);
+                if (entryIndex > -1) {
+                    const existingEntry = entries[entryIndex];
+                    entries[entryIndex] = { ...existingEntry, ...entryData };
+
+                    if (photoFiles.length > 0) {
+                        const photoPromises = Array.from(photoFiles).map(file => new Promise((resolve) => {
+                            const reader = new FileReader();
+                            reader.onload = e => resolve(e.target.result);
+                            reader.readAsDataURL(file);
+                        }));
+                        entries[entryIndex].photos = await Promise.all(photoPromises);
+                    }
+                }
+            } else {
+                // --- CREATE NEW ENTRY ---
+                entryData.id = Date.now();
+                entryData.photos = [];
+                if (photoFiles.length > 0) {
+                    const photoPromises = Array.from(photoFiles).map(file => new Promise((resolve) => {
                         const reader = new FileReader();
                         reader.onload = e => resolve(e.target.result);
                         reader.readAsDataURL(file);
-                    });
-                });
-                entry.photos = await Promise.all(photoPromises);
+                    }));
+                    entryData.photos = await Promise.all(photoPromises);
+                }
+                entries.unshift(entryData);
             }
 
-            const entries = JSON.parse(localStorage.getItem('concertEntries')) || [];
-            entries.unshift(entry);
             localStorage.setItem('concertEntries', JSON.stringify(entries));
-
-            renderConcertEntry(entry);
+            loadConcertEntries();
             cancelNewEntry();
+        }
+        
+        function loadConcertEntries() {
+            const entries = JSON.parse(localStorage.getItem('concertEntries')) || [];
+            const concertEntriesContainer = document.getElementById('concert-entries');
+            concertEntriesContainer.innerHTML = '';
+            entries.forEach(renderConcertEntry);
         }
 
         function renderConcertEntry(entry) {
             const concertEntriesContainer = document.getElementById('concert-entries');
-            const dateObj = new Date(entry.concertDate);
-            const options = { year: 'numeric', month: 'long', day: 'numeric' };
-            const formattedDate = dateObj.toLocaleDateString('en-US', options);
+            // Ensure date is valid before trying to format it
+            const dateObj = entry.concertDate ? new Date(entry.concertDate) : null;
+            const options = { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' };
+            const formattedDate = dateObj && !isNaN(dateObj) ? dateObj.toLocaleDateString('en-US', options) : 'N/A';
 
             let photosHTML = '';
             if (entry.photos && entry.photos.length > 0) {
@@ -502,21 +552,55 @@
 
             const entryHTML = `
                 <div class="bg-white p-6 rounded-lg shadow-md relative" id="entry-${entry.id}">
-                    <div class="absolute top-2 right-2 sticker bg-blue-100 text-blue-800 px-2 py-1 text-xs">
+                    <div class="absolute top-3 right-3 flex gap-2">
+                         <button onclick="editConcertEntry(${entry.id})" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></button>
+                         <button onclick="removeConcertEntry(${entry.id})" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
+                    </div>
+                    <div class="absolute top-2 left-2 sticker bg-blue-100 text-blue-800 px-2 py-1 text-xs">
                         <i class="fas fa-calendar-day mr-1"></i> ${formattedDate}
                     </div>
-                    <h3 class="text-xl font-bold mb-2">${entry.bandName}</h3>
+                    <h3 class="text-xl font-bold mb-2 mt-6">${entry.bandName}</h3>
                     <div class="flex items-center mb-2">
                         <span class="text-yellow-500 mr-2">${'★'.repeat(entry.rating)}${'☆'.repeat(5 - entry.rating)}</span>
                         <span class="text-gray-600 text-sm">${entry.venue}</span>
                     </div>
-                    <p class="text-gray-700 mb-4">${entry.review}</p>
+                    <p class="text-gray-700 mb-4 whitespace-pre-wrap">${entry.review}</p>
                     ${entry.openingActs ? `<div class="mb-2"><span class="text-sm font-semibold">Opening Acts:</span><span class="text-sm ml-2">${entry.openingActs}</span></div>` : ''}
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-4">${photosHTML}</div>
                 </div>
             `;
-            concertEntriesContainer.insertAdjacentHTML('afterbegin', entryHTML);
+            concertEntriesContainer.insertAdjacentHTML('beforeend', entryHTML);
         }
+
+        function editConcertEntry(entryId) {
+            const entries = JSON.parse(localStorage.getItem('concertEntries')) || [];
+            const entry = entries.find(e => e.id === entryId);
+            if (!entry) return;
+
+            openNewEntryForm();
+            document.getElementById('form-title').textContent = 'Edit Concert Entry';
+            document.getElementById('editing-entry-id').value = entry.id;
+            document.getElementById('band-name').value = entry.bandName;
+            document.getElementById('concert-date').value = entry.concertDate;
+            document.getElementById('concert-venue').value = entry.venue;
+            document.getElementById('opening-acts').value = entry.openingActs;
+            document.getElementById('concert-review').value = entry.review;
+            
+            // Clear existing rating and check the correct star
+            document.querySelectorAll('.star-rating input').forEach(input => input.checked = false);
+            const starInput = document.getElementById(`star${entry.rating}`);
+            if (starInput) starInput.checked = true;
+        }
+
+        function removeConcertEntry(entryId) {
+            if (confirm('Are you sure you want to delete this concert entry? This cannot be undone.')) {
+                let entries = JSON.parse(localStorage.getItem('concertEntries')) || [];
+                entries = entries.filter(e => e.id !== entryId);
+                localStorage.setItem('concertEntries', JSON.stringify(entries));
+                loadConcertEntries();
+            }
+        }
+
 
         // --- Photo Modal Functions ---
         function openPhotoModal(entryId, photoIndex) {
@@ -541,6 +625,102 @@
         }
 
         // --- Command Center Functions ---
+        function renderChecklistItem(item) {
+            const checklistContainer = document.getElementById('checklist-items');
+            const wrapper = document.createElement('div');
+            wrapper.className = 'checklist-item-wrapper flex items-center justify-between mb-2';
+            wrapper.dataset.id = item.id;
+
+            const textDiv = document.createElement('div');
+            textDiv.className = `checklist-item flex-grow cursor-pointer ${item.checked ? 'checked' : ''}`;
+            textDiv.textContent = item.text;
+            textDiv.onclick = () => toggleChecklistItem(textDiv);
+
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'actions ml-4 flex gap-2 flex-shrink-0';
+            
+            const editButton = document.createElement('button');
+            editButton.className = 'text-blue-500 hover:text-blue-700';
+            editButton.innerHTML = '<i class="fas fa-edit"></i>';
+            editButton.onclick = () => editChecklistItem(wrapper);
+
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'text-red-500 hover:text-red-700';
+            deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+            deleteButton.onclick = () => deleteChecklistItem(wrapper);
+
+            actionsDiv.appendChild(editButton);
+            actionsDiv.appendChild(deleteButton);
+            wrapper.appendChild(textDiv);
+            wrapper.appendChild(actionsDiv);
+            checklistContainer.appendChild(wrapper);
+        }
+
+        function editChecklistItem(wrapper) {
+            const textDiv = wrapper.querySelector('.checklist-item');
+            const actionsDiv = wrapper.querySelector('.actions');
+            if (!textDiv || !actionsDiv) return; // Already in edit mode
+
+            const currentText = textDiv.textContent.trim();
+            
+            textDiv.style.display = 'none';
+            actionsDiv.style.display = 'none';
+
+            const editInput = document.createElement('input');
+            editInput.type = 'text';
+            editInput.className = 'flex-grow px-2 py-1 border border-gray-300 rounded-md';
+            editInput.value = currentText;
+
+            const saveButton = document.createElement('button');
+            saveButton.className = 'text-green-500 hover:text-green-700';
+            saveButton.innerHTML = '<i class="fas fa-check"></i>';
+            
+            const cancelButton = document.createElement('button');
+            cancelButton.className = 'text-gray-500 hover:text-gray-700';
+            cancelButton.innerHTML = '<i class="fas fa-times"></i>';
+
+            const editActions = document.createElement('div');
+            editActions.className = 'ml-4 flex gap-2 flex-shrink-0';
+            editActions.appendChild(saveButton);
+            editActions.appendChild(cancelButton);
+
+            wrapper.prepend(editInput);
+            wrapper.appendChild(editActions);
+            editInput.focus();
+
+            const endEdit = () => {
+                wrapper.removeChild(editInput);
+                wrapper.removeChild(editActions);
+                textDiv.style.display = '';
+                actionsDiv.style.display = '';
+            };
+            
+            saveButton.onclick = () => {
+                const newText = editInput.value.trim();
+                if (newText) {
+                    textDiv.textContent = newText;
+                    saveChecklist();
+                }
+                endEdit();
+            };
+
+            cancelButton.onclick = () => {
+                endEdit();
+            };
+            
+            editInput.onkeydown = (e) => {
+                if (e.key === 'Enter') saveButton.click();
+                if (e.key === 'Escape') cancelButton.click();
+            };
+        }
+
+        function deleteChecklistItem(wrapper) {
+            if (confirm('Are you sure you want to delete this item?')) {
+                wrapper.remove();
+                saveChecklist();
+            }
+        }
+
         function toggleChecklistItem(element) {
             element.classList.toggle('checked');
             saveChecklist();
@@ -550,9 +730,12 @@
             const input = document.getElementById('new-checklist-item');
             const text = input.value.trim();
             if (text) {
-                const checklistContainer = document.getElementById('checklist-items');
-                const itemHTML = `<div class="checklist-item mb-2 cursor-pointer" onclick="toggleChecklistItem(this)">${text}</div>`;
-                checklistContainer.insertAdjacentHTML('beforeend', itemHTML);
+                const newItem = {
+                    id: Date.now(),
+                    text: text,
+                    checked: false
+                };
+                renderChecklistItem(newItem);
                 input.value = '';
                 saveChecklist();
             }
@@ -560,11 +743,48 @@
         
         function saveChecklist() {
             const items = [];
-            document.querySelectorAll('#checklist-items .checklist-item').forEach(item => {
-                items.push({ text: item.textContent.trim(), checked: item.classList.contains('checked') });
+            document.querySelectorAll('#checklist-items .checklist-item-wrapper').forEach(wrapper => {
+                const textDiv = wrapper.querySelector('.checklist-item');
+                if (textDiv) {
+                    items.push({
+                        id: wrapper.dataset.id,
+                        text: textDiv.textContent.trim(),
+                        checked: textDiv.classList.contains('checked')
+                    });
+                }
             });
             localStorage.setItem('checklistItems', JSON.stringify(items));
         }
+
+        function loadChecklist() {
+            const savedChecklist = JSON.parse(localStorage.getItem('checklistItems'));
+            const checklistContainer = document.getElementById('checklist-items');
+            checklistContainer.innerHTML = '';
+            const defaultItems = [
+                { id: Date.now() + 1, text: 'Charge phone to 100%', checked: false },
+                { id: Date.now() + 2, text: 'Download/print ticket', checked: false },
+                { id: Date.now() + 3, text: 'Find earplugs', checked: false },
+                { id: Date.now() + 4, text: 'Check venue bag policy', checked: false },
+                { id: Date.now() + 5, text: 'Plan transportation', checked: false },
+                { id: Date.now() + 6, text: 'Cash for merch', checked: false }
+            ];
+            
+            let itemsToLoad;
+            if (savedChecklist === null) {
+                itemsToLoad = defaultItems;
+                localStorage.setItem('checklistItems', JSON.stringify(itemsToLoad));
+            } else {
+                itemsToLoad = savedChecklist;
+            }
+            
+            itemsToLoad.forEach(item => {
+                if (!item.id) {
+                    item.id = Date.now() + Math.random();
+                }
+                renderChecklistItem(item);
+            });
+        }
+
 
         function getWeather() {
             const weatherWidget = document.getElementById('weather-widget-content');
@@ -709,9 +929,11 @@
         }
 
         function resetPoster() {
-            document.getElementById('headliners').innerHTML = '';
-            document.getElementById('support-acts').innerHTML = '';
-            localStorage.removeItem('festivalLineup');
+            if(confirm('Are you sure you want to reset the festival poster?')){
+                document.getElementById('headliners').innerHTML = '';
+                document.getElementById('support-acts').innerHTML = '';
+                localStorage.removeItem('festivalLineup');
+            }
         }
 
         // --- Local Storage Functions ---
@@ -736,9 +958,7 @@
 
         function loadSavedData() {
             // Load Concert Log Entries
-            const entries = JSON.parse(localStorage.getItem('concertEntries')) || [];
-            document.getElementById('concert-entries').innerHTML = '';
-            entries.forEach(renderConcertEntry);
+            loadConcertEntries();
 
             // Load custom bands
             const customBands = JSON.parse(localStorage.getItem('customBands')) || [];
@@ -748,27 +968,11 @@
 
             // Load saved lineup
             const lineup = JSON.parse(localStorage.getItem('festivalLineup')) || { headliners: [], supportActs: [] };
-            lineup.headliners.forEach(band => addBandToPoster({ dataset: band }));
-            lineup.supportActs.forEach(band => addBandToPoster({ dataset: band }));
+            lineup.headliners.forEach(band => addBandToPoster({ dataset: { ...band, logoSrc: band.logoSrc } }));
+            lineup.supportActs.forEach(band => addBandToPoster({ dataset: { ...band, logoSrc: band.logoSrc } }));
             
             // Load checklist
-            const savedChecklist = JSON.parse(localStorage.getItem('checklistItems'));
-            const checklistContainer = document.getElementById('checklist-items');
-            checklistContainer.innerHTML = '';
-            const defaultItems = [
-                { text: 'Charge phone to 100%', checked: false },
-                { text: 'Download/print ticket', checked: false },
-                { text: 'Find earplugs', checked: false },
-                { text: 'Check venue bag policy', checked: false },
-                { text: 'Plan transportation', checked: false },
-                { text: 'Cash for merch', checked: false }
-            ];
-            const itemsToLoad = savedChecklist || defaultItems;
-            itemsToLoad.forEach(item => {
-                const checkedClass = item.checked ? 'checked' : '';
-                const itemHTML = `<div class="checklist-item mb-2 cursor-pointer ${checkedClass}" onclick="toggleChecklistItem(this)">${item.text}</div>`;
-                checklistContainer.insertAdjacentHTML('beforeend', itemHTML);
-            });
+            loadChecklist();
 
             // Load outfit planner
             document.getElementById('outfit-planner').value = localStorage.getItem('outfitPlanner') || '';
