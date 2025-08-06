@@ -13,179 +13,234 @@
             font-family: 'Roboto Condensed', sans-serif;
             background-color: #2c2f33; /* Dark background */
             color: #e0e0e0; /* Light grey text */
-            line-height: 1.6;
+            line-height: 1.4; /* Reduced line height */
             background-image: url('https://placehold.co/1920x1080/2c2f33/e0e0e0?text=Subtle+Parchment+Background'); /* Placeholder for a subtle background texture */
             background-size: cover;
             background-attachment: fixed;
         }
         .container {
-            max-width: 1000px;
-            margin: 2rem auto;
-            padding: 2rem;
+            max-width: 960px; /* Slightly reduced max-width */
+            margin: 1rem auto; /* Reduced top/bottom margin */
+            padding: 1rem; /* Reduced padding */
             background-color: #3a3f44; /* Slightly lighter dark background for content */
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-            border: 2px solid #5a5f66; /* Subtle border */
+            border-radius: 10px; /* Slightly smaller border-radius */
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4); /* Slightly smaller shadow */
+            border: 1px solid #5a5f66; /* Subtle border */
         }
         h1, h2, h3 {
             font-family: 'Old Standard TT', serif; /* Epic/Medieval font for headings */
             font-weight: 700;
             color: #f7d750; /* Brass/gold color for headings */
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Slightly smaller shadow */
         }
         h1 {
-            font-size: 3rem;
+            font-size: 2.2rem; /* Smaller */
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem; /* Reduced margin */
             text-transform: uppercase;
-            letter-spacing: 2px;
-            border-bottom: 3px double #f7d750; /* Double line border */
-            padding-bottom: 1rem;
+            letter-spacing: 1.5px; /* Slightly reduced letter spacing */
+            border-bottom: 2px double #f7d750; /* Smaller double line border */
+            padding-bottom: 0.6rem; /* Reduced padding */
         }
         h2 {
-            font-size: 2.2rem;
-            border-bottom: 2px solid #6b7280;
-            padding-bottom: 0.75rem;
-            margin-top: 2.5rem;
-            margin-bottom: 1.25rem;
+            font-size: 1.6rem; /* Smaller */
+            border-bottom: 1px solid #6b7280; /* Thinner border */
+            padding-bottom: 0.4rem; /* Reduced padding */
+            margin-top: 1.5rem; /* Consistent margin-top for all main section headings */
+            margin-bottom: 0.8rem; /* Reduced margin */
             color: #c0c0c0; /* Silver-like color */
         }
         h3 {
-            font-size: 1.6rem;
-            margin-top: 1.8rem;
-            margin-bottom: 0.8rem;
+            font-size: 1.2rem; /* Smaller */
+            margin-top: 1rem; /* Reduced margin */
+            margin-bottom: 0.5rem; /* Reduced margin */
             color: #d0d0d0;
         }
 
         /* Input & Section Styling */
-        .stat-grid, .skill-grid, .combat-section, .grid-cols-1.md\:grid-cols-2, .grid-cols-1.md\:grid-cols-3 {
-            gap: 1.5rem; /* Increased gap for more breathing room */
+        .stat-grid, .grid-cols-1.md\:grid-cols-2, .grid-cols-1.md\:grid-cols-3 {
+            gap: 0.75rem; /* Reduced gap for more compact layout */
         }
+        /* New class for consistent bottom margin on major content blocks */
+        .section-block {
+            margin-bottom: 1.5rem; /* Consistent spacing between major sections */
+        }
+
         .p-4.bg-gray-50.rounded-lg.border.border-gray-200,
         .stat-item, .skill-item, .combat-item, .section-content {
             background-color: #4a4f54; /* Darker panel background */
-            padding: 1.2rem;
-            border-radius: 10px;
+            padding: 0.8rem; /* Reduced padding */
+            border-radius: 8px; /* Slightly smaller border-radius */
             border: 1px solid #6b7280; /* Subtle border */
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3); /* Inner shadow for depth */
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3); /* Inner shadow for depth */
         }
         label {
             font-weight: 600;
-            margin-bottom: 0.6rem;
+            margin-bottom: 0.3rem; /* Reduced margin */
             color: #f7d750; /* Brass/gold for labels */
             text-transform: uppercase;
-            font-size: 0.9rem;
+            font-size: 0.8rem; /* Smaller font */
             letter-spacing: 0.5px;
         }
         input[type="text"], input[type="number"], textarea {
             width: 100%;
-            padding: 0.6rem;
+            padding: 0.4rem; /* Reduced padding */
             border: 1px solid #6b7280;
-            border-radius: 6px;
-            font-size: 1rem;
+            border-radius: 5px; /* Smaller border-radius */
+            font-size: 0.9rem; /* Smaller font */
             background-color: #3a3f44; /* Dark input background */
             color: #e0e0e0; /* Light text in inputs */
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2); /* Smaller shadow */
             transition: border-color 0.2s, box-shadow 0.2s;
         }
         input[type="text"]:focus, input[type="number"]:focus, textarea:focus {
             border-color: #f7d750; /* Gold border on focus */
-            box-shadow: 0 0 0 2px rgba(247, 215, 80, 0.5); /* Gold glow on focus */
+            box-shadow: 0 0 0 1px rgba(247, 215, 80, 0.5); /* Smaller gold glow on focus */
             outline: none;
         }
         textarea {
-            min-height: 120px;
+            min-height: 60px; /* Reduced min-height */
             resize: vertical;
         }
-        .stat-item input[type="number"], .skill-item input[type="number"] {
+        .stat-item input[type="number"] {
             text-align: center;
-            font-size: 1.2rem;
+            font-size: 1rem; /* Smaller font */
             font-weight: 700;
             color: #f7d750; /* Gold for stat values */
+            /* Specific width to fit 3 numbers */
+            width: 60px; /* Adjust as needed based on font and padding */
+            margin: 0 auto; /* Center the input */
         }
         .text-xs.text-gray-500 {
             color: #b0b0b0; /* Lighter grey for derived stats */
+            font-size: 0.7rem; /* Even smaller font */
+            margin-top: 0.3rem; /* Reduced margin */
+        }
+        /* Skill Grid Specific Styles */
+        .skill-grid {
+            display: grid; /* Ensure it's a grid */
+            grid-template-columns: repeat(auto-fit, minmax(105px, 1fr)); /* Aim for compact columns */
+            gap: 0.5rem; /* Further reduced gap for skills */
+            /* margin-top: 0.8rem; Removed as section-block handles overall spacing */
+        }
+        .skill-item {
+            background-color: #4a4f54;
+            padding: 0.6rem; /* Reduced padding */
+            border-radius: 8px;
+            border: 1px solid #6b7280;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+            display: flex; /* Keep flex for internal alignment */
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .skill-item label {
+            font-size: 0.75rem; /* Even smaller font for skill names */
+            margin-bottom: 0.2rem; /* Reduced margin */
+            white-space: nowrap; /* Prevent wrapping of skill names if possible */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Add ellipsis if name is too long */
+        }
+        .skill-item .skill-value-group {
+            display: flex;
+            gap: 0.25rem; /* Smaller gap */
+            align-items: center;
+        }
+        .skill-item .skill-value-group input {
+            flex-grow: 1;
+            max-width: 45px; /* Even narrower input */
+            padding: 0.2rem; /* Even less padding */
+            font-size: 0.8rem; /* Even smaller font for value */
         }
         .skill-item .skill-value-group span {
             color: #f7d750; /* Gold for percentage sign */
             font-weight: 700;
+            font-size: 0.75rem; /* Smaller font */
+        }
+        .checkbox-group {
+            margin-top: 0.2rem; /* Reduced margin */
         }
         .checkbox-group span {
             color: #e0e0e0;
+            font-size: 0.7rem; /* Even smaller font for 'Trained' */
         }
         input[type="checkbox"] {
             accent-color: #f7d750; /* Gold checkbox */
+            transform: scale(1); /* Reset scale */
+            margin-right: 0.3rem; /* Reduced margin */
         }
 
         /* Resource Bars */
         .resource-bar {
             background-color: #6b7280; /* Darker grey for empty bar */
-            border-radius: 8px;
+            border-radius: 6px; /* Smaller border-radius */
             overflow: hidden;
-            margin-bottom: 1rem;
+            margin-bottom: 0.6rem; /* Reduced margin */
             border: 1px solid #9ca3af;
-            box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.3);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3); /* Smaller shadow */
         }
         .resource-fill {
-            height: 28px; /* Slightly taller bar */
-            background-color: #8b5cf6; /* Default purple */
-            transition: width 0.4s ease-in-out, background-color 0.4s ease-in-out;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+            height: 20px; /* Shorter bar */
+            font-size: 0.9rem; /* Smaller font */
+            text-shadow: 0 0 1px rgba(0,0,0,0.3); /* Lighter shadow */
+        }
+        .resource-controls {
+            margin-top: 0.3rem; /* Reduced margin */
+            gap: 0.3rem; /* Smaller gap */
         }
         .resource-controls button {
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background-image: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(0,0,0,0.1));
+            padding: 0.3rem 0.6rem; /* Reduced padding */
+            border-radius: 5px; /* Smaller border-radius */
+            font-weight: 600; /* Slightly less bold */
+            font-size: 0.75rem; /* Smaller font */
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); /* Smaller shadow */
         }
-        .btn-heal { background-color: #22c55e; } /* Green */
-        .btn-heal:hover { background-color: #16a34a; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.4); }
-        .btn-damage { background-color: #ef4444; } /* Red */
-        .btn-damage:hover { background-color: #dc2626; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.4); }
-        .btn-reset { background-color: #f59e0b; } /* Amber */
-        .btn-reset:hover { background-color: #d97706; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.4); }
 
         /* Primary Buttons */
         .btn-primary {
-            background-color: #f7d750; /* Gold button */
-            color: #1f2937; /* Dark text on gold */
-            padding: 0.8rem 1.8rem;
-            border-radius: 10px;
+            padding: 0.6rem 1.2rem; /* Reduced padding */
+            border-radius: 8px; /* Slightly smaller radius */
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-            border: 2px solid #c0c0c0; /* Silver border */
-            background-image: linear-gradient(to bottom, #f7d750, #e0b000); /* Gold gradient */
+            letter-spacing: 0.8px; /* Slightly reduced letter spacing */
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4); /* Smaller shadow */
+            margin: 0.6rem auto; /* Reduced margin */
         }
         .btn-primary:hover {
-            background-color: #e0b000;
-            background-image: linear-gradient(to bottom, #e0b000, #f7d750);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
-        }
-        .btn-primary:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
         }
 
         /* Message Box */
         .message-box {
-            background-color: #f7d750; /* Gold message box */
-            color: #1f2937; /* Dark text */
-            font-weight: 700;
-            border: 2px solid #e0b000;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            padding: 0.6rem 1.2rem; /* Reduced padding */
+            border: 1px solid #e0b000; /* Thinner border */
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3); /* Smaller shadow */
+        }
+
+        /* Combat Section Specific Styles */
+        .combat-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Adjust min-width for combat items */
+            gap: 0.75rem; /* Reduced gap */
+            /* margin-top: 1rem; Removed as section-block handles overall spacing */
+        }
+        .combat-item {
+            padding: 0.8rem; /* Reduced padding */
+        }
+        .combat-item h3 {
+            font-size: 1.1rem; /* Slightly smaller combat item titles */
+            margin-top: 0.5rem; /* Reduced margin */
+            margin-bottom: 0.4rem; /* Reduced margin */
+        }
+        .combat-item label {
+            font-size: 0.75rem; /* Smaller labels within combat items */
+        }
+        .combat-item input[type="text"], .combat-item input[type="number"] {
+            padding: 0.3rem; /* Reduced padding */
+            font-size: 0.85rem; /* Smaller font */
+        }
+        .combat-item .input-group span {
+            font-size: 0.85rem; /* Smaller percentage sign */
         }
     </style>
 </head>
@@ -195,7 +250,7 @@
 
         <div class="message-box" id="messageBox"></div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 section-block"> <!-- Added section-block -->
             <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <label class="block text-sm font-medium text-gray-700">Name:</label>
                 <input type="text" id="charName" value="Caelum" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
@@ -214,142 +269,151 @@
             </div>
         </div>
 
-        <h2>Core Characteristics</h2>
-        <div class="stat-grid">
-            <div class="stat-item">
-                <label for="str">STR (Strength)</label>
-                <input type="number" id="str" value="45" data-full="45" data-half="22" data-fifth="9">
-                <div class="text-xs text-gray-500 mt-2">Half: <span id="strHalf">22</span>, Fifth: <span id="strFifth">9</span></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 section-block"> <!-- Added section-block -->
+            <!-- Left Column: Core Characteristics -->
+            <div>
+                <h2>Core Characteristics</h2>
+                <div class="stat-grid">
+                    <div class="stat-item">
+                        <label for="str">STR (Strength)</label>
+                        <input type="number" id="str" value="45" data-full="45" data-half="22" data-fifth="9">
+                        <div class="text-xs text-gray-500 mt-2">Half: <span id="strHalf">22</span>, Fifth: <span id="strFifth">9</span></div>
+                    </div>
+                    <div class="stat-item">
+                        <label for="con">CON (Constitution)</label>
+                        <input type="number" id="con" value="45" data-full="45" data-half="22" data-fifth="9">
+                        <div class="text-xs text-gray-500 mt-2">Half: <span id="conHalf">22</span>, Fifth: <span id="conFifth">9</span></div>
+                    </div>
+                    <div class="stat-item">
+                        <label for="siz">SIZ (Size)</label>
+                        <input type="number" id="siz" value="55" data-full="55" data-half="27" data-fifth="11">
+                        <div class="text-xs text-gray-500 mt-2">Half: <span id="sizHalf">27</span>, Fifth: <span id="sizFifth">11</span></div>
+                    </div>
+                    <div class="stat-item">
+                        <label for="dex">DEX (Dexterity)</label>
+                        <input type="number" id="dex" value="20" data-full="20" data-half="10" data-fifth="4">
+                        <div class="text-xs text-gray-500 mt-2">Half: <span id="dexHalf">10</span>, Fifth: <span id="dexFifth">4</span></div>
+                    </div>
+                    <div class="stat-item">
+                        <label for="app">APP (Appearance)</label>
+                        <input type="number" id="app" value="50" data-full="50" data-half="25" data-fifth="10">
+                        <div class="text-xs text-gray-500 mt-2">Half: <span id="appHalf">25</span>, Fifth: <span id="appFifth">10</span></div>
+                    </div>
+                    <div class="stat-item">
+                        <label for="int">INT (Intelligence)</label>
+                        <input type="number" id="int" value="90" data-full="90" data-half="45" data-fifth="18">
+                        <div class="text-xs text-gray-500 mt-2">Half: <span id="intHalf">45</span>, Fifth: <span id="intFifth">18</span></div>
+                    </div>
+                    <div class="stat-item">
+                        <label for="pow">POW (Power)</label>
+                        <input type="number" id="pow" value="35" data-full="35" data-half="17" data-fifth="7">
+                        <div class="text-xs text-gray-500 mt-2">Half: <span id="powHalf">17</span>, Fifth: <span id="powFifth">7</span></div>
+                    </div>
+                    <div class="stat-item">
+                        <label for="edu">EDU (Education)</label>
+                        <input type="number" id="edu" value="45" data-full="45" data-half="22" data-fifth="9">
+                        <div class="text-xs text-gray-500 mt-2">Half: <span id="eduHalf">22</span>, Fifth: <span id="eduFifth">9</span></div>
+                    </div>
+                    <div class="stat-item">
+                        <label for="luck">Luck</label>
+                        <input type="number" id="luck" value="60" data-full="60" data-half="30" data-fifth="12">
+                        <div class="text-xs text-gray-500 mt-2">Half: <span id="luckHalf">30</span>, Fifth: <span id="luckFifth">12</span></div>
+                    </div>
+                </div>
             </div>
-            <div class="stat-item">
-                <label for="con">CON (Constitution)</label>
-                <input type="number" id="con" value="45" data-full="45" data-half="22" data-fifth="9">
-                <div class="text-xs text-gray-500 mt-2">Half: <span id="conHalf">22</span>, Fifth: <span id="conFifth">9</span></div>
-            </div>
-            <div class="stat-item">
-                <label for="siz">SIZ (Size)</label>
-                <input type="number" id="siz" value="55" data-full="55" data-half="27" data-fifth="11">
-                <div class="text-xs text-gray-500 mt-2">Half: <span id="sizHalf">27</span>, Fifth: <span id="sizFifth">11</span></div>
-            </div>
-            <div class="stat-item">
-                <label for="dex">DEX (Dexterity)</label>
-                <input type="number" id="dex" value="20" data-full="20" data-half="10" data-fifth="4">
-                <div class="text-xs text-gray-500 mt-2">Half: <span id="dexHalf">10</span>, Fifth: <span id="dexFifth">4</span></div>
-            </div>
-            <div class="stat-item">
-                <label for="app">APP (Appearance)</label>
-                <input type="number" id="app" value="50" data-full="50" data-half="25" data-fifth="10">
-                <div class="text-xs text-gray-500 mt-2">Half: <span id="appHalf">25</span>, Fifth: <span id="appFifth">10</span></div>
-            </div>
-            <div class="stat-item">
-                <label for="int">INT (Intelligence)</label>
-                <input type="number" id="int" value="90" data-full="90" data-half="45" data-fifth="18">
-                <div class="text-xs text-gray-500 mt-2">Half: <span id="intHalf">45</span>, Fifth: <span id="intFifth">18</span></div>
-            </div>
-            <div class="stat-item">
-                <label for="pow">POW (Power)</label>
-                <input type="number" id="pow" value="35" data-full="35" data-half="17" data-fifth="7">
-                <div class="text-xs text-gray-500 mt-2">Half: <span id="powHalf">17</span>, Fifth: <span id="powFifth">7</span></div>
-            </div>
-            <div class="stat-item">
-                <label for="edu">EDU (Education)</label>
-                <input type="number" id="edu" value="45" data-full="45" data-half="22" data-fifth="9">
-                <div class="text-xs text-gray-500 mt-2">Half: <span id="eduHalf">22</span>, Fifth: <span id="eduFifth">9</span></div>
-            </div>
-            <div class="stat-item">
-                <label for="luck">Luck</label>
-                <input type="number" id="luck" value="60" data-full="60" data-half="30" data-fifth="12">
-                <div class="text-xs text-gray-500 mt-2">Half: <span id="luckHalf">30</span>, Fifth: <span id="luckFifth">12</span></div>
+
+            <!-- Right Column: Resources -->
+            <div>
+                <h2>Resources</h2>
+                <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                    <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Hit Points (HP)</label>
+                        <div class="resource-bar">
+                            <div class="resource-fill" id="hpFill"></div>
+                        </div>
+                        <div class="flex items-center justify-between mb-2">
+                            <input type="number" id="currentHp" value="20" min="0" class="w-24 p-1 border rounded text-center">
+                            <span class="text-gray-600">/</span>
+                            <input type="number" id="maxHp" value="20" min="1" class="w-24 p-1 border rounded text-center">
+                        </div>
+                        <div class="resource-controls">
+                            <button class="btn-heal" onclick="adjustResource('hp', 1)">+1</button>
+                            <button class="btn-heal" onclick="adjustResource('hp', 4)">+1D4</button>
+                            <button class="btn-damage" onclick="adjustResource('hp', -1)">-1</button>
+                            <button class="btn-damage" onclick="adjustResource('hp', -4)">-1D4</button>
+                            <button class="btn-reset" onclick="resetResource('hp')">Reset</button>
+                        </div>
+                        <div class="mt-2 text-xs text-gray-500">
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" id="majorWound" class="form-checkbox rounded">
+                                <span class="ml-2">Major Wound</span>
+                            </label>
+                            <label class="inline-flex items-center ml-4">
+                                <input type="checkbox" id="unconscious" class="form-checkbox rounded">
+                                <span class="ml-2">Unconscious</span>
+                            </label>
+                            <label class="inline-flex items-center ml-4">
+                                <input type="checkbox" id="dying" class="form-checkbox rounded">
+                                <span class="ml-2">Dying</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Magic Points (MP)</label>
+                        <div class="resource-bar">
+                            <div class="resource-fill" id="mpFill"></div>
+                        </div>
+                        <div class="flex items-center justify-between mb-2">
+                            <input type="number" id="currentMp" value="7" min="0" class="w-24 p-1 border rounded text-center">
+                            <span class="text-gray-600">/</span>
+                            <input type="number" id="maxMp" value="7" min="1" class="w-24 p-1 border rounded text-center">
+                        </div>
+                        <div class="resource-controls">
+                            <button class="btn-heal" onclick="adjustResource('mp', 1)">+1</button>
+                            <button class="btn-damage" onclick="adjustResource('mp', -1)">-1</button>
+                            <button class="btn-reset" onclick="resetResource('mp')">Reset</button>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Sanity (SAN)</label>
+                        <div class="resource-bar">
+                            <div class="resource-fill" id="sanFill"></div>
+                        </div>
+                        <div class="flex items-center justify-between mb-2">
+                            <input type="number" id="currentSan" value="35" min="0" class="w-24 p-1 border rounded text-center">
+                            <span class="text-gray-600">/</span>
+                            <input type="number" id="maxSan" value="99" min="1" class="w-24 p-1 border rounded text-center">
+                        </div>
+                        <div class="resource-controls">
+                            <button class="btn-heal" onclick="adjustResource('san', 1)">+1</button>
+                            <button class="btn-damage" onclick="adjustResource('san', -1)">-1</button>
+                            <button class="btn-reset" onclick="resetResource('san')">Reset</button>
+                        </div>
+                        <div class="mt-2 text-xs text-gray-500">
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" id="tempInsanity" class="form-checkbox rounded">
+                                <span class="ml-2">Temporary Insanity</span>
+                            </label>
+                            <label class="inline-flex items-center ml-4">
+                                <input type="checkbox" id="indefiniteInsanity" class="form-checkbox rounded">
+                                <span class="ml-2">Indefinite Insanity</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <h2>Resources</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Hit Points (HP)</label>
-                <div class="resource-bar">
-                    <div class="resource-fill" id="hpFill"></div>
-                </div>
-                <div class="flex items-center justify-between mb-2">
-                    <input type="number" id="currentHp" value="20" min="0" class="w-24 p-1 border rounded text-center">
-                    <span class="text-gray-600">/</span>
-                    <input type="number" id="maxHp" value="20" min="1" class="w-24 p-1 border rounded text-center">
-                </div>
-                <div class="resource-controls">
-                    <button class="btn-heal" onclick="adjustResource('hp', 1)">+1</button>
-                    <button class="btn-heal" onclick="adjustResource('hp', 4)">+1D4</button>
-                    <button class="btn-damage" onclick="adjustResource('hp', -1)">-1</button>
-                    <button class="btn-damage" onclick="adjustResource('hp', -4)">-1D4</button>
-                    <button class="btn-reset" onclick="resetResource('hp')">Reset</button>
-                </div>
-                <div class="mt-2 text-xs text-gray-500">
-                    <label class="inline-flex items-center">
-                        <input type="checkbox" id="majorWound" class="form-checkbox rounded">
-                        <span class="ml-2">Major Wound</span>
-                    </label>
-                    <label class="inline-flex items-center ml-4">
-                        <input type="checkbox" id="unconscious" class="form-checkbox rounded">
-                        <span class="ml-2">Unconscious</span>
-                    </label>
-                    <label class="inline-flex items-center ml-4">
-                        <input type="checkbox" id="dying" class="form-checkbox rounded">
-                        <span class="ml-2">Dying</span>
-                    </label>
-                </div>
-            </div>
-
-            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Magic Points (MP)</label>
-                <div class="resource-bar">
-                    <div class="resource-fill" id="mpFill"></div>
-                </div>
-                <div class="flex items-center justify-between mb-2">
-                    <input type="number" id="currentMp" value="7" min="0" class="w-24 p-1 border rounded text-center">
-                    <span class="text-gray-600">/</span>
-                    <input type="number" id="maxMp" value="7" min="1" class="w-24 p-1 border rounded text-center">
-                </div>
-                <div class="resource-controls">
-                    <button class="btn-heal" onclick="adjustResource('mp', 1)">+1</button>
-                    <button class="btn-damage" onclick="adjustResource('mp', -1)">-1</button>
-                    <button class="btn-reset" onclick="resetResource('mp')">Reset</button>
-                </div>
-            </div>
-
-            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Sanity (SAN)</label>
-                <div class="resource-bar">
-                    <div class="resource-fill" id="sanFill"></div>
-                </div>
-                <div class="flex items-center justify-between mb-2">
-                    <input type="number" id="currentSan" value="35" min="0" class="w-24 p-1 border rounded text-center">
-                    <span class="text-gray-600">/</span>
-                    <input type="number" id="maxSan" value="99" min="1" class="w-24 p-1 border rounded text-center">
-                </div>
-                <div class="resource-controls">
-                    <button class="btn-heal" onclick="adjustResource('san', 1)">+1</button>
-                    <button class="btn-damage" onclick="adjustResource('san', -1)">-1</button>
-                    <button class="btn-reset" onclick="resetResource('san')">Reset</button>
-                </div>
-                <div class="mt-2 text-xs text-gray-500">
-                    <label class="inline-flex items-center">
-                        <input type="checkbox" id="tempInsanity" class="form-checkbox rounded">
-                        <span class="ml-2">Temporary Insanity</span>
-                    </label>
-                    <label class="inline-flex items-center ml-4">
-                        <input type="checkbox" id="indefiniteInsanity" class="form-checkbox rounded">
-                        <span class="ml-2">Indefinite Insanity</span>
-                    </label>
-                </div>
-            </div>
-        </div>
-
+        <!-- Skills section moved here to take full width -->
         <h2>Skills</h2>
-        <div class="skill-grid" id="skillGrid">
+        <div class="skill-grid section-block" id="skillGrid"> <!-- Added section-block -->
             <!-- Skills will be dynamically loaded here -->
         </div>
 
         <h2>Combat</h2>
-        <div class="combat-section">
+        <div class="combat-section section-block"> <!-- Added section-block -->
             <div class="combat-item">
                 <h3>Brawl</h3>
                 <div class="input-group">
@@ -402,7 +466,7 @@
 
 
         <h2>Backstory & Possessions</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 section-block"> <!-- Added section-block -->
             <div>
                 <h3>My Story</h3>
                 <div class="section-content">
@@ -483,8 +547,8 @@
             </div>
         </div>
 
-        <h2 class="mt-8">Wealth</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <h2>Wealth</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 section-block"> <!-- Added section-block -->
             <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <label class="block text-sm font-medium text-gray-700">Spending Level:</label>
                 <input type="text" id="spendingLevel" value="$10.00" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
@@ -547,8 +611,8 @@
             updateResourceBar('hp');
             updateResourceBar('mp');
             updateResourceBar('san');
-            populateSkills(); // Populate skills on load
-            loadCharacter(); // Load character data from local storage on page load
+            // Call loadCharacter first, which will then call populateSkills
+            loadCharacter();
         });
 
         // Add event listeners for characteristics to update on change
@@ -690,6 +754,10 @@
         // Function to populate skills dynamically
         function populateSkills() {
             const skillGrid = document.getElementById('skillGrid');
+            if (!skillGrid) {
+                console.error("Error: skillGrid element not found. Cannot populate skills.");
+                return; // Exit if element is null
+            }
             skillGrid.innerHTML = ''; // Clear existing skills
             skillsData.forEach((skill, index) => {
                 const skillItem = document.createElement('div');
@@ -878,8 +946,8 @@
                                 skillsData[index].checked = loadedSkill.checked;
                             }
                         });
-                        populateSkills(); // Re-render skills with loaded data
                     }
+                    populateSkills(); // Call populateSkills after data is loaded/updated
 
                     // Populate combat
                     document.getElementById('brawlSkill').value = data.combat.brawl.skill || '';
@@ -904,15 +972,15 @@
                     document.getElementById('backstory').value = data.backstoryDetails.backstory || '';
                     document.getElementById('personalDescription').value = data.backstoryDetails.personalDescription || '';
                     document.getElementById('traits').value = data.backstoryDetails.traits || '';
-                    document.getElementById('ideologyBeliefs').value = data.backstoryDetails.ideologyBeliefs || '';
-                    document.getElementById('injuriesScars').value = data.backstoryDetails.injuriesScars || '';
-                    document.getElementById('significantPeople').value = data.backstoryDetails.significantPeople || '';
-                    document.getElementById('phobiasManias').value = data.backstoryDetails.phobiasManias || '';
-                    document.getElementById('meaningfulLocations').value = data.backstoryDetails.meaningfulLocations || '';
-                    document.getElementById('treasuredPossessions').value = data.backstoryDetails.treasuredPossessions || '';
-                    document.getElementById('gearPossessions').value = data.backstoryDetails.gearPossessions || '';
-                    document.getElementById('arcaneTomesSpells').value = data.backstoryDetails.arcaneTomesSpells || '';
-                    document.getElementById('strangeEntities').value = data.backstoryDetails.strangeEntities || '';
+                    document.getElementById('ideologyBeliefs').value = data.ideologyBeliefs || '';
+                    document.getElementById('injuriesScars').value = data.injuriesScars || '';
+                    document.getElementById('significantPeople').value = data.significantPeople || '';
+                    document.getElementById('phobiasManias').value = data.phobiasManias || '';
+                    document.getElementById('meaningfulLocations').value = data.meaningfulLocations || '';
+                    document.getElementById('treasuredPossessions').value = data.treasuredPossessions || '';
+                    document.getElementById('gearPossessions').value = data.gearPossessions || '';
+                    document.getElementById('arcaneTomesSpells').value = data.arcaneTomesSpells || '';
+                    document.getElementById('strangeEntities').value = data.strangeEntities || '';
 
                     // Populate wealth
                     document.getElementById('spendingLevel').value = data.wealth.spendingLevel || '';
@@ -923,6 +991,7 @@
                 } else {
                     showMessage("No saved character data found in your browser. Starting fresh.", "info");
                     console.log("No character data found in local storage.");
+                    populateSkills(); // Populate with default skills if no saved data
                 }
             } catch (e) {
                 console.error("Error loading character data from local storage: ", e);
