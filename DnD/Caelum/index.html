@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caelum - Pulp Cthulhu Character Sheet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Old Standard TT (for titles) and Roboto Condensed (for body) -->
+    <link href="https://fonts.googleapis.com/css2?family=Old+Standard+TT:wght@400;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Base Styles */
+        body {
+            font-family: 'Roboto Condensed', sans-serif;
+            background-color: #2c2f33; /* Dark background */
+            color: #e0e0e0; /* Light grey text */
+            line-height: 1.6;
+            background-image: url('https://placehold.co/1920x1080/2c2f33/e0e0e0?text=Subtle+Parchment+Background'); /* Placeholder for a subtle background texture */
+            background-size: cover;
+            background-attachment: fixed;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #3a3f44; /* Slightly lighter dark background for content */
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            border: 2px solid #5a5f66; /* Subtle border */
+        }
+        h1, h2, h3 {
+            font-family: 'Old Standard TT', serif; /* Epic/Medieval font for headings */
+            font-weight: 700;
+            color: #f7d750; /* Brass/gold color for headings */
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+        h1 {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 3px double #f7d750; /* Double line border */
+            padding-bottom: 1rem;
+        }
+        h2 {
+            font-size: 2.2rem;
+            border-bottom: 2px solid #6b7280;
+            padding-bottom: 0.75rem;
+            margin-top: 2.5rem;
+            margin-bottom: 1.25rem;
+            color: #c0c0c0; /* Silver-like color */
+        }
+        h3 {
+            font-size: 1.6rem;
+            margin-top: 1.8rem;
+            margin-bottom: 0.8rem;
+            color: #d0d0d0;
+        }
+
+        /* Input & Section Styling */
+        .stat-grid, .skill-grid, .combat-section, .grid-cols-1.md\:grid-cols-2, .grid-cols-1.md\:grid-cols-3 {
+            gap: 1.5rem; /* Increased gap for more breathing room */
+        }
+        .p-4.bg-gray-50.rounded-lg.border.border-gray-200,
+        .stat-item, .skill-item, .combat-item, .section-content {
+            background-color: #4a4f54; /* Darker panel background */
+            padding: 1.2rem;
+            border-radius: 10px;
+            border: 1px solid #6b7280; /* Subtle border */
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3); /* Inner shadow for depth */
+        }
+        label {
+            font-weight: 600;
+            margin-bottom: 0.6rem;
+            color: #f7d750; /* Brass/gold for labels */
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+        input[type="text"], input[type="number"], textarea {
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px solid #6b7280;
+            border-radius: 6px;
+            font-size: 1rem;
+            background-color: #3a3f44; /* Dark input background */
+            color: #e0e0e0; /* Light text in inputs */
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input[type="text"]:focus, input[type="number"]:focus, textarea:focus {
+            border-color: #f7d750; /* Gold border on focus */
+            box-shadow: 0 0 0 2px rgba(247, 215, 80, 0.5); /* Gold glow on focus */
+            outline: none;
+        }
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        .stat-item input[type="number"], .skill-item input[type="number"] {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #f7d750; /* Gold for stat values */
+        }
+        .text-xs.text-gray-500 {
+            color: #b0b0b0; /* Lighter grey for derived stats */
+        }
+        .skill-item .skill-value-group span {
+            color: #f7d750; /* Gold for percentage sign */
+            font-weight: 700;
+        }
+        .checkbox-group span {
+            color: #e0e0e0;
+        }
+        input[type="checkbox"] {
+            accent-color: #f7d750; /* Gold checkbox */
+        }
+
+        /* Resource Bars */
+        .resource-bar {
+            background-color: #6b7280; /* Darker grey for empty bar */
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            border: 1px solid #9ca3af;
+            box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.3);
+        }
+        .resource-fill {
+            height: 28px; /* Slightly taller bar */
+            background-color: #8b5cf6; /* Default purple */
+            transition: width 0.4s ease-in-out, background-color 0.4s ease-in-out;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
+        .resource-controls button {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background-image: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(0,0,0,0.1));
+        }
+        .btn-heal { background-color: #22c55e; } /* Green */
+        .btn-heal:hover { background-color: #16a34a; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.4); }
+        .btn-damage { background-color: #ef4444; } /* Red */
+        .btn-damage:hover { background-color: #dc2626; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.4); }
+        .btn-reset { background-color: #f59e0b; } /* Amber */
+        .btn-reset:hover { background-color: #d97706; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.4); }
+
+        /* Primary Buttons */
+        .btn-primary {
+            background-color: #f7d750; /* Gold button */
+            color: #1f2937; /* Dark text on gold */
+            padding: 0.8rem 1.8rem;
+            border-radius: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            border: 2px solid #c0c0c0; /* Silver border */
+            background-image: linear-gradient(to bottom, #f7d750, #e0b000); /* Gold gradient */
+        }
+        .btn-primary:hover {
+            background-color: #e0b000;
+            background-image: linear-gradient(to bottom, #e0b000, #f7d750);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+        }
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Message Box */
+        .message-box {
+            background-color: #f7d750; /* Gold message box */
+            color: #1f2937; /* Dark text */
+            font-weight: 700;
+            border: 2px solid #e0b000;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Caelum - Pulp Cthulhu Character Sheet</h1>
+
+        <div class="message-box" id="messageBox"></div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <label class="block text-sm font-medium text-gray-700">Name:</label>
+                <input type="text" id="charName" value="Caelum" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
+            </div>
+            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <label class="block text-sm font-medium text-gray-700">Occupation:</label>
+                <input type="text" id="charOccupation" value="Engineer" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
+            </div>
+            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <label class="block text-sm font-medium text-gray-700">Age:</label>
+                <input type="number" id="charAge" value="28" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
+            </div>
+            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <label class="block text-sm font-medium text-gray-700">Archetype:</label>
+                <input type="text" id="charArchetype" value="Grease Monkey" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
+            </div>
+        </div>
+
+        <h2>Core Characteristics</h2>
+        <div class="stat-grid">
+            <div class="stat-item">
+                <label for="str">STR (Strength)</label>
+                <input type="number" id="str" value="45" data-full="45" data-half="22" data-fifth="9">
+                <div class="text-xs text-gray-500 mt-2">Half: <span id="strHalf">22</span>, Fifth: <span id="strFifth">9</span></div>
+            </div>
+            <div class="stat-item">
+                <label for="con">CON (Constitution)</label>
+                <input type="number" id="con" value="45" data-full="45" data-half="22" data-fifth="9">
+                <div class="text-xs text-gray-500 mt-2">Half: <span id="conHalf">22</span>, Fifth: <span id="conFifth">9</span></div>
+            </div>
+            <div class="stat-item">
+                <label for="siz">SIZ (Size)</label>
+                <input type="number" id="siz" value="55" data-full="55" data-half="27" data-fifth="11">
+                <div class="text-xs text-gray-500 mt-2">Half: <span id="sizHalf">27</span>, Fifth: <span id="sizFifth">11</span></div>
+            </div>
+            <div class="stat-item">
+                <label for="dex">DEX (Dexterity)</label>
+                <input type="number" id="dex" value="20" data-full="20" data-half="10" data-fifth="4">
+                <div class="text-xs text-gray-500 mt-2">Half: <span id="dexHalf">10</span>, Fifth: <span id="dexFifth">4</span></div>
+            </div>
+            <div class="stat-item">
+                <label for="app">APP (Appearance)</label>
+                <input type="number" id="app" value="50" data-full="50" data-half="25" data-fifth="10">
+                <div class="text-xs text-gray-500 mt-2">Half: <span id="appHalf">25</span>, Fifth: <span id="appFifth">10</span></div>
+            </div>
+            <div class="stat-item">
+                <label for="int">INT (Intelligence)</label>
+                <input type="number" id="int" value="90" data-full="90" data-half="45" data-fifth="18">
+                <div class="text-xs text-gray-500 mt-2">Half: <span id="intHalf">45</span>, Fifth: <span id="intFifth">18</span></div>
+            </div>
+            <div class="stat-item">
+                <label for="pow">POW (Power)</label>
+                <input type="number" id="pow" value="35" data-full="35" data-half="17" data-fifth="7">
+                <div class="text-xs text-gray-500 mt-2">Half: <span id="powHalf">17</span>, Fifth: <span id="powFifth">7</span></div>
+            </div>
+            <div class="stat-item">
+                <label for="edu">EDU (Education)</label>
+                <input type="number" id="edu" value="45" data-full="45" data-half="22" data-fifth="9">
+                <div class="text-xs text-gray-500 mt-2">Half: <span id="eduHalf">22</span>, Fifth: <span id="eduFifth">9</span></div>
+            </div>
+            <div class="stat-item">
+                <label for="luck">Luck</label>
+                <input type="number" id="luck" value="60" data-full="60" data-half="30" data-fifth="12">
+                <div class="text-xs text-gray-500 mt-2">Half: <span id="luckHalf">30</span>, Fifth: <span id="luckFifth">12</span></div>
+            </div>
+        </div>
+
+        <h2>Resources</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Hit Points (HP)</label>
+                <div class="resource-bar">
+                    <div class="resource-fill" id="hpFill"></div>
+                </div>
+                <div class="flex items-center justify-between mb-2">
+                    <input type="number" id="currentHp" value="20" min="0" class="w-24 p-1 border rounded text-center">
+                    <span class="text-gray-600">/</span>
+                    <input type="number" id="maxHp" value="20" min="1" class="w-24 p-1 border rounded text-center">
+                </div>
+                <div class="resource-controls">
+                    <button class="btn-heal" onclick="adjustResource('hp', 1)">+1</button>
+                    <button class="btn-heal" onclick="adjustResource('hp', 4)">+1D4</button>
+                    <button class="btn-damage" onclick="adjustResource('hp', -1)">-1</button>
+                    <button class="btn-damage" onclick="adjustResource('hp', -4)">-1D4</button>
+                    <button class="btn-reset" onclick="resetResource('hp')">Reset</button>
+                </div>
+                <div class="mt-2 text-xs text-gray-500">
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" id="majorWound" class="form-checkbox rounded">
+                        <span class="ml-2">Major Wound</span>
+                    </label>
+                    <label class="inline-flex items-center ml-4">
+                        <input type="checkbox" id="unconscious" class="form-checkbox rounded">
+                        <span class="ml-2">Unconscious</span>
+                    </label>
+                    <label class="inline-flex items-center ml-4">
+                        <input type="checkbox" id="dying" class="form-checkbox rounded">
+                        <span class="ml-2">Dying</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Magic Points (MP)</label>
+                <div class="resource-bar">
+                    <div class="resource-fill" id="mpFill"></div>
+                </div>
+                <div class="flex items-center justify-between mb-2">
+                    <input type="number" id="currentMp" value="7" min="0" class="w-24 p-1 border rounded text-center">
+                    <span class="text-gray-600">/</span>
+                    <input type="number" id="maxMp" value="7" min="1" class="w-24 p-1 border rounded text-center">
+                </div>
+                <div class="resource-controls">
+                    <button class="btn-heal" onclick="adjustResource('mp', 1)">+1</button>
+                    <button class="btn-damage" onclick="adjustResource('mp', -1)">-1</button>
+                    <button class="btn-reset" onclick="resetResource('mp')">Reset</button>
+                </div>
+            </div>
+
+            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Sanity (SAN)</label>
+                <div class="resource-bar">
+                    <div class="resource-fill" id="sanFill"></div>
+                </div>
+                <div class="flex items-center justify-between mb-2">
+                    <input type="number" id="currentSan" value="35" min="0" class="w-24 p-1 border rounded text-center">
+                    <span class="text-gray-600">/</span>
+                    <input type="number" id="maxSan" value="99" min="1" class="w-24 p-1 border rounded text-center">
+                </div>
+                <div class="resource-controls">
+                    <button class="btn-heal" onclick="adjustResource('san', 1)">+1</button>
+                    <button class="btn-damage" onclick="adjustResource('san', -1)">-1</button>
+                    <button class="btn-reset" onclick="resetResource('san')">Reset</button>
+                </div>
+                <div class="mt-2 text-xs text-gray-500">
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" id="tempInsanity" class="form-checkbox rounded">
+                        <span class="ml-2">Temporary Insanity</span>
+                    </label>
+                    <label class="inline-flex items-center ml-4">
+                        <input type="checkbox" id="indefiniteInsanity" class="form-checkbox rounded">
+                        <span class="ml-2">Indefinite Insanity</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <h2>Skills</h2>
+        <div class="skill-grid" id="skillGrid">
+            <!-- Skills will be dynamically loaded here -->
+        </div>
+
+        <h2>Combat</h2>
+        <div class="combat-section">
+            <div class="combat-item">
+                <h3>Brawl</h3>
+                <div class="input-group">
+                    <label for="brawlSkill" class="sr-only">Skill %</label>
+                    <input type="number" id="brawlSkill" value="50" class="w-full" placeholder="Skill %">
+                    <span>%</span>
+                </div>
+                <label for="brawlDamage" class="sr-only">Damage</label>
+                <input type="text" id="brawlDamage" value="1D3 + DB" class="w-full" placeholder="Damage">
+                <label for="brawlAttacks" class="sr-only"># of Attacks</label>
+                <input type="number" id="brawlAttacks" value="1" class="w-full mt-2" placeholder="# of Attacks">
+            </div>
+            <div class="combat-item">
+                <h3>Dodge</h3>
+                <div class="input-group">
+                    <label for="dodgeSkill" class="sr-only">Skill %</label>
+                    <input type="number" id="dodgeSkill" value="20" class="w-full" placeholder="Skill %">
+                    <span>%</span>
+                </div>
+                <label for="move" class="sr-only">Move</label>
+                <input type="number" id="move" value="7" class="w-full" placeholder="Move">
+                <label for="build" class="sr-only">Build</label>
+                <input type="text" id="build" value="O" class="w-full mt-2" placeholder="Build">
+            </div>
+            <div class="combat-item">
+                <h3>Firearms (Handgun)</h3>
+                <div class="input-group">
+                    <label for="firearmsHandgunSkill" class="sr-only">Skill %</label>
+                    <input type="number" id="firearmsHandgunSkill" value="20" class="w-full" placeholder="Skill %">
+                    <span>%</span>
+                </div>
+                <label for="firearmsHandgunDamage" class="sr-only">Damage</label>
+                <input type="text" id="firearmsHandgunDamage" value="1D10" class="w-full" placeholder="Damage (Example)">
+                <label for="firearmsHandgunAttacks" class="sr-only"># of Attacks</label>
+                <input type="number" id="firearmsHandgunAttacks" value="1" class="w-full mt-2" placeholder="# of Attacks">
+            </div>
+            <div class="combat-item">
+                <h3>Firearms (Rifle/Shotgun)</h3>
+                <div class="input-group">
+                    <label for="firearmsRifleSkill" class="sr-only">Skill %</label>
+                    <input type="number" id="firearmsRifleSkill" value="25" class="w-full" placeholder="Skill %">
+                    <span>%</span>
+                </div>
+                <label for="firearmsRifleDamage" class="sr-only">Damage</label>
+                <input type="text" id="firearmsRifleDamage" value="2D6" class="w-full" placeholder="Damage (Example)">
+                <label for="firearmsRifleAttacks" class="sr-only"># of Attacks</label>
+                <input type="number" id="firearmsRifleAttacks" value="1" class="w-full mt-2" placeholder="# of Attacks">
+            </div>
+        </div>
+
+
+        <h2>Backstory & Possessions</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h3>My Story</h3>
+                <div class="section-content">
+                    <textarea id="myStory" placeholder="Write your character's personal story here..."></textarea>
+                </div>
+            </div>
+            <div>
+                <h3>Backstory</h3>
+                <div class="section-content">
+                    <textarea id="backstory" placeholder="Details about Caelum's past..."></textarea>
+                </div>
+            </div>
+            <div>
+                <h3>Personal Description</h3>
+                <div class="section-content">
+                    <textarea id="personalDescription" placeholder="Describe Caelum's appearance..."></textarea>
+                </div>
+            </div>
+            <div>
+                <h3>Traits</h3>
+                <div class="section-content">
+                    <textarea id="traits" placeholder="List Caelum's personality traits..."></textarea>
+                </div>
+            </div>
+            <div>
+                <h3>Ideology & Beliefs</h3>
+                <div class="section-content">
+                    <textarea id="ideologyBeliefs" placeholder="What does Caelum believe in?"></textarea>
+                </div>
+            </div>
+            <div>
+                <h3>Injuries & Scars</h3>
+                <div class="section-content">
+                    <textarea id="injuriesScars" placeholder="Any notable injuries or scars?"></textarea>
+                </div>
+            </div>
+            <div>
+                <h3>Significant People</h3>
+                <div class="section-content">
+                    <textarea id="significantPeople" placeholder="Who are important people in Caelum's life?"></textarea>
+                </div>
+            </div>
+            <div>
+                <h3>Phobias & Manias</h3>
+                <div class="section-content">
+                    <textarea id="phobiasManias" placeholder="List Caelum's fears or obsessions..."></textarea>
+                </div>
+            </div>
+            <div>
+                <h3>Meaningful Locations</h3>
+                <div class="section-content">
+                    <textarea id="meaningfulLocations" placeholder="Places important to Caelum..."></textarea>
+                </div>
+            </div>
+            <div>
+                <h3>Treasured Possessions</h3>
+                <div class="section-content">
+                    <textarea id="treasuredPossessions" placeholder="What does Caelum value most?"></textarea>
+                </div>
+            </div>
+            <div class="md:col-span-2">
+                <h3>Gear & Possessions</h3>
+                <div class="section-content">
+                    <textarea id="gearPossessions" placeholder="List all of Caelum's equipment and items..."></textarea>
+                </div>
+            </div>
+            <div class="md:col-span-2">
+                <h3>Arcane Tomes & Spells</h3>
+                <div class="section-content">
+                    <textarea id="arcaneTomesSpells" placeholder="Any magical books or spells Caelum knows?"></textarea>
+                </div>
+            </div>
+            <div class="md:col-span-2">
+                <h3>Encounters with Strange Entities</h3>
+                <div class="section-content">
+                    <textarea id="strangeEntities" placeholder="Describe any encounters with otherworldly beings..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="mt-8">Wealth</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <label class="block text-sm font-medium text-gray-700">Spending Level:</label>
+                <input type="text" id="spendingLevel" value="$10.00" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
+            </div>
+            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <label class="block text-sm font-medium text-gray-700">Cash:</label>
+                <input type="text" id="cash" value="$60.00" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
+            </div>
+            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <label class="block text-sm font-medium text-gray-700">Assets:</label>
+                <input type="text" id="assets" value="" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
+            </div>
+        </div>
+
+        <button class="btn-primary" onclick="saveCharacter()">Save Character Data</button>
+        <button class="btn-primary" onclick="loadCharacter()">Load Character Data</button>
+    </div>
+
+    <script type="module">
+        // Helper function to show messages to the user
+        function showMessage(message, type = "info") {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.textContent = message;
+            messageBox.className = 'message-box show'; // Reset classes and show
+            if (type === "error") {
+                messageBox.style.backgroundColor = '#dc2626'; // Red for errors
+            } else {
+                messageBox.style.backgroundColor = '#f7d750'; // Gold for info
+                messageBox.style.color = '#1f2937'; // Dark text on gold
+            }
+            setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, 3000);
+        }
+
+        // Function to calculate half and fifth values for characteristics
+        function calculateDerivedStats(value) {
+            return {
+                full: value,
+                half: Math.floor(value / 2),
+                fifth: Math.floor(value / 5)
+            };
+        }
+
+        // Update displayed half and fifth values for a characteristic
+        function updateCharacteristicDisplay(id) {
+            const input = document.getElementById(id);
+            const value = parseInt(input.value);
+            const stats = calculateDerivedStats(value);
+            document.getElementById(`${id}Half`).textContent = stats.half;
+            document.getElementById(`${id}Fifth`).textContent = stats.fifth;
+        }
+
+        // Initial update for all characteristics on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const characteristics = ['str', 'con', 'siz', 'dex', 'app', 'int', 'pow', 'edu', 'luck'];
+            characteristics.forEach(id => {
+                updateCharacteristicDisplay(id);
+            });
+            updateResourceBar('hp');
+            updateResourceBar('mp');
+            updateResourceBar('san');
+            populateSkills(); // Populate skills on load
+            loadCharacter(); // Load character data from local storage on page load
+        });
+
+        // Add event listeners for characteristics to update on change
+        const characteristicInputs = document.querySelectorAll('.stat-item input[type="number"]');
+        characteristicInputs.forEach(input => {
+            input.addEventListener('input', (event) => {
+                updateCharacteristicDisplay(event.target.id);
+            });
+        });
+
+        // Function to adjust HP, MP, SAN
+        window.adjustResource = function(type, amount) {
+            const currentInput = document.getElementById(`current${type.charAt(0).toUpperCase() + type.slice(1)}`);
+            const maxInput = document.getElementById(`max${type.charAt(0).toUpperCase() + type.slice(1)}`);
+
+            let currentValue = parseInt(currentInput.value);
+            const maxValue = parseInt(maxInput.value);
+
+            let adjustedAmount = amount;
+            if (amount.toString().includes('D')) { // Handle dice rolls like 1D4
+                const [numDice, dieSize] = amount.toString().split('D').map(Number);
+                adjustedAmount = 0;
+                for (let i = 0; i < numDice; i++) {
+                    adjustedAmount += Math.floor(Math.random() * dieSize) + 1;
+                }
+                showMessage(`Rolled ${adjustedAmount} for ${type}!`);
+            }
+
+            currentValue += adjustedAmount;
+
+            // Clamp value between 0 and max
+            currentValue = Math.max(0, Math.min(currentValue, maxValue));
+            currentInput.value = currentValue;
+            updateResourceBar(type);
+        };
+
+        // Function to reset HP, MP, SAN to max
+        window.resetResource = function(type) {
+            const currentInput = document.getElementById(`current${type.charAt(0).toUpperCase() + type.slice(1)}`);
+            const maxInput = document.getElementById(`max${type.charAt(0).toUpperCase() + type.slice(1)}`);
+            currentInput.value = maxInput.value;
+            updateResourceBar(type);
+        };
+
+        // Update resource bar visual
+        function updateResourceBar(type) {
+            const currentInput = document.getElementById(`current${type.charAt(0).toUpperCase() + type.slice(1)}`);
+            const maxInput = document.getElementById(`max${type.charAt(0).toUpperCase() + type.slice(1)}`);
+            const fillElement = document.getElementById(`${type}Fill`);
+
+            const currentValue = parseInt(currentInput.value);
+            const maxValue = parseInt(maxInput.value);
+
+            if (maxValue > 0) {
+                const percentage = (currentValue / maxValue) * 100;
+                fillElement.style.width = `${percentage}%`;
+                fillElement.textContent = `${currentValue}/${maxValue}`;
+            } else {
+                fillElement.style.width = '0%';
+                fillElement.textContent = `0/0`;
+            }
+
+            // Change color based on percentage for HP only
+            if (type === 'hp') {
+                if (currentValue / maxValue <= 0.25) {
+                    fillElement.style.backgroundColor = '#ef4444'; /* Red */
+                } else if (currentValue / maxValue <= 0.5) {
+                    fillElement.style.backgroundColor = '#f59e0b'; /* Amber */
+                } else {
+                    fillElement.style.backgroundColor = '#22c55e'; /* Green */
+                }
+            }
+        }
+
+        // Add event listeners for resource inputs to update on change
+        document.getElementById('currentHp').addEventListener('input', () => updateResourceBar('hp'));
+        document.getElementById('maxHp').addEventListener('input', () => updateResourceBar('hp'));
+        document.getElementById('currentMp').addEventListener('input', () => updateResourceBar('mp'));
+        document.getElementById('maxMp').addEventListener('input', () => updateResourceBar('mp'));
+        document.getElementById('currentSan').addEventListener('input', () => updateResourceBar('san'));
+        document.getElementById('maxSan').addEventListener('input', () => updateResourceBar('san'));
+
+
+        // Define skills data based on the PDF
+        const skillsData = [
+            { name: "Accounting", value: 5, checked: false },
+            { name: "Appraise", value: 5, checked: false },
+            { name: "Archaeology", value: 1, checked: false },
+            { name: "Art/Craft", value: 5, checked: false }, // Placeholder, needs specific craft
+            { name: "Charm", value: 15, checked: false },
+            { name: "Chemistry", value: 1, checked: false },
+            { name: "Climb", value: 20, checked: false },
+            { name: "Computer Use", value: 0, checked: false },
+            { name: "Credit Rating", value: 0, checked: false },
+            { name: "Cthulhu Mythos", value: 0, checked: false },
+            { name: "Demolitions", value: 1, checked: false },
+            { name: "Disguise", value: 5, checked: false },
+            { name: "Diving", value: 1, checked: false },
+            { name: "Dodge", value: 20, checked: false }, // Special: half DEX
+            { name: "Drive Auto", value: 20, checked: false },
+            { name: "Elec. Repair", value: 10, checked: false },
+            { name: "Fast Talk", value: 5, checked: false },
+            { name: "Fighting (Brawl)", value: 25, checked: false },
+            { name: "Firearms (Handgun)", value: 20, checked: false },
+            { name: "Firearms (Rifle/Shotgun)", value: 25, checked: false },
+            { name: "First Aid", value: 30, checked: false },
+            { name: "Garrote", value: 5, checked: false },
+            { name: "History", value: 5, checked: false },
+            { name: "Intimidate", value: 15, checked: false },
+            { name: "Jump", value: 20, checked: false },
+            { name: "Language (Own - English)", value: 45, checked: false },
+            { name: "Language (Other)", value: 1, checked: false }, // Placeholder
+            { name: "Law", value: 5, checked: false },
+            { name: "Library Use", value: 20, checked: false },
+            { name: "Listen", value: 20, checked: false },
+            { name: "Locksmith", value: 1, checked: false },
+            { name: "Mech. Repair", value: 10, checked: false },
+            { name: "Medicine", value: 1, checked: false },
+            { name: "Natural World", value: 10, checked: false },
+            { name: "Navigate", value: 10, checked: false },
+            { name: "Occult", value: 5, checked: false },
+            { name: "Persuade", value: 10, checked: false },
+            { name: "Pilot", value: 1, checked: false }, // Placeholder, needs specific vehicle
+            { name: "Psychoanalysis", value: 1, checked: false },
+            { name: "Psychology", value: 10, checked: false },
+            { name: "Read Lips", value: 1, checked: false },
+            { name: "Ride", value: 5, checked: false },
+            { name: "Science (Physics)", value: 1, checked: false }, // Placeholder, needs specific science
+            { name: "Sleight of Hand", value: 10, checked: false },
+            { name: "Spot Hidden", value: 25, checked: false },
+            { name: "Stealth", value: 20, checked: false },
+            { name: "Survival", value: 10, checked: false }, // Placeholder
+            { name: "Swim", value: 20, checked: false },
+            { name: "Technical Drawing", value: 5, checked: false },
+            { name: "Throw", value: 20, checked: false },
+            { name: "Track", value: 10, checked: false }
+        ];
+
+        // Function to populate skills dynamically
+        function populateSkills() {
+            const skillGrid = document.getElementById('skillGrid');
+            skillGrid.innerHTML = ''; // Clear existing skills
+            skillsData.forEach((skill, index) => {
+                const skillItem = document.createElement('div');
+                skillItem.className = 'skill-item';
+                skillItem.innerHTML = `
+                    <label for="skill-${index}">${skill.name}</label>
+                    <div class="skill-value-group">
+                        <input type="number" id="skill-${index}" value="${skill.value}" min="0">
+                        <span>%</span>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="skill-checked-${index}" ${skill.checked ? 'checked' : ''}>
+                        <span>Trained</span>
+                    </div>
+                `;
+                skillGrid.appendChild(skillItem);
+
+                // Add event listener to update skill data when input changes
+                const skillInput = skillItem.querySelector(`#skill-${index}`);
+                skillInput.addEventListener('input', (event) => {
+                    skillsData[index].value = parseInt(event.target.value);
+                });
+                const skillCheckbox = skillItem.querySelector(`#skill-checked-${index}`);
+                skillCheckbox.addEventListener('change', (event) => {
+                    skillsData[index].checked = event.target.checked;
+                });
+            });
+        }
+
+        // Function to save character data to Local Storage
+        window.saveCharacter = function() {
+            // Collect all data from the form
+            const characterData = {
+                // Basic Info
+                name: document.getElementById('charName').value,
+                occupation: document.getElementById('charOccupation').value,
+                age: parseInt(document.getElementById('charAge').value),
+                archetype: document.getElementById('charArchetype').value,
+
+                // Characteristics
+                characteristics: {
+                    str: parseInt(document.getElementById('str').value),
+                    con: parseInt(document.getElementById('con').value),
+                    siz: parseInt(document.getElementById('siz').value),
+                    dex: parseInt(document.getElementById('dex').value),
+                    app: parseInt(document.getElementById('app').value),
+                    int: parseInt(document.getElementById('int').value),
+                    pow: parseInt(document.getElementById('pow').value),
+                    edu: parseInt(document.getElementById('edu').value),
+                    luck: parseInt(document.getElementById('luck').value),
+                },
+
+                // Resources
+                resources: {
+                    hp: {
+                        current: parseInt(document.getElementById('currentHp').value),
+                        max: parseInt(document.getElementById('maxHp').value),
+                        majorWound: document.getElementById('majorWound').checked,
+                        unconscious: document.getElementById('unconscious').checked,
+                        dying: document.getElementById('dying').checked,
+                    },
+                    mp: {
+                        current: parseInt(document.getElementById('currentMp').value),
+                        max: parseInt(document.getElementById('maxMp').value),
+                    },
+                    san: {
+                        current: parseInt(document.getElementById('currentSan').value),
+                        max: parseInt(document.getElementById('maxSan').value),
+                        tempInsanity: document.getElementById('tempInsanity').checked,
+                        indefiniteInsanity: document.getElementById('indefiniteInsanity').checked,
+                    },
+                },
+
+                // Skills (using the skillsData array)
+                skills: skillsData,
+
+                // Combat
+                combat: {
+                    brawl: {
+                        skill: parseInt(document.getElementById('brawlSkill').value),
+                        damage: document.getElementById('brawlDamage').value,
+                        attacks: parseInt(document.getElementById('brawlAttacks').value),
+                    },
+                    dodge: {
+                        skill: parseInt(document.getElementById('dodgeSkill').value),
+                        move: parseInt(document.getElementById('move').value),
+                        build: document.getElementById('build').value,
+                    },
+                    firearmsHandgun: {
+                        skill: parseInt(document.getElementById('firearmsHandgunSkill').value),
+                        damage: document.getElementById('firearmsHandgunDamage').value,
+                        attacks: parseInt(document.getElementById('firearmsHandgunAttacks').value),
+                    },
+                    firearmsRifle: {
+                        skill: parseInt(document.getElementById('firearmsRifleSkill').value),
+                        damage: document.getElementById('firearmsRifleDamage').value,
+                        attacks: parseInt(document.getElementById('firearmsRifleAttacks').value),
+                    },
+                },
+
+                // Backstory & Possessions
+                backstoryDetails: {
+                    myStory: document.getElementById('myStory').value,
+                    backstory: document.getElementById('backstory').value,
+                    personalDescription: document.getElementById('personalDescription').value,
+                    traits: document.getElementById('traits').value,
+                    ideologyBeliefs: document.getElementById('ideologyBeliefs').value,
+                    injuriesScars: document.getElementById('injuriesScars').value,
+                    significantPeople: document.getElementById('significantPeople').value,
+                    phobiasManias: document.getElementById('phobiasManias').value,
+                    meaningfulLocations: document.getElementById('meaningfulLocations').value,
+                    treasuredPossessions: document.getElementById('treasuredPossessions').value,
+                    gearPossessions: document.getElementById('gearPossessions').value,
+                    arcaneTomesSpells: document.getElementById('arcaneTomesSpells').value,
+                    strangeEntities: document.getElementById('strangeEntities').value,
+                },
+
+                // Wealth
+                wealth: {
+                    spendingLevel: document.getElementById('spendingLevel').value,
+                    cash: document.getElementById('cash').value,
+                    assets: document.getElementById('assets').value,
+                }
+            };
+
+            try {
+                // Save to local storage
+                localStorage.setItem('caelumCharacterData', JSON.stringify(characterData));
+                showMessage("Character data saved successfully to your browser!");
+                console.log("Character data saved to local storage.");
+            } catch (e) {
+                console.error("Error saving character data to local storage: ", e);
+                showMessage("Error saving character data: " + e.message, "error");
+            }
+        };
+
+        // Function to load character data from Local Storage
+        window.loadCharacter = function() {
+            try {
+                // Load from local storage
+                const storedData = localStorage.getItem('caelumCharacterData');
+
+                if (storedData) {
+                    const data = JSON.parse(storedData);
+                    console.log("Character data loaded from local storage:", data);
+
+                    // Populate basic info
+                    document.getElementById('charName').value = data.name || '';
+                    document.getElementById('charOccupation').value = data.occupation || '';
+                    document.getElementById('charAge').value = data.age || '';
+                    document.getElementById('charArchetype').value = data.archetype || '';
+
+                    // Populate characteristics
+                    for (const stat in data.characteristics) {
+                        const input = document.getElementById(stat);
+                        if (input) {
+                            input.value = data.characteristics[stat];
+                            updateCharacteristicDisplay(stat);
+                        }
+                    }
+
+                    // Populate resources
+                    document.getElementById('currentHp').value = data.resources.hp.current;
+                    document.getElementById('maxHp').value = data.resources.hp.max;
+                    document.getElementById('majorWound').checked = data.resources.hp.majorWound;
+                    document.getElementById('unconscious').checked = data.resources.hp.unconscious;
+                    document.getElementById('dying').checked = data.resources.hp.dying;
+                    updateResourceBar('hp');
+
+                    document.getElementById('currentMp').value = data.resources.mp.current;
+                    document.getElementById('maxMp').value = data.resources.mp.max;
+                    updateResourceBar('mp');
+
+                    document.getElementById('currentSan').value = data.resources.san.current;
+                    document.getElementById('maxSan').value = data.resources.san.max;
+                    document.getElementById('tempInsanity').checked = data.resources.san.tempInsanity;
+                    document.getElementById('indefiniteInsanity').checked = data.resources.san.indefiniteInsanity;
+                    updateResourceBar('san');
+
+                    // Populate skills
+                    if (data.skills && data.skills.length > 0) {
+                        // Update the global skillsData array with loaded values
+                        data.skills.forEach((loadedSkill, index) => {
+                            if (skillsData[index]) { // Ensure the skill exists in our default list
+                                skillsData[index].value = loadedSkill.value;
+                                skillsData[index].checked = loadedSkill.checked;
+                            }
+                        });
+                        populateSkills(); // Re-render skills with loaded data
+                    }
+
+                    // Populate combat
+                    document.getElementById('brawlSkill').value = data.combat.brawl.skill || '';
+                    document.getElementById('brawlDamage').value = data.combat.brawl.damage || '';
+                    document.getElementById('brawlAttacks').value = data.combat.brawl.attacks || '';
+
+                    document.getElementById('dodgeSkill').value = data.combat.dodge.skill || '';
+                    document.getElementById('move').value = data.combat.dodge.move || '';
+                    document.getElementById('build').value = data.combat.dodge.build || '';
+
+                    document.getElementById('firearmsHandgunSkill').value = data.combat.firearmsHandgun.skill || '';
+                    document.getElementById('firearmsHandgunDamage').value = data.combat.firearmsHandgun.damage || '';
+                    document.getElementById('firearmsHandgunAttacks').value = data.combat.firearmsHandgun.attacks || '';
+
+                    document.getElementById('firearmsRifleSkill').value = data.combat.firearmsRifle.skill || '';
+                    document.getElementById('firearmsRifleDamage').value = data.combat.firearmsRifle.damage || '';
+                    document.getElementById('firearmsRifleAttacks').value = data.combat.firearmsRifle.attacks || '';
+
+
+                    // Populate backstory & possessions
+                    document.getElementById('myStory').value = data.backstoryDetails.myStory || '';
+                    document.getElementById('backstory').value = data.backstoryDetails.backstory || '';
+                    document.getElementById('personalDescription').value = data.backstoryDetails.personalDescription || '';
+                    document.getElementById('traits').value = data.backstoryDetails.traits || '';
+                    document.getElementById('ideologyBeliefs').value = data.backstoryDetails.ideologyBeliefs || '';
+                    document.getElementById('injuriesScars').value = data.backstoryDetails.injuriesScars || '';
+                    document.getElementById('significantPeople').value = data.backstoryDetails.significantPeople || '';
+                    document.getElementById('phobiasManias').value = data.backstoryDetails.phobiasManias || '';
+                    document.getElementById('meaningfulLocations').value = data.backstoryDetails.meaningfulLocations || '';
+                    document.getElementById('treasuredPossessions').value = data.backstoryDetails.treasuredPossessions || '';
+                    document.getElementById('gearPossessions').value = data.backstoryDetails.gearPossessions || '';
+                    document.getElementById('arcaneTomesSpells').value = data.backstoryDetails.arcaneTomesSpells || '';
+                    document.getElementById('strangeEntities').value = data.backstoryDetails.strangeEntities || '';
+
+                    // Populate wealth
+                    document.getElementById('spendingLevel').value = data.wealth.spendingLevel || '';
+                    document.getElementById('cash').value = data.wealth.cash || '';
+                    document.getElementById('assets').value = data.wealth.assets || '';
+
+                    showMessage("Character data loaded successfully from your browser!");
+                } else {
+                    showMessage("No saved character data found in your browser. Starting fresh.", "info");
+                    console.log("No character data found in local storage.");
+                }
+            } catch (e) {
+                console.error("Error loading character data from local storage: ", e);
+                showMessage("Error loading character data: " + e.message, "error");
+            }
+        };
+    </script>
+</body>
+</html>
