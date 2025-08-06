@@ -14,9 +14,14 @@
             background-color: #2c2f33; /* Dark background */
             color: #e0e0e0; /* Light grey text */
             line-height: 1.4; /* Reduced line height */
-            background-image: url('https://placehold.co/1920x1080/2c2f33/e0e0e0?text=Subtle+Parchment+Background'); /* Placeholder for a subtle background texture */
-            background-size: cover;
+            /* Steampunk background: gears with orange tint */
+            background-image: 
+                linear-gradient(rgba(255, 140, 0, 0.2), rgba(255, 140, 0, 0.2)), /* Orange overlay */
+                url('images/gears.jpg'); /* Placeholder for gear pattern */
+            background-size: auto; /* Cover the entire body */
+            background-repeat: repeat; /* Repeat the gear pattern */
             background-attachment: fixed;
+            background-position: center center; /* Center the background */
         }
         .container {
             max-width: 960px; /* Slightly reduced max-width */
@@ -119,7 +124,7 @@
         /* Skill Grid Specific Styles */
         .skill-grid {
             display: grid; /* Ensure it's a grid */
-            grid-template-columns: repeat(auto-fit, minmax(105px, 1fr)); /* Aim for compact columns */
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); /* Increased min-width for skill names */
             gap: 0.5rem; /* Further reduced gap for skills */
             /* margin-top: 0.8rem; Removed as section-block handles overall spacing */
         }
@@ -136,9 +141,10 @@
         .skill-item label {
             font-size: 0.75rem; /* Even smaller font for skill names */
             margin-bottom: 0.2rem; /* Reduced margin */
-            white-space: nowrap; /* Prevent wrapping of skill names if possible */
-            overflow: hidden;
-            text-overflow: ellipsis; /* Add ellipsis if name is too long */
+            white-space: normal; /* ALLOW TEXT WRAPPING */
+            overflow: visible; /* ALLOW OVERFLOW */
+            text-overflow: clip; /* PREVENT ELLIPSIS */
+            line-height: 1.1; /* Tighter line height for multi-line labels */
         }
         .skill-item .skill-value-group {
             display: flex;
