@@ -108,10 +108,19 @@ async function fetchGameState() {
         const response = await retryFetch(async () => {
             const res = await fetch(`${API_URL}?gameId=${gameId}&clientId=${clientId}`);
             if (!res.ok) {
-                const errorText = await res.text();
+                // If response is not OK, try to get JSON error, but fallback to text
+                let errorText = await res.text();
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    errorText = errorJson.error || JSON.stringify(errorJson);
+                } catch (parseError) {
+                    // Not a JSON error, use raw text
+                }
                 throw new Error(`Failed to fetch game state: ${res.status} ${res.statusText} - ${errorText}`);
             }
-            return res;
+            console.log('Raw response from fetchGameState:', res); // Log the full response object
+            const data = await res.json(); // This is where the error occurs
+            return data;
         });
         const data = await response.json();
         return data;
@@ -145,10 +154,18 @@ async function handleMove(cellIndex) {
                 })
             });
             if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.error || 'Failed to make move.');
+                let errorText = await res.text();
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    errorText = errorJson.error || JSON.stringify(errorJson);
+                } catch (parseError) {
+                    // Not a JSON error, use raw text
+                }
+                throw new Error(errorText || 'Failed to make move.');
             }
-            return res;
+            console.log('Raw response from handleMove:', res); // Log the full response object
+            const data = await res.json(); // This is where the error occurs
+            return data;
         });
 
         const data = await response.json();
@@ -178,10 +195,18 @@ async function createNewGame() {
                 body: JSON.stringify({ action: 'create', clientId }) // Pass clientId here
             });
             if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.error || 'Failed to create new game.');
+                let errorText = await res.text();
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    errorText = errorJson.error || JSON.stringify(errorJson);
+                } catch (parseError) {
+                    // Not a JSON error, use raw text
+                }
+                throw new Error(errorText || 'Failed to create new game.');
             }
-            return res;
+            console.log('Raw response from createNewGame:', res); // Log the full response object
+            const data = await res.json(); // This is where the error occurs
+            return data;
         });
         const data = await response.json();
         gameId = data.gameId;
@@ -214,10 +239,18 @@ async function joinGame(id) {
                 body: JSON.stringify({ action: 'join', gameId: id, clientId }) // Pass clientId here
             });
             if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.error || 'Failed to join game.');
+                let errorText = await res.text();
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    errorText = errorJson.error || JSON.stringify(errorJson);
+                } catch (parseError) {
+                    // Not a JSON error, use raw text
+                }
+                throw new Error(errorText || 'Failed to join game.');
             }
-            return res;
+            console.log('Raw response from joinGame:', res); // Log the full response object
+            const data = await res.json(); // This is where the error occurs
+            return data;
         });
         const data = await response.json();
 
@@ -294,26 +327,20 @@ function startPolling() {
  * Resets the game by clearing local state and reloading the page to start fresh.
  */
 async function resetGame() {
-    // Replaced confirm() with showMessageBox for consistency and better UI
-    showMessageBox("Are you sure you want to restart the game? This will create a new game link.");
-    // For this specific case, the "OK" button in the message box should trigger the actual reset.
-    // I'll add an event listener to the "OK" button within the message box for a reset confirmation.
-    // However, for simplicity and direct action, if the user clicks "Reset Game" and confirms,
-    // we can proceed with a direct window reload. Let's make the showMessageBox a direct
-    // confirmation with a different button.
+    // A more robust way to handle confirmation would be a custom modal with "Yes/No" buttons.
+    // For now, given the simplicity, the `showMessageBox` is informative. The actual reset
+    // logic below implies a "yes" to restart.
+    showMessageBox("A new game link will be created. Please click OK to proceed.");
 
-    // A more robust way to handle confirmation without browser 'confirm':
-    // You would create two buttons in the message box, e.g., "Yes" and "No".
-    // For now, I'll use a direct window reload as the `resetGame` function is called after the user explicitly
-    // clicks the "Restart Game" button, and the previous prompt was successfully handled.
-
-    // To prevent immediate reload and allow user to read the message,
-    // I will slightly delay the redirect and rely on the user understanding the new game link creation.
-    gameId = null;
-    playerSymbol = null;
-    gameActive = false;
-    clearInterval(gamePollingInterval); // Stop polling
-    window.location.href = window.location.protocol + "//" + window.location.host + window.location.pathname;
+    // We delay the actual reload slightly to allow the message to be seen.
+    // In a real app, a confirmation dialog with buttons would be better.
+    setTimeout(() => {
+        gameId = null;
+        playerSymbol = null;
+        gameActive = false;
+        clearInterval(gamePollingInterval); // Stop polling
+        window.location.href = window.location.protocol + "//" + window.location.host + window.location.pathname;
+    }, 500); // 0.5 second delay to show message
 }
 
 // --- Event Listeners ---
