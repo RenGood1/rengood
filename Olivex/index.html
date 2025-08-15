@@ -5,25 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Online Tic-Tac-Toe</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Load Font Awesome for icons, if needed for future enhancements -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <h1>Online Tic-Tac-Toe</h1>
-    <div class="game-container">
-        <div class="game-board" id="game-board">
-            <div class="cell" data-index="0"></div>
-            <div class="cell" data-index="1"></div>
-            <div class="cell" data-index="2"></div>
-            <div class="cell" data-index="3"></div>
-            <div class="cell" data-index="4"></div>
-            <div class="cell" data-index="5"></div>
-            <div class="cell" data-index="6"></div>
-            <div class="cell" data-index="7"></div>
-            <div class="cell" data-index="8"></div>
+    <div class="container">
+        <h1>Online Tic-Tac-Toe</h1>
+        <div class="game-info">
+            <p id="player-id-display" class="player-info-text"></p>
+            <p id="game-id-display" class="game-info-text"></p>
+            <button id="copy-game-link-button" class="copy-button" title="Copy Game Link"><i class="fas fa-copy"></i> Copy Link</button>
+        </div>
+        <div class="game-container">
+            <div class="game-board" id="game-board">
+                <div class="cell" data-index="0"></div>
+                <div class="cell" data-index="1"></div>
+                <div class="cell" data-index="2"></div>
+                <div class="cell" data-index="3"></div>
+                <div class="cell" data-index="4"></div>
+                <div class="cell" data-index="5"></div>
+                <div class="cell" data-index="6"></div>
+                <div class="cell" data-index="7"></div>
+                <div class="cell" data-index="8"></div>
+            </div>
+        </div>
+        <p id="status-message">Loading game...</p>
+        <button id="reset-button" class="action-button"><i class="fas fa-sync-alt"></i> Restart Game</button>
+        <div id="message-box" class="message-box hidden">
+            <p id="message-content"></p>
+            <button class="close-message-box" onclick="hideMessageBox()">OK</button>
         </div>
     </div>
-    <p id="status-message">Waiting for a player to join...</p>
-    <button id="reset-button">Restart Game</button>
-
     <script src="script.js"></script>
 </body>
 </html>
