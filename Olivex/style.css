@@ -5,7 +5,7 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: linear-gradient(to right, #6dd5ed, #2193b0); /* Modern gradient background */
+    background: linear-gradient(to right, #8BC34A, #4CAF50); /* Olive green gradient background */
     margin: 0;
     color: #333;
     padding: 20px;
@@ -27,9 +27,10 @@ body {
 }
 
 h1 {
-    color: #0d47a1;
+    color: #33691E; /* Dark olive green for header */
     margin-bottom: 20px;
     font-size: 2.2em;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
 }
 
 .game-info {
@@ -43,18 +44,18 @@ h1 {
 }
 
 .player-info-text, .game-info-text {
-    background-color: #e0f2f7;
+    background-color: #DCEDC8; /* Lighter olive green */
     padding: 8px 15px;
     border-radius: 8px;
     margin: 5px 0;
     font-weight: bold;
-    color: #0d47a1;
+    color: #33691E;
     width: fit-content;
     word-break: break-all; /* Allow long IDs to break */
 }
 
 .copy-button {
-    background-color: #4CAF50; /* Green */
+    background-color: #689F38; /* Green */
     color: white;
     padding: 8px 15px;
     border: none;
@@ -66,11 +67,13 @@ h1 {
     display: flex;
     align-items: center;
     gap: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 .copy-button:hover {
-    background-color: #45a049;
+    background-color: #558B2F;
     transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
 
 .game-board {
@@ -78,7 +81,7 @@ h1 {
     grid-template-columns: repeat(3, 90px); /* Smaller cells for better fit */
     grid-template-rows: repeat(3, 90px);
     gap: 8px; /* Increased gap */
-    background-color: #3f51b5; /* Deeper blue for board */
+    background-color: #558B2F; /* Deeper olive green for board */
     padding: 10px;
     border-radius: 10px;
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
@@ -87,7 +90,7 @@ h1 {
 .cell {
     width: 90px;
     height: 90px;
-    background-color: #e8f5e9; /* Light green background for cells */
+    background-color: #E8F5E9; /* Lightest green background for cells */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -101,23 +104,30 @@ h1 {
 }
 
 .cell:hover {
-    background-color: #c8e6c9; /* Lighter green on hover */
+    background-color: #DCE7E1; /* Lighter green on hover */
     transform: scale(1.03);
 }
 
 .cell[data-player="X"] {
-    color: #ff5252; /* Red for X */
+    color: #D32F2F; /* Red for X */
 }
 
+/* Styling for the 'Olive' symbol */
 .cell[data-player="O"] {
-    color: #448aff; /* Blue for O */
+    /* Using an SVG background for the olive */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23689F38' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z'/%3E%3C/svg%3E");
+    background-size: 70%; /* Adjust size as needed */
+    background-repeat: no-repeat;
+    background-position: center;
+    font-size: 0; /* Hide the 'O' text content */
+    border: 2px solid #33691E; /* Border to define olive shape */
 }
 
 #status-message {
     margin-top: 25px;
     font-size: 1.4em;
     font-weight: bold;
-    color: #0d47a1;
+    color: #33691E; /* Dark olive green for status */
     min-height: 1.5em; /* Prevent layout shift */
 }
 
@@ -126,7 +136,7 @@ h1 {
     padding: 12px 25px;
     font-size: 1.1em;
     cursor: pointer;
-    background-color: #1976d2; /* Blue */
+    background-color: #33691E; /* Dark olive green */
     color: white;
     border: none;
     border-radius: 10px;
@@ -138,7 +148,7 @@ h1 {
 }
 
 .action-button:hover {
-    background-color: #1565c0;
+    background-color: #1B5E20; /* Even darker olive green */
     transform: translateY(-3px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
@@ -161,7 +171,7 @@ h1 {
     z-index: 1000;
     text-align: center;
     max-width: 80%;
-    border: 2px solid #1976d2;
+    border: 2px solid #33691E; /* Olive green border */
 }
 
 .message-box p {
@@ -171,7 +181,7 @@ h1 {
 }
 
 .message-box .close-message-box {
-    background-color: #1976d2;
+    background-color: #33691E;
     color: white;
     padding: 10px 20px;
     border: none;
@@ -182,7 +192,7 @@ h1 {
 }
 
 .message-box .close-message-box:hover {
-    background-color: #1565c0;
+    background-color: #1B5E20;
 }
 
 .hidden {
@@ -206,6 +216,7 @@ h1 {
         width: 80px;
         height: 80px;
         font-size: 3em;
+        background-size: 60%; /* Adjust olive size for smaller screens */
     }
     #status-message {
         font-size: 1.2em;
