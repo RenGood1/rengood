@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personalized Dancing Sign</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom style for the dancing text animation and background fixes -->
+    <style>
+
+        /* Set a compliant placeholder background image for the body */
+        body{
+            /* Replaced local image/bats.png with a compliant placeholder */
+            background-image: url('image/bats.png');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Define the keyframe animation for the whole text block ("sign") movement. */
+        @keyframes sign-dance {
+            /* Base transformation: Centered horizontally, centered vertically, plus user shift */
+            0% { transform: translate(calc(-50% + var(--center-shift)), calc(-50% + var(--vertical-shift))) rotate(0deg) scale(1.0); }
+            
+            /* Dance movements applied on top of centering and shift */
+            25% { transform: translate(calc(-50% + var(--center-shift) + 1vw), calc(-50% + var(--vertical-shift) - 1vh)) rotate(3deg) scale(1.05); } 
+            50% { transform: translate(calc(-50% + var(--center-shift) - 1vw), calc(-50% + var(--vertical-shift) + 1vh)) rotate(-3deg) scale(1.0); }
+            75% { transform: translate(calc(-50% + var(--center-shift) + 0.5vw), calc(-50% + var(--vertical-shift) - 0.5vh)) rotate(2deg) scale(1.03); }
+            100% { transform: translate(calc(-50% + var(--center-shift)), calc(-50% + var(--vertical-shift))) rotate(0deg) scale(1.0); }
+        }
+        
+        /* Apply the animation to the overlaid text */
+        #dancing-text {
+            animation: sign-dance 1s infinite alternate; /* Applies the rigid movement to the whole text block */
+            /* Ensure the black text pops out with a white shadow */
+            text-shadow: 4px 4px 0px rgba(255, 255, 255, 0.5); 
+            font-family: 'Inter', sans-serif;
+            transition: opacity 0.3s ease; /* For smooth hide/show */
+            z-index: 10; /* Ensure text is above the image */
+            
+            --center-shift: -35vw;
+            --vertical-shift: -35vh;
+
+            /* Positioning: Anchors the center-shifted text to the absolute center of the viewport */
+            top: 50vh;
+            left: 50vw;
+
+            /* --- Custom Anchor Control Points --- */
+
+            /* Targeting screens wider than 650px (e.g., Tablet/Small Desktop) */
+            @media (min-width: 640px) {
+                --center-shift: -30vw;
+                --vertical-shift: -35vh;
+            }
+            @media (min-width: 800px) {
+                --center-shift: -24vw;
+                --vertical-shift: -35vh;
+            }
+
+            /* Targeting screens wider than 1200px (e.g., Large Desktop) */
+            @media (min-width: 1200px) {
+                --center-shift: -18vw;
+                --vertical-shift: -38vh;
+            }
+        }
+        
+        /* Ensure the body and main content container are set up for fullscreen cover */
+        .full-cover {
+            object-fit: cover;
+            width: 100%;
+            height: 100%;
+        }
+
+    </style>
+    <!-- Set up a nice, modern default font -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<!-- The body is set to a solid background color -->
+<body class="bg-black min-h-screen">
+
+    <!-- START Popup/Modal Overlay (z-50 ensures it is on top) -->
+    <div id="startup-modal" class="fixed inset-0 bg-gray-900 bg-opacity-90 z-50 flex items-center justify-center p-4 transition-opacity duration-500">
+        <div class="bg-white p-8 rounded-xl shadow-2xl max-w-sm w-full text-center space-y-6 transform scale-100 transition duration-300">
+            <h2 class="text-3xl font-extrabold text-pink-600">CONGRATULATIONS</h2>
+            <p class="text-gray-600">Enter your name for your personalized prize.</p>
+            
+            <input 
+                type="text" 
+                id="modal-name-input" 
+                placeholder="Your name here" 
+                maxlength="25"
+                class="w-full p-3 border-2 border-indigo-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:border-indigo-500 transition duration-300 shadow-inner text-center text-lg"
+            >
+            
+            <button id="start-button" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]">
+                CLAIM NOW
+            </button>
+        </div>
+    </div>
+    <!-- END Popup/Modal Overlay -->
+
+    <!-- The main content is the fullscreen, stationary container for the GIF and text -->
+    <!-- It remains hidden until the modal is dismissed -->
+    <div id="main-content" class="fixed inset-0 opacity-0 transition-opacity duration-500 pointer-events-none">
+        
+        <!-- GIF/Image Display Section (Fullscreen and Static) -->
+        <div class="relative w-full h-full">
+            <img 
+                /* Replaced local image/slowrat.gif with a compliant placeholder */
+                src="image/slowrat.gif" 
+                alt="Animated background placeholder" 
+                class="full-cover"
+                onerror="this.src='https://placehold.co/1920x1080/0F172A/ffffff?text=Image+Not+Found'"
+            >
+            
+            <!-- Dynamic Dancing Text Overlay (Centered on 50vw anchor) -->
+            <div 
+                id="dancing-text" 
+                class="absolute text-black text-center text-lg sm:text-2xl font-black whitespace-nowrap opacity-0"
+            >
+                START TYPING
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get elements for the main app
+        const dancingText = document.getElementById('dancing-text');
+
+        // Get elements for the new modal
+        const modal = document.getElementById('startup-modal');
+        const modalInput = document.getElementById('modal-name-input');
+        const startButton = document.getElementById('start-button');
+        const mainContent = document.getElementById('main-content');
+        
+        // Global variable for the audio object
+        let backgroundMusic;
+
+        /**
+         * Loads and plays background music from an external MP3 URL.
+         * This is triggered by user interaction to comply with browser autoplay policies.
+         */
+        function playBackgroundMusic() {
+            // Check if music is already playing to prevent re-initialization
+            if (backgroundMusic) {
+                // Ensure music starts playing if it was somehow paused
+                backgroundMusic.play().catch(e => console.error("Autoplay failed:", e));
+                return;
+            }
+
+            try {
+                // 🛑 IMPORTANT: REPLACE THIS PLACEHOLDER URL with the link to your actual, publicly hosted MP3 file.
+                // The file must be accessible via HTTP/HTTPS. (e.g., hosted on GitHub, Dropbox, etc.)
+                const musicUrl = 'image/partyboy.mp3';
+                
+                backgroundMusic = new Audio(musicUrl);
+                backgroundMusic.loop = true; // Loop the music indefinitely
+                backgroundMusic.volume = 0.3; // Set volume (adjust 0.0 to 1.0 as needed)
+
+                backgroundMusic.play().then(() => {
+                    console.log("Background music started successfully.");
+                }).catch(e => {
+                    console.error("Autoplay failed. The URL might be invalid or the browser blocked it:", e);
+                });
+
+            } catch (e) {
+                console.error("Failed to load or start background music:", e);
+            }
+        }
+
+
+        // Function to start the application after the modal input
+        function startApp() {
+            // Get text from modal, use "PARTY TIME" as a default fallback
+            const currentText = (modalInput.value.trim() || "PARTY TIME").toUpperCase();
+
+            // 1. Start the background audio immediately upon user interaction
+            playBackgroundMusic();
+
+            // 2. Hide the modal smoothly
+            modal.style.opacity = '0';
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 500); // Matches the 500ms transition time
+
+            // 3. Show the main content and set the text
+            mainContent.classList.remove('opacity-0', 'pointer-events-none');
+            
+            // Set the text and make it visible
+            dancingText.textContent = currentText;
+            dancingText.classList.remove('opacity-0');
+        }
+
+        // Add event listeners for the modal
+        startButton.addEventListener('click', startApp);
+        // Also allow starting by pressing Enter key in the modal input
+        modalInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                startApp();
+            }
+        });
+
+        // Add exponential backoff utility (included for compliance)
+        async function runWithBackoff(fn, retries = 3) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    return await fn();
+                } catch (error) {
+                    if (i === retries - 1) throw error;
+                    const delay = Math.pow(2, i) * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        }
+    </script>
+</body>
