@@ -40,8 +40,8 @@
             transition: opacity 0.3s ease; /* For smooth hide/show */
             z-index: 10; /* Ensure text is above the image */
             
-            --center-shift: -35vw;
-            --vertical-shift: -35vh;
+            --center-shift: -33vw;
+            --vertical-shift: -25vh;
 
             /* Positioning: Anchors the center-shifted text to the absolute center of the viewport */
             top: 50vh;
@@ -71,6 +71,13 @@
             object-fit: cover;
             width: 100%;
             height: 100%;
+
+            @media (max-width: 640px) {
+                scale: 2;
+                object-fit: contain;
+                height: 100%;
+                width: 100%;
+            }
         }
 
     </style>
