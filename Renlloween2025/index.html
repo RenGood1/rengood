@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Shadow Crypt Hunt</title>
+    <!-- Load Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles to enhance the spooky atmosphere */
+        :root {
+            --bg-dark: #1a1a2e; /* Dark Navy/Violet */
+            --accent-orange: #ff9900; /* Spooky Orange */
+            --text-light: #f4f4f9;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+        }
+        .spooky-card {
+            background-color: #27274b; /* Slightly lighter card background */
+            border: 2px solid var(--accent-orange);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5), 0 0 15px var(--accent-orange);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .spooky-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6), 0 0 25px var(--accent-orange);
+        }
+        .spooky-input {
+            border: 1px solid #4a4e69;
+            background-color: #1a1a2e;
+            color: var(--text-light);
+            transition: all 0.3s;
+        }
+        .spooky-input:focus {
+            outline: none;
+            border-color: var(--accent-orange);
+            box-shadow: 0 0 0 2px rgba(255, 153, 0, 0.5);
+        }
+        .spooky-button {
+            background-color: var(--accent-orange);
+            color: #1a1a2e;
+            font-weight: bold;
+            transition: background-color 0.15s, transform 0.1s;
+        }
+        .spooky-button:hover {
+            background-color: #e68a00;
+            transform: translateY(-1px);
+        }
+        .spooky-button:active {
+            transform: translateY(1px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <!-- Custom Modal for Messages (Instead of alert()) -->
+    <div id="message-modal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
+        <div class="spooky-card p-8 w-11/12 max-w-md text-center rounded-xl">
+            <h3 id="modal-title" class="text-2xl font-bold mb-4 text-red-500"></h3>
+            <p id="modal-content" class="text-lg text-gray-200 mb-6"></p>
+            <button onclick="hideModal()" class="spooky-button py-2 px-6 rounded-lg">Close</button>
+        </div>
+    </div>
+
+    <!-- Main Game Container -->
+    <div class="w-full max-w-2xl text-center">
+        <h1 class="text-5xl font-extrabold text-white mb-2 tracking-wider">
+            THE SHADOW RAT HUNT
+        </h1>
+        <p class="text-orange-400 text-xl mb-8 font-medium">A Halloween Haunt for The Arcade's Bravest Souls</p>
+
+        <!-- Current Clue Card -->
+        <div id="clue-card" class="spooky-card p-6 md:p-10 rounded-xl">
+            <div id="game-container">
+                <p class="text-lg font-semibold text-orange-400 mb-2">Clue <span id="clue-number">1</span> of <span id="total-clues"></span></p>
+                <div class="h-0.5 w-1/4 bg-orange-400 mx-auto mb-6"></div>
+
+                <!-- The Clue Text Area -->
+                <p id="current-clue-text" class="text-2xl md:text-3xl text-gray-100 font-light leading-relaxed mb-8">
+                    Loading the first dark riddle...
+                </p>
+
+                <!-- Input Field and Button -->
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <input type="text" id="answer-input" placeholder="Enter the secret word."
+                           class="spooky-input flex-grow p-3 rounded-lg text-center uppercase tracking-wider"
+                           onkeypress="handleKeyPress(event)" />
+                    <button id="submit-button" onclick="checkAnswer()"
+                            class="spooky-button p-3 rounded-lg flex-shrink-0 w-full sm:w-auto">
+                        UNLOCK THE NEXT DOOR
+                    </button>
+                </div>
+            </div>
+
+            <!-- Victory Screen (Hidden initially) -->
+            <div id="victory-screen" class="hidden text-center">
+                <svg class="w-24 h-24 mx-auto text-yellow-400 mb-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.503 4.604a1 1 0 00.95.694h4.845c.969 0 1.371 1.24.588 1.81l-3.906 2.842a1 1 0 00-.364 1.118l1.503 4.604c.3.921-.755 1.688-1.54 1.118l-3.906-2.842a1 1 0 00-1.176 0l-3.906 2.842c-.785.57-1.84-.197-1.54-1.118l1.503-4.604a1 1 0 00-.364-1.118L2.596 9.535c-.783-.57-.381-1.81.588-1.81h4.845a1 1 0 00.95-.694l1.503-4.604z"></path>
+                </svg>
+                <h2 class="text-4xl font-extrabold text-yellow-400 mb-4">TREASURE FOUND!</h2>
+                <p class="text-xl text-gray-100 mb-6">You have unlocked the final secret and claimed the spectral treasure! Your reward awaits you back in the Discord server.</p>
+                <p class="text-2xl font-mono text-green-400"><a href="/DanceRat/">Click here for your PRIZE!</a>></p>
+            </div>
+        </div>
+
+        <p class="mt-6 text-xs text-gray-500">
+            Hint: You must use the **exact** word.
+        </p>
+
+    </div>
+
+    <script>
+        // --- Game Data: Clues and Answers ---
+        const TREASURE_MAP = [
+            {
+                clue: "Give the server username of who said they have yet to see Halloween Town with Jacks.",
+                answer: "Tall Glass of Ducky"
+            },
+            {
+                clue: "Unscramble the bones to find the next key: **ESTNECRSHNA**.",
+                answer: "ENCHANTRESS"
+            },
+            {
+                clue: "In the original Friday the 13th (1980), how many characters does Jason Voorhees actually kill on-screen? (spell out the number)",
+                answer: "Zero" 
+            },
+            {
+                clue: "Give the server username of who has had a picture of a black-cat smoking a cigarrete.",
+                answer: "HelpImWater"
+            },
+              {
+                clue: "I have a name, but it isn&apos;t mine. You don&apos;t think about me while in your prime. People cry when I&apos;m in their sight. Others lie with me all day and night. What am I?",
+                answer: "Tombstone"
+            },
+              {
+                clue: "What popular 1984 movie warned, &quot;Don&apos;t feed them after midnight&quot;?",
+                answer: "Gremlins"
+            },
+              {
+                clue: "Give the server username of who started the October Challenge for the Arcade server.",
+                answer: "Bex"
+            },
+            {
+                clue: "Name the animated film where a young boy must perform in the Land of the Dead to reverse his curse before sunrise, during the holiday Día de Muertos",
+                answer: "Coco"
+            },
+            {
+                clue: "Give the discord username of who was dressed as 2 kids in a trench coat for this Halloween.",
+                answer: "banananana"
+            },
+            {
+                clue: "The final door unlocks with the answer to this riddle: I am tall when I am young, and I am short when I am old. What am I?",
+                answer: "CANDLE"
+            }
+        ];
+
+        let currentClueIndex = 0;
+        const totalClues = TREASURE_MAP.length;
+
+        // --- DOM Elements ---
+        const clueNumberEl = document.getElementById('clue-number');
+        const totalCluesEl = document.getElementById('total-clues');
+        const clueTextEl = document.getElementById('current-clue-text');
+        const answerInput = document.getElementById('answer-input');
+        const gameContainer = document.getElementById('game-container');
+        const victoryScreen = document.getElementById('victory-screen');
+
+        // Modal Elements
+        const modal = document.getElementById('message-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+
+        // --- Utility Functions ---
+
+        /**
+         * Shows a custom modal message (replaces alert()).
+         * @param {string} title - The title of the message.
+         * @param {string} content - The main body content.
+         * @param {string} type - 'success' or 'error'.
+         */
+        function showModal(title, content, type = 'error') {
+            modalTitle.textContent = title;
+            modalContent.textContent = content;
+            if (type === 'success') {
+                modalTitle.classList.remove('text-red-500');
+                modalTitle.classList.add('text-green-400');
+            } else {
+                modalTitle.classList.remove('text-green-400');
+                modalTitle.classList.add('text-red-500');
+            }
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        /** Hides the custom modal. */
+        function hideModal() {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+
+        /** Normalizes the user input for consistent comparison. */
+        function normalizeInput(input) {
+            // Convert to uppercase, trim whitespace, and remove all punctuation
+            return input.toUpperCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").trim();
+        }
+
+        /** Renders the current clue on the page. */
+        function renderClue() {
+            if (currentClueIndex < totalClues) {
+                const currentClue = TREASURE_MAP[currentClueIndex];
+                clueNumberEl.textContent = currentClueIndex + 1;
+                clueTextEl.innerHTML = currentClue.clue; // Use innerHTML to allow for bolding of hints
+                answerInput.value = '';
+                answerInput.focus();
+            } else {
+                showVictoryScreen();
+            }
+        }
+
+        /** Checks the user's input against the correct answer. */
+        function checkAnswer() {
+            const userAnswer = normalizeInput(answerInput.value);
+            const correctAnswer = normalizeInput(TREASURE_MAP[currentClueIndex].answer);
+
+            if (userAnswer === correctAnswer) {
+                currentClueIndex++;
+                if (currentClueIndex < totalClues) {
+                    showModal('SUCCESS!', 'The spectral door opens! Proceed to the next riddle.', 'success');
+                    renderClue();
+                } else {
+                    // Final clue solved
+                    showModal('CONGRATULATIONS!', 'You have solved the FINAL riddle! The treasure is yours!', 'success');
+                    showVictoryScreen();
+                }
+            } else {
+                showModal('ACCESS DENIED', 'That is not the correct key. The shadows whisper that you must try again.', 'error');
+            }
+        }
+
+        /** Shows the final victory screen. */
+        function showVictoryScreen() {
+            gameContainer.classList.add('hidden');
+            victoryScreen.classList.remove('hidden');
+            document.getElementById('clue-card').classList.remove('p-10'); // Adjust padding for a cleaner look
+            document.getElementById('clue-card').classList.add('p-12');
+        }
+
+        /** Handles Enter key press on the input field. */
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                checkAnswer();
+            }
+        }
+
+        // --- Initialization ---
+        window.onload = function() {
+            totalCluesEl.textContent = totalClues;
+            renderClue();
+
+            // New: Add global keydown listener to close the modal with Enter
+            document.addEventListener('keydown', (event) => {
+                // Check if the modal is currently visible (has 'flex' class)
+                const isModalVisible = modal.classList.contains('flex');
+
+                if (isModalVisible && event.key === 'Enter') {
+                    hideModal();
+                    // Prevent the keypress from affecting the underlying input
+                    event.preventDefault();
+                }
+            });
+        };
+
+    </script>
+</body>
+</html>
