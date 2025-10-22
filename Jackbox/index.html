@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jackbox Game Randomizer</title>
+    <style>
+        :root {
+            --primary-color: #7209B7; /* Jackbox Purple */
+            --secondary-color: #4895EF; /* Blue */
+            --tertiary-color: #F72585; /* Pink */
+            --background-color: #1a1a2e; /* Dark Blue/Purple */
+            --text-color: #ffffff;
+            --card-color: #2c2c4d;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--tertiary-color);
+            margin-bottom: 30px;
+        }
+
+        .controls, .result-area {
+            background-color: var(--card-color);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        label, select, button {
+            display: block;
+            margin: 10px auto;
+        }
+
+        select {
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid var(--secondary-color);
+            background-color: #3f3f6d;
+            color: var(--text-color);
+            font-size: 16px;
+            width: 80%;
+            max-width: 300px;
+        }
+
+        button {
+            padding: 12px 25px;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.1s;
+        }
+
+        button:hover {
+            background-color: #8b3abf;
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+
+        #result {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 15px;
+            min-height: 30px;
+        }
+
+        #gameName {
+            color: var(--secondary-color);
+            font-size: 36px;
+            margin-top: 10px;
+        }
+
+        #gamePack {
+            color: var(--tertiary-color);
+            font-size: 18px;
+            margin-top: 5px;
+        }
+        
+        .error {
+            color: var(--tertiary-color);
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🎮 The Arcade's Jackbox Game Randomizer 🎰</h1>
+    <p>Select your group size and spin the wheel to find a game you can play!</p>
+
+    <div class="controls">
+        <label for="playerCount">Maximum Active Players:</label>
+        <select id="playerCount">
+            <option value="1">1 Player</option>
+            <option value="2">2 Players</option>
+            <option value="3" selected>3 Players</option>
+            <option value="4">4 Players</option>
+            <option value="5">5 Players</option>
+            <option value="6">6 Players</option>
+            <option value="7">7 Players</option>
+            <option value="8">8 Players (Most Games)</option>
+            <option value="9">9 Players</option>
+            <option value="10">10 Players (Push The Button, etc.)</option>
+            <option value="16">16 Players (Bracketeering)</option>
+        </select>
+
+        <button onclick="spinWheel()">Spin the Wheel!</button>
+    </div>
+
+    <div class="result-area">
+        <p id="result">Your Random Game Is:</p>
+        <div id="gameName">...</div>
+        <div id="gamePack"></div>
+    </div>
+
+    <script>
+        // Data structure with all Jackbox games and their player counts
+        const jackboxGames = [
+            // Min 1
+            { name: "Lie Swatter", pack: "PP 1 / Standalone", min: 1, max: 100 },
+            { name: "You Don't Know Jack 2015", pack: "PP 1", min: 1, max: 4 },
+            { name: "Bomb Corp.", pack: "PP 2", min: 1, max: 4 },
+            { name: "Trivia Murder Party", pack: "PP 3", min: 1, max: 8 },
+            { name: "Zeeple Dome", pack: "PP 5", min: 1, max: 6 },
+            { name: "You Don't Know Jack: Full Stream", pack: "PP 5", min: 1, max: 8 },
+            { name: "Trivia Murder Party 2", pack: "PP 6", min: 1, max: 8 },
+            { name: "Timejinx", pack: "PP 10", min: 1, max: 8 },
+            { name: "Dodo Re Mi", pack: "PP 10", min: 1, max: 9 },
+            { name: "Quixort", pack: "PP 9", min: 1, max: 10 },
+            { name: "Legends of Trivia", pack: "PP 11", min: 1, max: 6 },
+            { name: "You Don't Know Jack Classic Pack", pack: "Standalone", min: 1, max: 3 },
+            // Min 2
+            { name: "Fibbage", pack: "Standalone", min: 2, max: 8 },
+            { name: "Fibbage XL", pack: "PP 1", min: 2, max: 8 },
+            { name: "Word Spud", pack: "PP 1", min: 2, max: 8 },
+            { name: "Fibbage 2", pack: "PP 2", min: 2, max: 8 },
+            { name: "Guesspionage", pack: "PP 3", min: 2, max: 8 },
+            { name: "Fibbage 3", pack: "PP 4", min: 2, max: 8 },
+            { name: "Blather 'Round", pack: "PP 7", min: 2, max: 6 },
+            { name: "The Wheel of Enormous Proportions", pack: "PP 8", min: 2, max: 8 },
+            { name: "The Poll Mine", pack: "PP 8", min: 2, max: 10 },
+            { name: "Fibbage 4", pack: "PP 9", min: 2, max: 8 },
+            { name: "The Jackbox Survey Scramble", pack: "Standalone", min: 2, max: 10 },
+            { name: "Hear Say", pack: "PP 11", min: 2, max: 8 },
+            // Min 3
+            { name: "Drawful", pack: "PP 1", min: 3, max: 8 },
+            { name: "Quiplash", pack: "Standalone", min: 3, max: 8 },
+            { name: "Drawful 2", pack: "Standalone", min: 3, max: 8 },
+            { name: "Quiplash 2: InterLASHional", pack: "Standalone", min: 3, max: 8 },
+            { name: "Bidiots", pack: "PP 2", min: 3, max: 6 },
+            { name: "Earwax", pack: "PP 2", min: 3, max: 8 },
+            { name: "Quiplash XL", pack: "PP 2", min: 3, max: 8 },
+            { name: "Quiplash 2", pack: "PP 3", min: 3, max: 8 },
+            { name: "Tee K.O.", pack: "PP 3", min: 3, max: 8 },
+            { name: "Fakin' It", pack: "PP 3", min: 3, max: 6 },
+            { name: "Survive the Internet", pack: "PP 4", min: 3, max: 8 },
+            { name: "Monster Seeking Monster", pack: "PP 4", min: 3, max: 7 },
+            { name: "Bracketeering", pack: "PP 4", min: 3, max: 16 },
+            { name: "Civic Doodle", pack: "PP 4", min: 3, max: 8 },
+            { name: "Split the Room", pack: "PP 5", min: 3, max: 8 },
+            { name: "Patently Stupid", pack: "PP 5", min: 3, max: 8 },
+            { name: "Mad Verse City", pack: "PP 5", min: 3, max: 8 },
+            { name: "Role Models", pack: "PP 6", min: 3, max: 6 },
+            { name: "Joke Boat", pack: "PP 6", min: 3, max: 8 },
+            { name: "Dictionarium", pack: "PP 6", min: 3, max: 8 },
+            { name: "Quiplash 3", pack: "PP 7", min: 3, max: 8 },
+            { name: "The Devils and the Details", pack: "PP 7", min: 3, max: 8 },
+            { name: "Champ'd Up", pack: "PP 7", min: 3, max: 8 },
+            { name: "Talking Points", pack: "PP 7", min: 3, max: 8 },
+            { name: "Job Job", pack: "PP 8", min: 3, max: 10 },
+            { name: "Drawful: Animate", pack: "PP 8", min: 3, max: 10 },
+            { name: "Junktopia", pack: "PP 9", min: 3, max: 8 },
+            { name: "Nonsensory", pack: "PP 9", min: 3, max: 8 },
+            { name: "FixyText", pack: "PP 10", min: 3, max: 8 },
+            { name: "Tee K.O. 2", pack: "PP 10", min: 3, max: 8 },
+            { name: "Fakin' It All Night Long", pack: "Naughty Pack", min: 3, max: 8 },
+            { name: "Dirty Drawful", pack: "Naughty Pack", min: 3, max: 8 },
+            { name: "Let Me Finish", pack: "Naughty Pack", min: 3, max: 8 },
+            { name: "Doominate", pack: "PP 11", min: 3, max: 8 },
+            { name: "Cookie Haus", pack: "PP 11", min: 3, max: 8 },
+            // Min 4
+            { name: "Push The Button", pack: "PP 6", min: 4, max: 10 },
+            { name: "Weapons Drawn", pack: "PP 8", min: 4, max: 8 },
+            { name: "Roomerang", pack: "PP 9", min: 4, max: 9 },
+            { name: "Hypnotorious", pack: "PP 10", min: 4, max: 8 },
+            { name: "Suspectives", pack: "PP 11", min: 4, max: 8 }
+        ];
+
+        function spinWheel() {
+            const playerCount = parseInt(document.getElementById('playerCount').value);
+            const gameNameEl = document.getElementById('gameName');
+            const gamePackEl = document.getElementById('gamePack');
+            const resultEl = document.getElementById('result');
+            const spinButton = document.querySelector('button');
+
+            // 1. Filter the games based on the selected player count
+            const playableGames = jackboxGames.filter(game => {
+                // A game is playable if the min players is <= playerCount 
+                // AND the max players is >= playerCount.
+                return game.min <= playerCount && game.max >= playerCount;
+            });
+
+            // Clear previous results and disable button during 'spin'
+            gameNameEl.textContent = "...";
+            gamePackEl.textContent = "";
+            resultEl.textContent = "Spinning...";
+            spinButton.disabled = true;
+
+            if (playableGames.length === 0) {
+                // Handle case where no games match the player count (shouldn't happen with the current list)
+                gameNameEl.textContent = "No Games Found!";
+                gameNameEl.classList.add('error');
+                gamePackEl.textContent = "Try adjusting the player count.";
+                resultEl.textContent = "Error";
+                spinButton.disabled = false;
+                return;
+            }
+
+            // 2. Simulate the 'spin' animation
+            const spinDuration = 2000; // 2 seconds
+            const interval = 100;
+            let iterations = spinDuration / interval;
+            let countdown = iterations;
+
+            const spinInterval = setInterval(() => {
+                // Pick a random game from the playable list for the 'spin' effect
+                const tempGame = playableGames[Math.floor(Math.random() * playableGames.length)];
+                gameNameEl.textContent = tempGame.name + '...';
+                
+                countdown--;
+
+                if (countdown <= 0) {
+                    clearInterval(spinInterval);
+                    
+                    // 3. Select the final random game
+                    const randomIndex = Math.floor(Math.random() * playableGames.length);
+                    const selectedGame = playableGames[randomIndex];
+
+                    // 4. Display the final result
+                    gameNameEl.textContent = selectedGame.name;
+                    gamePackEl.textContent = `(${selectedGame.pack}) - Players: ${selectedGame.min} - ${selectedGame.max}`;
+                    resultEl.textContent = "🎉 Play This Game! 🎉";
+                    gameNameEl.classList.remove('error');
+                    spinButton.disabled = false;
+                }
+            }, interval);
+        }
+    </script>
+
+</body>
+</html>
