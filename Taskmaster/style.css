@@ -1,0 +1,92 @@
+/* Flame animation */
+.flame-main {
+    width: 16px;
+    height: 24px;
+    background: #ff9d00;
+    border-radius: 50% 50% 20% 20%;
+    box-shadow: 0 0 20px 10px #ff9d00, 
+                0 0 40px 20px #ff5d00;
+    animation: flicker 0.5s infinite alternate;
+    position: relative;
+}
+
+.flame-particle {
+    position: absolute;
+    background: #ff5d00;
+    border-radius: 50%;
+    animation: float 2s infinite ease-in-out;
+}
+
+.flame-particle:nth-child(2) {
+    width: 6px;
+    height: 6px;
+    top: -20px;
+    left: -5px;
+    animation-delay: 0.2s;
+}
+
+.flame-particle:nth-child(3) {
+    width: 4px;
+    height: 4px;
+    top: -15px;
+    right: -8px;
+    animation-delay: 0.4s;
+}
+
+.flame-particle:nth-child(4) {
+    width: 3px;
+    height: 3px;
+    top: -25px;
+    left: 2px;
+    animation-delay: 0.6s;
+}
+
+@keyframes flicker {
+    0%, 100% { transform: scale(1, 1); }
+    25% { transform: scale(0.95, 1.05); }
+    50% { transform: scale(1.05, 0.95); }
+    75% { transform: scale(0.98, 1.02); }
+}
+
+@keyframes float {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-30px) scale(0.5); opacity: 0; }
+}
+
+/* Obstacles */
+.obstacle {
+    position: absolute;
+    background-color: rgba(255, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+.wind-area {
+    position: absolute;
+    background-color: rgba(0, 191, 255, 0.2);
+    border-radius: 4px;
+}
+
+/* Mobile specific styles */
+@media (max-width: 640px) {
+    #game-container {
+        height: 60vh;
+    }
+    
+    #start-area {
+        top: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    
+    #finish-area {
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    
+    #candle-container {
+        top: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+}
