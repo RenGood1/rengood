@@ -207,24 +207,19 @@
             id: 1,
             text: "Which number comes next in the sequence: 2, 4, 8, 16, ___?",
             options: ["20", "24", "32", "36"],
-            answer: "32" // Correct Answer
+            answer: "32" // (x * 2)
         },
         {
             id: 2,
-            text: "If 'HAND' is to 'IGN' as 'FEET' is to: ",
-            options: ["GFSU", "GEET", "GUET", "GFUU"],
-            answer: "GFUU" // H+1=I, A-1=G (incorrect, A->B, N->M), let's use a simpler logic: Each letter shifts +1 (H->I, A->B, N->O, D->E). The question is flawed for IQ context, so let's make it a simple pattern: H+1=I, A-1=Z, N+1=O, D-1=C. Simpler: A-B, B-C... H-I, A-B, N-O, D-E. F+1=G, E+1=F, E+1=F, T+1=U. A better question: HAND is to I B O E, FEET is to: G F F U.
-            // Let's assume the question meant: H(8)+1=I(9), A(1)+1=B(2), N(14)+1=O(15), D(4)+1=E(5). So F+1=G, E+1=F, E+1=F, T+1=U.
-            // The options are simplified for the demo.
-            answer: "GFUU" // F+1=G, E+0=E, E+0=E, T+1=U. Let's make the correct answer GFFU
-            // To match the options provided: F+1=G, E-1=D, E-1=D, T+1=U. (No)
-            // Let's simplify the options and correct answer to 'GFFU'
+            text: "If 'HAND' is to 'IBOE', then 'FEET' is to: ",
+            options: ["GFFU", "GEET", "GUET", "GFUU"],
+            answer: "GFFU" // Letter shift pattern: H+1=I, A+1=B, N+1=O, D+1=E. Therefore F+1=G, E+1=F, E+1=F, T+1=U.
         },
         {
             id: 3,
             text: "Which word does not belong: Apple, Banana, Carrot, Grape?",
             options: ["Apple", "Banana", "Carrot", "Grape"],
-            answer: "Carrot" // It's a vegetable, the others are fruit.
+            answer: "Carrot" // It's a root vegetable, the others are fruit.
         },
         {
             id: 4,
@@ -299,9 +294,10 @@
         });
 
         // Basic IQ estimation (Simple formula for demonstration):
-        // (Correct Answers / Total Questions) * 100 + Base_IQ (e.g., 80)
+        // (Correct Answers / Total Questions) * 60 + Base_IQ (80)
+        // This gives a range of 80 (0 correct) to 140 (5 correct)
         const baseIQ = 80; 
-        const maxScoreContribution = 60; // Max points above baseIQ
+        const maxScoreContribution = 60; 
         const iqScore = Math.round((correctCount / totalQuestions) * maxScoreContribution + baseIQ);
 
         // --- Display Results ---
@@ -327,8 +323,10 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // Initialize the test when the page loads
-    document.addEventListener('DOMContentLoaded', renderQuestions);
+    // THE FIX: Directly call the rendering function. 
+    // Since the script is at the end of the body, all necessary elements (like the container) 
+    // are already defined and ready.
+    renderQuestions();
 </script>
 
 </body>
