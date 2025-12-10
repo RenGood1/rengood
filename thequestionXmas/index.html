@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Question Xmas</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for a festive, snowy Christmas theme */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c1a2c; /* Deep Winter Blue/Navy */
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+
+        /* Snow effect animation */
+        .snow-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            background-image: 
+                radial-gradient(white 1px, transparent 0),
+                radial-gradient(white 1px, transparent 0),
+                radial-gradient(white 2px, transparent 0);
+            background-size: 50px 50px, 70px 70px, 90px 90px;
+            background-position: 0 0, 10px 10px, 20px 20px;
+            animation: snowfall 10s linear infinite;
+        }
+
+        @keyframes snowfall {
+            to {
+                background-position: 50px 50px, 70px 120px, 90px 150px;
+            }
+        }
+
+        .container-shadow {
+            box-shadow: 0 10px 40px rgba(180, 0, 0, 0.4);
+            backdrop-filter: blur(5px); /* Add a slight blur for better contrast against snow */
+        }
+        
+        .word-tile {
+            height: 64px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: white; /* Default color for tiles */
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        .word-tile:hover:not(.revealed) {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+        .word-tile.revealed {
+            cursor: default;
+            background-color: #fef3c7; /* Pale Gold/Snow White for revealed words */
+            color: #1f2937; /* Dark text for contrast */
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+            border: 2px solid #f59e0b;
+        }
+        .answer-box {
+            min-height: 80px;
+            border: 3px solid #f59e0b; /* Gold border */
+            background-color: #166534; /* Dark Christmas Green */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #fef3c7; /* Pale Gold/Snow White text */
+            text-align: center;
+            padding: 0.5rem;
+        }
+        .btn-gold {
+            background-color: #f59e0b;
+            color: #1f2937;
+        }
+        .btn-gold:hover {
+            background-color: #d97706;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen flex items-center justify-center">
+
+    <!-- Snowy Background Effect -->
+    <div class="snow-container"></div>
+
+    <div id="app" class="w-full max-w-4xl container-shadow rounded-2xl p-6 bg-green-900/80 border-4 border-red-700">
+        <h1 class="text-4xl font-extrabold text-center mb-6 text-amber-300 tracking-wider">
+            🎄 CHRISTMAS MODE -  The Question 🎁
+        </h1>
+
+        <!-- Question Counter -->
+        <div class="text-lg font-bold text-center mb-4 text-white">
+            <span class="text-red-400">Question <span id="current-q-index">1</span></span> of 10
+        </div>
+
+        <!-- Word Grid (10 tiles in two columns) -->
+        <div id="word-grid" class="grid grid-cols-2 gap-4 mb-6">
+            <!-- Tiles will be inserted here by JavaScript -->
+        </div>
+
+        <!-- Answer Area -->
+        <div class="flex flex-col sm:flex-row items-center gap-4 mb-8">
+            <div class="w-full sm:w-1/3 text-xl font-black text-center py-4 rounded-xl bg-red-700 text-white shadow-xl">
+                ANSWER
+            </div>
+            <div id="answer-display" class="w-full sm:w-2/3 answer-box rounded-xl">
+                Click "Show Answer" to reveal!
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-between items-center space-x-4">
+            <button id="prev-btn" class="px-6 py-3 bg-green-700 hover:bg-green-600 text-white font-semibold rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md">
+                &larr; Previous
+            </button>
+            <button id="show-answer-btn" class="px-6 py-3 btn-gold hover:bg-amber-500/80 text-gray-900 font-bold rounded-xl transition active:scale-95 shadow-lg">
+                Show Answer
+            </button>
+            <button id="next-btn" class="px-6 py-3 bg-red-700 hover:bg-red-600 text-white font-semibold rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md">
+                Next &rarr;
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- Game Data (Updated colors for Christmas theme) ---
+        const questions = [
+            {
+                q: "What is the main gift-giver's wife called every December 25th?",
+                a: "Mrs. Claus",
+                color: "bg-red-700", // Red
+            },
+            {
+                q: "Which plant's white berries are popularly hung for kissing underneath?",
+                a: "Mistletoe",
+                color: "bg-green-700", // Green
+            },
+            {
+                q: "What specific tree is traditionally brought inside and decorated brightly?",
+                a: "Evergreen Tree (or Fir Tree)",
+                color: "bg-blue-700", // Winter Blue
+            },
+            {
+                q: "In the song, what color was Rudolph's nose shining brightly?",
+                a: "Red",
+                color: "bg-yellow-600", // Rudolph's Nose
+            },
+            {
+                q: "What famous beverage brand popularized Santa's modern red suit appearance?",
+                a: "Coca-Cola",
+                color: "bg-red-900", // Deep Red
+            },
+            {
+                q: "The Christian holiday Christmas celebrates the birth of which figure?",
+                a: "Jesus Christ",
+                color: "bg-amber-600", // Gold
+            },
+            {
+                q: "What classic holiday treat is shaped like a shepherd's staff?",
+                a: "Candy Cane",
+                color: "bg-pink-700", // Candy Cane
+            },
+            {
+                q: "Which gifts were brought to baby Jesus by the wise-men?",
+                a: "Gold, Frankincense, and Myrrh",
+                color: "bg-indigo-700", // Regal
+            },
+            {
+                q: "What biscuits are often decorated with colored icing for Christmas?",
+                a: "Gingerbread Cookies",
+                color: "bg-orange-700", // Gingerbread
+            },
+            {
+                q: "In the song, what object was Grandma run over by?",
+                a: "A RENdeer - I smashed yo gammy.",
+                color: "bg-green-800", // Forest Green
+            }
+        ];
+
+        // --- State Variables ---
+        let currentQuestionIndex = 0; // 0-indexed
+        // This array holds the state of which words have been revealed for the current question.
+        let revealedWordsState = [];
+
+        // --- DOM Elements ---
+        const wordGrid = document.getElementById('word-grid');
+        const answerDisplay = document.getElementById('answer-display');
+        const currentQIndexSpan = document.getElementById('current-q-index');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const showAnswerBtn = document.getElementById('show-answer-btn');
+
+        // --- Utility Functions ---
+
+        /**
+         * Renders the current question's tiles, setting up click listeners and colors.
+         */
+        function renderQuestion() {
+            const currentQ = questions[currentQuestionIndex];
+            const words = currentQ.q.split(' ');
+            const numWords = words.length;
+
+            // Ensure we have exactly 10 tiles. If the question has fewer than 10 words, fill the rest with empty strings.
+            const displayWords = [...words];
+            while (displayWords.length < 10) {
+                displayWords.push('');
+            }
+            // Trim to exactly 10 words if the question was too long (shouldn't happen with the sample data)
+            displayWords.splice(10);
+
+            // Initialize or reset the revealed state for the current question
+            if (revealedWordsState.length !== 10) {
+                revealedWordsState = new Array(10).fill(false);
+            }
+
+            // Clear previous tiles
+            wordGrid.innerHTML = '';
+            answerDisplay.textContent = 'Click "Show Answer" to reveal!';
+            // Reset answer style, ensuring the new style is applied on showAnswer
+            answerDisplay.classList.remove('bg-red-700', 'text-white');
+            answerDisplay.classList.add('bg-green-900/80');
+
+
+            // Loop to create 10 word tiles
+            for (let i = 0; i < 10; i++) {
+                const isRevealed = revealedWordsState[i];
+                const word = displayWords[i];
+
+                // Create the tile element
+                const tile = document.createElement('div');
+                tile.id = `word-tile-${i}`;
+                // Apply the question-specific color class
+                tile.className = `word-tile rounded-lg p-3 text-sm transition-all shadow-xl ${currentQ.color} ${isRevealed ? 'revealed' : 'cursor-pointer'}`;
+                tile.setAttribute('data-index', i);
+
+                // Tile Content
+                if (isRevealed) {
+                    // Show the word if revealed
+                    tile.textContent = word;
+                    tile.classList.remove(currentQ.color); // Remove the colored background on reveal
+                } else {
+                    // Show the index if not revealed, or an empty box if the word is empty
+                    tile.textContent = word ? `${i + 1}` : ''; // Show number 1-10
+
+                    // Add click listener only if not revealed and there is a word to reveal
+                    if (word) {
+                        tile.addEventListener('click', handleTileClick);
+                    }
+                }
+
+                wordGrid.appendChild(tile);
+            }
+
+            // Update UI elements
+            currentQIndexSpan.textContent = currentQuestionIndex + 1;
+            updateNavigationButtons();
+        }
+
+        /**
+         * Handles the click event on a word tile.
+         * @param {Event} event The click event.
+         */
+        function handleTileClick(event) {
+            const tile = event.currentTarget;
+            const index = parseInt(tile.getAttribute('data-index'), 10);
+
+            if (revealedWordsState[index]) return; // Already revealed
+
+            const currentQ = questions[currentQuestionIndex];
+            const word = currentQ.q.split(' ')[index];
+
+            if (word) {
+                // Update state and UI
+                revealedWordsState[index] = true;
+                tile.textContent = word;
+                tile.classList.add('revealed');
+                tile.classList.remove(currentQ.color, 'cursor-pointer');
+                tile.removeEventListener('click', handleTileClick);
+
+                updateAnswerText();
+            }
+        }
+
+        /**
+         * Updates the answer display text with the current revealed question words.
+         */
+        function updateAnswerText() {
+            // No functional change here, just ensuring the function remains.
+        }
+
+        /**
+         * Reveals the final answer in the display box.
+         */
+        function showAnswer() {
+            const currentA = questions[currentQuestionIndex].a;
+            answerDisplay.textContent = currentA;
+            // Apply a strong color for the revealed answer
+            answerDisplay.classList.remove('bg-green-900/80');
+            answerDisplay.classList.add('bg-red-700', 'text-white'); 
+            showAnswerBtn.disabled = true;
+        }
+
+        /**
+         * Handles navigation to the next question.
+         */
+        function goToNextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                resetStateAndRender();
+            }
+        }
+
+        /**
+         * Handles navigation to the previous question.
+         */
+        function goToPreviousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                resetStateAndRender();
+            }
+        }
+
+        /**
+         * Resets the revealed state and re-renders the question.
+         * In a real game, you might load the saved state if the user already played it.
+         */
+        function resetStateAndRender() {
+            // NOTE: In a real-world scenario with persistent storage (like Firestore), 
+            // the state loading logic would go here before rendering.
+            revealedWordsState = new Array(10).fill(false);
+            showAnswerBtn.disabled = false;
+            renderQuestion();
+        }
+
+        /**
+         * Enables/disables navigation buttons based on current index.
+         */
+        function updateNavigationButtons() {
+            prevBtn.disabled = currentQuestionIndex === 0;
+            nextBtn.disabled = currentQuestionIndex === questions.length - 1;
+        }
+
+        // --- Event Listeners ---
+        prevBtn.addEventListener('click', goToPreviousQuestion);
+        nextBtn.addEventListener('click', goToNextQuestion);
+        showAnswerBtn.addEventListener('click', showAnswer);
+
+        // --- Initialization ---
+        window.onload = () => {
+            renderQuestion();
+        };
+
+    </script>
+</body>
+</html>
