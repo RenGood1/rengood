@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Question</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for a fun, Jurassic Park-inspired theme */
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Dark Forest Green Background */
+            background-color: #1a2a20; 
+            /* Bright Bone White Text */
+            color: #f0f7f4;
+            /* Subtle jungle texture overlay */
+            background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 10px 10px;
+        }
+        .container-shadow {
+            /* Stronger, cinematic shadow */
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.9);
+        }
+        .word-tile {
+            height: 64px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            /* Added a subtle inner shadow for depth */
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
+        }
+        .word-tile:hover:not(.revealed) {
+            /* Bright hover over darker tile */
+            background-color: #3d5e4a !important; 
+        }
+        .word-tile.revealed {
+            cursor: default;
+            /* Dark Jungle Green text for revealed words */
+            color: #1a2a20; 
+            background-color: #fffacd !important; /* Pale Lemon/Bone color when revealed */
+        }
+        .answer-box {
+            min-height: 80px;
+            /* Warning Yellow Border */
+            border: 3px solid #fbbd23;
+            /* Dark Slate/Black background */
+            background-color: #0d170f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+            /* Bright Warning Yellow text for initial state */
+            color: #fbbd23; 
+            text-align: center;
+            padding: 0.5rem;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen flex items-center justify-center">
+
+    <!-- Main container using a dark forest green background -->
+    <div id="app" class="w-full max-w-4xl container-shadow rounded-xl p-6 bg-[#2d4035]">
+        <!-- Title in Bright Yellow/Warning with Emojis -->
+        <h1 class="text-3xl font-extrabold text-center mb-6 text-[#fbbd23]">🦖 Find the Dino Question! 🦕</h1>
+
+        <!-- Question Counter -->
+        <div class="text-lg font-medium text-center mb-4">
+            Question <span id="current-q-index">1</span> of 10
+        </div>
+
+        <!-- Word Grid (10 tiles in two columns) -->
+        <div id="word-grid" class="grid grid-cols-2 gap-4 mb-6">
+            <!-- Tiles will be inserted here by JavaScript -->
+        </div>
+
+        <!-- Answer Area -->
+        <div class="flex flex-col sm:flex-row items-center gap-4 mb-8">
+            <!-- ANSWER box in Warning Red -->
+            <div class="w-full sm:w-1/3 text-xl font-bold text-center py-4 rounded-lg bg-red-600 shadow-xl">
+                ANSWER
+            </div>
+            <div id="answer-display" class="w-full sm:w-2/3 answer-box rounded-lg">
+                Click "Show Answer" to reveal.
+            </div>
+        </div>
+
+        <!-- Action Buttons - Updated for high contrast -->
+        <div class="flex justify-between items-center space-x-4">
+            <!-- Previous Button - Neutral Dark Gray -->
+            <button id="prev-btn" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed shadow-xl active:scale-95">
+                &larr; Previous
+            </button>
+            <!-- Show Answer Button - Neon Green (Success/Reveal) -->
+            <button id="show-answer-btn" class="px-6 py-3 bg-lime-500 hover:bg-lime-400 text-gray-900 font-bold rounded-lg transition active:scale-95 shadow-xl">
+                Show Answer
+            </button>
+            <!-- Next Button - Warning Red -->
+            <button id="next-btn" class="px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed shadow-xl active:scale-95">
+                Next &rarr;
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- Game Data ---
+        // The word tile colors have been updated to use brighter, more vibrant Tailwind scales for the 'fun' theme.
+        const questions = [
+            {
+                q: "What large meat eating dinosaur's name means tyrant lizard king?",
+                a: "Tyrannosaurus Rex (Andrew)",
+                color: "bg-red-600", // Vibrant Red
+            },
+            {
+                q: "The famous Velociraptor was surprisingly covered in what body feature?",
+                a: "Feathers",
+                color: "bg-blue-600", // Vibrant Blue
+            },
+            {
+                q: "What is thes scientific study of dinosaur fossils and remains?",
+                a: "Paleontology",
+                color: "bg-purple-600", // Vibrant Purple
+            },
+            {
+                q: "What body parts did the Triceratops use when fighting others?",
+                a: "Horns",
+                color: "bg-yellow-600", // Vibrant Yellow
+            },
+            {
+                q: "Which continent yielded the most diverse amount of dinosaur fossils?",
+                a: "North America",
+                color: "bg-amber-600", // Vibrant Amber
+            },
+            {
+                q: "Which swift-running dinosaur was known for their sharp toe claw?",
+                a: "Velociraptor (or Deinonychus)",
+                color: "bg-orange-600", // Vibrant Orange
+            },
+            {
+                q: "Dinosaur nests were often found with what important reproductive structures?",
+                a: "Eggs",
+                color: "bg-teal-600", // Vibrant Teal
+            },
+            {
+                q: "The word dinosaur translates from Greek as 'terrible' what exactly?",
+                a: "Lizard",
+                color: "bg-indigo-600", // Vibrant Indigo
+            },
+            {
+                q: "What structure is typically used to show off dinosaur skeletons?",
+                a: "Museum",
+                color: "bg-lime-600", // Vibrant Lime
+            },
+            {
+                q: "Dinosaurs that only eat meat are scientifically known as what?",
+                a: "Carnivores",
+                color: "bg-pink-600", // Vibrant Pink
+            }
+        ];
+
+        // --- State Variables ---
+        let currentQuestionIndex = 0; // 0-indexed
+        // This array holds the state of which words have been revealed for the current question.
+        let revealedWordsState = [];
+
+        // --- DOM Elements ---
+        const wordGrid = document.getElementById('word-grid');
+        const answerDisplay = document.getElementById('answer-display');
+        const currentQIndexSpan = document.getElementById('current-q-index');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const showAnswerBtn = document.getElementById('show-answer-btn');
+
+        // --- Utility Functions ---
+
+        /**
+         * Renders the current question's tiles, setting up click listeners and colors.
+         */
+        function renderQuestion() {
+            const currentQ = questions[currentQuestionIndex];
+            const words = currentQ.q.split(' ');
+            const numWords = words.length;
+
+            // Ensure we have exactly 10 tiles. If the question has fewer than 10 words, fill the rest with empty strings.
+            const displayWords = [...words];
+            while (displayWords.length < 10) {
+                displayWords.push('');
+            }
+            // Trim to exactly 10 words if the question was too long (shouldn't happen with the sample data)
+            displayWords.splice(10);
+
+            // Initialize or reset the revealed state for the current question
+            if (revealedWordsState.length !== 10) {
+                revealedWordsState = new Array(10).fill(false);
+            }
+
+            // Clear previous tiles
+            wordGrid.innerHTML = '';
+            // Reset to warning yellow text and initial message
+            answerDisplay.textContent = 'Click "Show Answer" to reveal.';
+            // Updated class removal to match new success state
+            answerDisplay.classList.remove('bg-lime-500', 'text-gray-900'); 
+
+            // Loop to create 10 word tiles
+            for (let i = 0; i < 10; i++) {
+                const isRevealed = revealedWordsState[i];
+                const word = displayWords[i];
+
+                // Create the tile element
+                const tile = document.createElement('div');
+                tile.id = `word-tile-${i}`;
+                // Apply the thematic colors
+                const baseColorClass = currentQ.color;
+                tile.className = `word-tile rounded-lg p-3 text-sm transition-all shadow-md ${baseColorClass} ${isRevealed ? 'revealed' : ''}`;
+                tile.setAttribute('data-index', i);
+
+                // Tile Content
+                if (isRevealed) {
+                    // Show the word if revealed
+                    tile.textContent = word;
+                } else {
+                    // Show the index if not revealed, or an empty box if the word is empty
+                    tile.textContent = word ? `${i + 1}` : ''; // Show number 1-10
+
+                    // Add click listener only if not revealed and there is a word to reveal
+                    if (word) {
+                        tile.addEventListener('click', handleTileClick);
+                    }
+                }
+
+                wordGrid.appendChild(tile);
+            }
+
+            // Update UI elements
+            currentQIndexSpan.textContent = currentQuestionIndex + 1;
+            updateNavigationButtons();
+        }
+
+        /**
+         * Handles the click event on a word tile.
+         * @param {Event} event The click event.
+         */
+        function handleTileClick(event) {
+            const tile = event.currentTarget;
+            const index = parseInt(tile.getAttribute('data-index'), 10);
+
+            if (revealedWordsState[index]) return; // Already revealed
+
+            const currentQ = questions[currentQuestionIndex];
+            const word = currentQ.q.split(' ')[index];
+
+            if (word) {
+                // Update state and UI
+                revealedWordsState[index] = true;
+                tile.textContent = word;
+                tile.classList.add('revealed');
+                tile.classList.remove(currentQ.color, 'cursor-pointer');
+                tile.removeEventListener('click', handleTileClick);
+
+                updateAnswerText();
+            }
+        }
+
+        /**
+         * Updates the answer display text with the current revealed question words.
+         */
+        function updateAnswerText() {
+            // This function is mostly a placeholder in the original code, but kept for logic structure.
+            const words = questions[currentQuestionIndex].q.split(' ');
+            let revealedQuestion = '';
+
+            for (let i = 0; i < 10; i++) {
+                if (revealedWordsState[i] && words[i]) {
+                    revealedQuestion += words[i] + ' ';
+                } else if (words[i]) {
+                    // Placeholder for unrevealed words
+                    revealedQuestion += '_______ ';
+                }
+            }
+        }
+
+        /**
+         * Reveals the final answer in the display box.
+         */
+        function showAnswer() {
+            const currentA = questions[currentQuestionIndex].a;
+            answerDisplay.textContent = currentA;
+            // Use Bright Lime Green for success
+            answerDisplay.classList.add('bg-lime-500', 'text-gray-900');
+            showAnswerBtn.disabled = true;
+        }
+
+        /**
+         * Handles navigation to the next question.
+         */
+        function goToNextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                resetStateAndRender();
+            }
+        }
+
+        /**
+         * Handles navigation to the previous question.
+         */
+        function goToPreviousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                resetStateAndRender();
+            }
+        }
+
+        /**
+         * Resets the revealed state and re-renders the question.
+         * In a real game, you might load the saved state if the user already played it.
+         * Note: The revealed state is currently reset on navigation.
+         */
+        function resetStateAndRender() {
+            revealedWordsState = new Array(10).fill(false);
+            showAnswerBtn.disabled = false;
+            renderQuestion();
+        }
+
+        /**
+         * Enables/disables navigation buttons based on current index.
+         */
+        function updateNavigationButtons() {
+            prevBtn.disabled = currentQuestionIndex === 0;
+            nextBtn.disabled = currentQuestionIndex === questions.length - 1;
+        }
+
+        // --- Event Listeners ---
+        prevBtn.addEventListener('click', goToPreviousQuestion);
+        nextBtn.addEventListener('click', goToNextQuestion);
+        showAnswerBtn.addEventListener('click', showAnswer);
+
+        // --- Initialization ---
+        window.onload = () => {
+            renderQuestion();
+        };
+
+    </script>
+</body>
+</html>
