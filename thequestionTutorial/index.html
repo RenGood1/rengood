@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Question Tutorial</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for a dark, engaging theme */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* Dark Slate Gray */
+            color: #f3f4f6;
+        }
+        .container-shadow {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        .word-tile {
+            height: 64px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+        .word-tile:hover:not(.revealed) {
+            background-color: #374151; /* Lighter gray on hover */
+        }
+        .word-tile.revealed {
+            cursor: default;
+            color: #111827; /* Dark text for revealed words */
+        }
+        .answer-box {
+            min-height: 80px;
+            border: 3px solid #6b7280;
+            background-color: #1f2937;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #34d399; /* Green text for the answer */
+            text-align: center;
+            padding: 0.5rem;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen flex items-center justify-center">
+
+    <div id="app" class="w-full max-w-4xl container-shadow rounded-xl p-6 bg-gray-800">
+        <h1 class="text-3xl font-extrabold text-center mb-6 text-indigo-400">Find the Question! - Tutorial</h1>
+
+        <!-- Question Counter -->
+        <div class="text-lg font-medium text-center mb-4">
+            Question <span id="current-q-index">1</span> of 10
+        </div>
+
+        <!-- Word Grid (10 tiles in two columns) -->
+        <div id="word-grid" class="grid grid-cols-2 gap-4 mb-6">
+            <!-- Tiles will be inserted here by JavaScript -->
+        </div>
+
+        <!-- Answer Area -->
+        <div class="flex flex-col sm:flex-row items-center gap-4 mb-8">
+            <div class="w-full sm:w-1/3 text-xl font-bold text-center py-4 rounded-lg bg-red-600">
+                ANSWER
+            </div>
+            <div id="answer-display" class="w-full sm:w-2/3 answer-box rounded-lg">
+                Click "Show Answer" to reveal.
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-between items-center space-x-4">
+            <button id="prev-btn" class="px-6 py-3 bg-gray-600 hover:bg-gray-500 text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed">
+                &larr; Previous
+            </button>
+            <button id="show-answer-btn" class="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg transition active:scale-95">
+                Show Answer
+            </button>
+            <button id="next-btn" class="px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed">
+                Next &rarr;
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- Game Data ---
+        const questions = [
+            {
+                q: "What is the largest land animal currently living on Earth?",
+                a: "Elephant",
+                color: "bg-red-500",
+            },
+            {
+                q: "Which color results from mixing the colors blue and yellow?",
+                a: "Green",
+                color: "bg-blue-500",
+            },
+            {
+                q: "What fruit is notoriously red and shaped like a heart?",
+                a: "Strawberry",
+                color: "bg-purple-500",
+            },
+            {
+                q: "How many sides does a triangle shape possess in total?",
+                a: "Three",
+                color: "bg-yellow-500",
+            },
+            {
+                q: "What is the capital of the United States of America?",
+                a: "Washington, D.C.",
+                color: "bg-amber-500",
+            },
+            {
+                q: "The Earth revolves around which large, very hot celestial body?",
+                a: "Sun",
+                color: "bg-orange-500",
+            },
+            {
+                q: "What popular small animal catches and eats mice for dinner?",
+                a: "Cats",
+                color: "bg-teal-500",
+            },
+            {
+                q: "What's' the substance that is ice turned into a liquid?",
+                a: "Water",
+                color: "bg-indigo-500",
+            },
+            {
+                q: "Which ginger fictional wizard attended the magical school called Hogwarts?",
+                a: "Ron Weasley",
+                color: "bg-lime-500",
+            },
+            {
+                q: "What farm animal gives us milk, cheese, and creamy butter?",
+                a: "ur mom - Cow",
+                color: "bg-pink-500",
+            }
+        ];
+
+        // --- State Variables ---
+        let currentQuestionIndex = 0; // 0-indexed
+        // This array holds the state of which words have been revealed for the current question.
+        let revealedWordsState = [];
+
+        // --- DOM Elements ---
+        const wordGrid = document.getElementById('word-grid');
+        const answerDisplay = document.getElementById('answer-display');
+        const currentQIndexSpan = document.getElementById('current-q-index');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const showAnswerBtn = document.getElementById('show-answer-btn');
+
+        // --- Utility Functions ---
+
+        /**
+         * Renders the current question's tiles, setting up click listeners and colors.
+         */
+        function renderQuestion() {
+            const currentQ = questions[currentQuestionIndex];
+            const words = currentQ.q.split(' ');
+            const numWords = words.length;
+
+            // Ensure we have exactly 10 tiles. If the question has fewer than 10 words, fill the rest with empty strings.
+            const displayWords = [...words];
+            while (displayWords.length < 10) {
+                displayWords.push('');
+            }
+            // Trim to exactly 10 words if the question was too long (shouldn't happen with the sample data)
+            displayWords.splice(10);
+
+            // Initialize or reset the revealed state for the current question
+            if (revealedWordsState.length !== 10) {
+                revealedWordsState = new Array(10).fill(false);
+            }
+
+            // Clear previous tiles
+            wordGrid.innerHTML = '';
+            answerDisplay.textContent = 'Click "Show Answer" to reveal.';
+            answerDisplay.classList.remove('bg-green-600', 'text-white'); // Reset answer style
+
+            // Loop to create 10 word tiles
+            for (let i = 0; i < 10; i++) {
+                const isRevealed = revealedWordsState[i];
+                const word = displayWords[i];
+
+                // Create the tile element
+                const tile = document.createElement('div');
+                tile.id = `word-tile-${i}`;
+                tile.className = `word-tile rounded-lg p-3 text-sm transition-all shadow-md ${currentQ.color} ${isRevealed ? 'revealed bg-gray-200 text-gray-900' : ''}`;
+                tile.setAttribute('data-index', i);
+
+                // Tile Content
+                if (isRevealed) {
+                    // Show the word if revealed
+                    tile.textContent = word;
+                } else {
+                    // Show the index if not revealed, or an empty box if the word is empty
+                    tile.textContent = word ? `${i + 1}` : ''; // Show number 1-10
+
+                    // Add click listener only if not revealed and there is a word to reveal
+                    if (word) {
+                        tile.addEventListener('click', handleTileClick);
+                    }
+                }
+
+                wordGrid.appendChild(tile);
+            }
+
+            // Update UI elements
+            currentQIndexSpan.textContent = currentQuestionIndex + 1;
+            updateNavigationButtons();
+        }
+
+        /**
+         * Handles the click event on a word tile.
+         * @param {Event} event The click event.
+         */
+        function handleTileClick(event) {
+            const tile = event.currentTarget;
+            const index = parseInt(tile.getAttribute('data-index'), 10);
+
+            if (revealedWordsState[index]) return; // Already revealed
+
+            const currentQ = questions[currentQuestionIndex];
+            const word = currentQ.q.split(' ')[index];
+
+            if (word) {
+                // Update state and UI
+                revealedWordsState[index] = true;
+                tile.textContent = word;
+                tile.classList.add('revealed', 'bg-gray-200', 'text-gray-900');
+                tile.classList.remove(currentQ.color, 'cursor-pointer');
+                tile.removeEventListener('click', handleTileClick);
+
+                updateAnswerText();
+            }
+        }
+
+        /**
+         * Updates the answer display text with the current revealed question words.
+         */
+        function updateAnswerText() {
+            const words = questions[currentQuestionIndex].q.split(' ');
+            let revealedQuestion = '';
+
+            for (let i = 0; i < 10; i++) {
+                if (revealedWordsState[i] && words[i]) {
+                    revealedQuestion += words[i] + ' ';
+                } else if (words[i]) {
+                    // Placeholder for unrevealed words
+                    revealedQuestion += '_______ ';
+                }
+            }
+
+            // Only show the revealed words; the main answer box is for the final answer.
+            // The word grid itself visually shows the revealed question, so we don't need to duplicate that here.
+        }
+
+        /**
+         * Reveals the final answer in the display box.
+         */
+        function showAnswer() {
+            const currentA = questions[currentQuestionIndex].a;
+            answerDisplay.textContent = currentA;
+            answerDisplay.classList.add('bg-green-600', 'text-white');
+            showAnswerBtn.disabled = true;
+        }
+
+        /**
+         * Handles navigation to the next question.
+         */
+        function goToNextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                resetStateAndRender();
+            }
+        }
+
+        /**
+         * Handles navigation to the previous question.
+         */
+        function goToPreviousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                resetStateAndRender();
+            }
+        }
+
+        /**
+         * Resets the revealed state and re-renders the question.
+         * In a real game, you might load the saved state if the user already played it.
+         */
+        function resetStateAndRender() {
+            revealedWordsState = new Array(10).fill(false);
+            showAnswerBtn.disabled = false;
+            renderQuestion();
+        }
+
+        /**
+         * Enables/disables navigation buttons based on current index.
+         */
+        function updateNavigationButtons() {
+            prevBtn.disabled = currentQuestionIndex === 0;
+            nextBtn.disabled = currentQuestionIndex === questions.length - 1;
+        }
+
+        // --- Event Listeners ---
+        prevBtn.addEventListener('click', goToPreviousQuestion);
+        nextBtn.addEventListener('click', goToNextQuestion);
+        showAnswerBtn.addEventListener('click', showAnswer);
+
+        // --- Initialization ---
+        window.onload = () => {
+            renderQuestion();
+        };
+
+    </script>
+</body>
+</html>
