@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Genetic Lab: Reveal Edition</title>
+    <style>
+        :root { 
+            --pink: #ffb7c5; 
+            --blue: #b7d4ff; 
+            --bg: #fdfaf6; 
+            --dark: #4a4a4a; 
+            --accent: #d6818f;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background: var(--bg); 
+            text-align: center; 
+            padding: 10px; /* Reduced for mobile */
+            color: var(--dark); 
+            margin: 0; 
+            overflow-x: hidden;
+        }
+
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding-bottom: 20px;
+        }
+
+        h1 { font-weight: 800; color: var(--accent); margin: 10px 0 5px 0; font-size: 1.8rem; }
+        .subtitle { color: #888; margin-bottom: 15px; font-size: 0.85rem; padding: 0 10px; }
+
+        #lab-controls { 
+            background: white; 
+            padding: 15px; 
+            border-radius: 25px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06); 
+            position: relative;
+        }
+
+        #status { 
+            font-weight: bold; 
+            margin-bottom: 15px; 
+            color: var(--accent); 
+            min-height: 20px; 
+            background: #fff0f3;
+            padding: 8px;
+            border-radius: 10px;
+            display: inline-block;
+            min-width: 180px;
+            font-size: 0.9rem;
+        }
+
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 10px; 
+            margin: 15px auto; 
+        }
+
+        .item { 
+            background: #fcfcfc; 
+            border: 2px solid #f0f0f0; 
+            border-radius: 14px; 
+            padding: 10px 2px; 
+            cursor: pointer; 
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            user-select: none;
+        }
+
+        .item:hover { transform: translateY(-2px); border-color: var(--blue); }
+
+        .item.selected { 
+            border-color: var(--pink); 
+            background: #fff9fa; 
+            transform: scale(0.95); 
+            box-shadow: 0 4px 12px rgba(255, 183, 197, 0.4); 
+        }
+
+        .emoji { font-size: 28px; display: block; margin-bottom: 2px; }
+        .label { font-size: 10px; font-weight: bold; text-transform: uppercase; color: #666; letter-spacing: 0.3px; }
+
+        .actions { margin-top: 15px; }
+
+        .btn { 
+            background: var(--pink); 
+            color: white; 
+            border: none; 
+            padding: 12px 30px; 
+            border-radius: 50px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            margin: 5px; 
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(255, 183, 197, 0.3);
+        }
+
+        .btn:hover { background: #ff9fb1; transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+        .btn-secondary { background: #f0f0f0; color: #888; box-shadow: none; }
+        .btn-secondary:hover { background: #e5e5e5; }
+
+        #result-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+
+        .result-card {
+            background: white;
+            padding: 30px 20px;
+            border-radius: 25px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .result-header { color: #aaa; text-transform: uppercase; font-size: 11px; font-weight: bold; margin-bottom: 8px; }
+        .result-title { font-size: 22px; margin-bottom: 12px; color: var(--dark); }
+        .result-text { font-size: 16px; line-height: 1.4; color: #555; margin-bottom: 20px; }
+
+        #reveal { 
+            display: none; 
+            position: fixed; 
+            top: 0; left: 0; width: 100%; height: 100%; 
+            background: white; 
+            z-index: 3000; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            background-image: radial-gradient(circle, #fff 0%, #fff0f3 100%);
+            padding: 20px;
+        }
+
+        .announcement { 
+            padding: 30px 20px; 
+            border: 4px dashed var(--pink); 
+            border-radius: 35px; 
+            background: white; 
+            max-width: 100%;
+            box-shadow: 0 15px 45px rgba(255, 183, 197, 0.2);
+        }
+
+        .confetti { position: absolute; font-size: 20px; animation: fall 3s linear forwards; }
+        @keyframes fall {
+            to { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* Mobile specific grid and sizing */
+        @media (max-width: 600px) { 
+            h1 { font-size: 1.5rem; }
+            .grid { grid-template-columns: repeat(4, 1fr); gap: 8px; } 
+            .emoji { font-size: 24px; }
+            .label { font-size: 9px; }
+            .btn { padding: 12px 20px; width: 100%; max-width: 250px; margin: 5px auto; display: block; }
+            .actions { display: flex; flex-direction: column; align-items: center; }
+        }
+
+        @media (max-width: 400px) {
+            .grid { grid-template-columns: repeat(4, 1fr); gap: 5px; }
+            .item { padding: 8px 1px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🔬 Genetic Lab</h1>
+    <p class="subtitle">Combine two elements to analyze compatibility.</p>
+
+    <div id="lab-controls">
+        <div id="status">Select two items...</div>
+        <div class="grid" id="itemGrid"></div>
+        
+        <div class="actions">
+            <button class="btn" onclick="mix()">SYNTHESIZE</button>
+            <button class="btn btn-secondary" onclick="resetLab()">RESET LAB</button>
+        </div>
+    </div>
+</div>
+
+<div id="result-overlay">
+    <div class="result-card">
+        <div class="result-header">Synthesis Report</div>
+        <div id="result-emoji" style="font-size: 40px; margin-bottom: 10px;">🧪</div>
+        <div class="result-title" id="result-title">Analyzing...</div>
+        <div class="result-text" id="result-text">Calculating compatibility.</div>
+        <button class="btn" onclick="closeResult()">Back to Lab</button>
+    </div>
+</div>
+
+<div id="reveal">
+    <div class="announcement">
+        <div style="font-size: 60px; margin-bottom: 15px;">🍼</div>
+        <h1 style="color: var(--pink); font-size: 36px; margin: 0;">SUCCESS!</h1>
+        <p style="font-weight: bold; color: #888; letter-spacing: 1px; font-size: 0.8rem;">PERFECT GENETIC MATCH</p>
+        <div style="margin: 20px 0; border-top: 1px solid #eee; padding-top: 20px;">
+            <h2 style="font-size: 26px; margin: 0; color: var(--dark);">Baby Ducky!!!</h2>
+            <p style="font-size: 18px; color: var(--accent); margin: 8px 0 0 0;">Arriving August 2026</p>
+        </div>
+        <button class="btn" onclick="location.reload()">Reset Timeline</button>
+    </div>
+</div>
+
+<script>
+    const items = [
+        {n: 'Ducky', e: '🦆', t: 'person'},
+        {n: 'Coffee', e: '☕️', t: 'fuel'}, 
+        {n: 'Pizza', e: '🍕', t: 'food'},
+        {n: 'Dog', e: '🐶', t: 'pet'}, 
+        {n: 'Cat', e: '🐱', t: 'pet'}, 
+        {n: 'Wine', e: '🍷', t: 'fuel'}, 
+        {n: 'Gym', e: '💪', t: 'hobby'},
+        {n: 'Dan', e: '🧔‍♂️', t: 'person'}, 
+        {n: 'Netflix', e: '📺', t: 'hobby'}, 
+        {n: 'Tacos', e: '🌮', t: 'food'}, 
+        {n: 'Sleep', e: '😴', t: 'fuel'}, 
+        {n: 'Travel', e: '✈️', t: 'hobby'},
+        {n: 'Games', e: '🎮', t: 'hobby'}, 
+        {n: 'Work', e: '💼', t: 'work'}, 
+        {n: 'Chocolate', e: '🍫', t: 'food'}, 
+        {n: 'Hiking', e: '🥾', t: 'hobby'},
+        {n: 'Sushi', e: '🍣', t: 'food'}, 
+        {n: 'Avocado', e: '🥑', t: 'food'}, 
+        {n: 'Camera', e: '📸', t: 'hobby'}, 
+        {n: 'Books', e: '📚', t: 'hobby'}
+    ];
+
+    let selected = [];
+    const grid = document.getElementById('itemGrid');
+
+    items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `<span class="emoji">${item.e}</span><span class="label">${item.n}</span>`;
+        div.onclick = () => selectItem(item, div);
+        grid.appendChild(div);
+    });
+
+    function selectItem(item, el) {
+        if (selected.includes(item)) {
+            selected = selected.filter(i => i !== item);
+            el.classList.remove('selected');
+        } else if (selected.length < 2) {
+            selected.push(item);
+            el.classList.add('selected');
+        }
+        
+        const status = document.getElementById('status');
+        if (selected.length === 0) status.innerText = "Select two items...";
+        else if (selected.length === 1) status.innerText = `Adding ${selected[0].n}...`;
+        else status.innerText = `${selected[0].n} + ${selected[1].n}`;
+    }
+
+    function resetLab() {
+        selected = [];
+        document.querySelectorAll('.item').forEach(i => i.classList.remove('selected'));
+        document.getElementById('status').innerText = "Select two items...";
+    }
+
+    function showResult(title, text, emoji = "🧪") {
+        document.getElementById('result-title').innerText = title;
+        document.getElementById('result-text').innerText = text;
+        document.getElementById('result-emoji').innerText = emoji;
+        document.getElementById('result-overlay').style.display = 'flex';
+    }
+
+    function closeResult() {
+        document.getElementById('result-overlay').style.display = 'none';
+        resetLab();
+    }
+
+    function spawnConfetti() {
+        for(let i=0; i<50; i++) {
+            const c = document.createElement('div');
+            c.className = 'confetti';
+            c.innerText = ['🍼', '✨', '🎈', '💖', '👶'][Math.floor(Math.random()*5)];
+            c.style.left = Math.random() * 100 + 'vw';
+            c.style.top = '-20px';
+            c.style.animationDelay = Math.random() * 2 + 's';
+            document.body.appendChild(c);
+        }
+    }
+
+    function mix() {
+        if (selected.length < 2) {
+            showResult("Data Missing", "A reaction requires exactly two components.", "⚠️");
+            return;
+        }
+        
+        const names = selected.map(i => i.n).sort();
+        const types = selected.map(i => i.t).sort();
+        const combo = names.join(" + ");
+        const typeCombo = types.join(" + ");
+
+        if (names.includes('Ducky') && names.includes('Dan')) {
+            document.getElementById('reveal').style.display = 'flex';
+            spawnConfetti();
+            return;
+        }
+
+        const eggs = {
+            "Ducky + Coffee": ["Turbo Ducky", "She is vibrating. She just cleaned the attic and it’s only 7 AM.", "☕️"],
+            "Ducky + Pizza": ["The Perfect Slicer", "She cut the pizza into geometrically perfect triangles. It’s too pretty to eat.", "🍕"],
+            "Ducky + Dog": ["The Favorite person", "The dog has officially chosen its human. Sorry Dan, you're the backup now.", "🐕"],
+            "Ducky + Cat": ["Heating Pad Mode", "Ducky has been claimed as a furniture piece. She cannot move for 3 hours.", "🐱"],
+            "Ducky + Wine": ["Zen Ducky", "Total tranquility achieved. Please do not startle the ducky during her vintage analysis.", "🍷"],
+            "Ducky + Gym": ["Efficiency Expert", "She’s doing squats while checking the grocery list and folding a towel. Legend.", "💪"],
+            "Ducky + Netflix": ["The Binge Queen", "She just watched three seasons of a show in one afternoon. We are in awe.", "📺"],
+            "Ducky + Tacos": ["Taco Manager", "She has organized a taco bar with 14 different toppings and a color-coded salsa chart.", "🌮"],
+            "Ducky + Sleep": ["Rare Phenomenon", "She is finally resting. Please maintain a 5-mile radius of absolute silence.", "😴"],
+            "Ducky + Travel": ["Master Packer", "Her suitcase is a work of structural art. Everything is vacuum-sealed and logical.", "✈️"],
+            "Ducky + Games": ["Competitive Streak", "She is surprisingly lethal at Mario Kart for someone who 'doesn't play games'.", "🎮"],
+            "Ducky + Work": ["The CEO", "Multitasking on four different screens while solving world hunger. Just Ducky things.", "💼"],
+            "Ducky + Chocolate": ["Sweet Bliss", "The chocolate has vanished. Ducky looks incredibly pleased with the results.", "🍫"],
+            "Ducky + Hiking": ["Nature Documentarian", "She found three cool rocks and a very specific type of moss. Success.", "🥾"],
+            "Ducky + Sushi": ["The Connoisseur", "She knows exactly which roll is the best. Trust the Ducky's palate.", "🍣"],
+            "Ducky + Avocado": ["Toast Master", "She found the only perfectly ripe avocado in the tri-state area. It’s a miracle.", "🥑"],
+            "Ducky + Camera": ["The Historian", "She’s taking a photo of you taking a photo of her. It’s meta-documentation.", "📸"],
+            "Ducky + Books": ["Library Hazard", "Her 'To Read' pile has achieved sentience and is currently blocking the hallway.", "📚"],
+            
+            "Dan + Coffee": ["Hyper Dan", "He's fixing things that aren't broken just to justify using the power drill.", "⚡️"],
+            "Dan + Pizza": ["The Crust Thief", "He said he wasn't hungry, yet half the crusts have mysteriously disappeared.", "🍕"],
+            "Dan + Dog": ["Best Friends", "They are currently napping in the exact same position on the living room rug.", "🐶"],
+            "Dan + Cat": ["The Negotiator", "Dan is trying to explain why the cat can't eat the plastic. The cat is winning.", "🐈"],
+            "Dan + Wine": ["Dan the Sommelier", "He’s swirling the glass and talking about 'legs'. It’s a $12 bottle of Malbec.", "🍷"],
+            "Dan + Gym": ["The PR Hunter", "He’s currently explaining his bench press max to the dog. The dog is unimpressed.", "💪"],
+            "Dan + Netflix": ["Instant Nap", "He picked the movie, argued for it, and then fell asleep during the studio logo.", "📺"],
+            "Dan + Tacos": ["Salsa King", "He has successfully consumed his body weight in salsa. He regrets nothing.", "🌮"],
+            "Dan + Sleep": ["The Chainsaw", "His snoring is so loud the neighbors called to report a low-flying helicopter.", "😴"],
+            "Dan + Travel": ["Analog Dan", "He refuses to use GPS because he 'remembers the way from that one time in 2004'.", "🗺️"],
+            "Dan + Games": ["Ren’s hole?", "Dan keeps going deeper into Ren’s hole, all day. everyday.", "🎮"],
+            "Dan + Work": ["Deep Focus", "He’s wearing a tie for a Zoom call where he’s the only person on camera.", "💼"],
+            "Dan + Chocolate": ["The Secret Stash", "He thinks we don't know about the wrappers hidden in the glovebox. We know.", "🍫"],
+            "Dan + Hiking": ["The Explorer", "He’s wearing zip-off pants and carrying a compass in a suburban park.", "🥾"],
+            "Dan + Sushi": ["Chopstick Failure", "He has given up and is now using a fork. No shame in his game.", "🍣"],
+            "Dan + Avocado": ["Millennial Dan", "He’s wondering if this avocado toast is why he can’t buy a classic car.", "🥑"],
+            "Dan + Camera": ["Dad Photography", "He’s taking 400 photos of the dog's left paw with professional intensity.", "📸"],
+            "Dan + Books": ["Academic Dan", "He’s reading a book on 'How to Nap Better'. He’s already a pro.", "📚"],
+
+            "Cat + Dog": ["The Peace Treaty", "They are sharing the sunspot. This truce will last exactly three minutes.", "🐾"],
+            "Cat + Coffee": ["Ceiling Zoomies", "The cat sniffed the steam and is now running vertically up the walls.", "🐈"],
+            "Dog + Pizza": ["The Master Beggar", "The dog is practicing its 'I have never been fed in my life' face. It's working.", "🍕"],
+            "Cat + Pizza": ["The Pepperoni Heist", "The cat is batting a piece of meat across the kitchen like a hockey puck.", "🍕"],
+            "Dog + Coffee": ["Tail Turbo", "He’s extra excited for a walk that hasn't even been mentioned yet.", "☕️"],
+            "Cat + Wine": ["Silent Critic", "The cat is judging your choice of vintage from the top of the bookshelf.", "🍷"],
+            "Dog + Wine": ["The Sommelier's Assistant", "He’s protecting the bottle. No one gets a refill without a belly rub.", "🍷"],
+            "Dog + Gym": ["Personal Trainer", "He’s 'helping' with your planks by licking your face until you collapse.", "💪"],
+            "Cat + Gym": ["The Yoga Saboteur", "The cat decided your yoga mat is actually a high-end scratching post.", "🧘"],
+            "Dog + Netflix": ["Film Critic", "He’s barking at every animal on the screen, including the animated ones.", "📺"],
+            "Cat + Netflix": ["Remote Sabotage", "The cat sat on the remote and successfully switched the language to Finnish.", "📺"],
+            "Dog + Tacos": ["The Scavenger", "He’s waiting for a piece of lettuce to drop. He won't even eat it, just guard it.", "🌮"],
+            "Cat + Tacos": ["The Snob", "She sniffed the taco, looked Dan in the eye, and walked away in disgust.", "🌮"],
+            "Dog + Sleep": ["Diagonal Bed Hog", "He starts in the corner, but by 3 AM he owns 90% of the mattress.", "😴"],
+            "Cat + Sleep": ["Face Warmer", "She decided your windpipe is the perfect place to take a four-hour nap.", "😴"],
+            "Dog + Travel": ["Window Specialist", "Head out, ears flapping, tongue at max extension. Life is 10/10.", "🚗"],
+            "Cat + Travel": ["Dimensional Shift", "She saw the carrier and has phased into a different plane of existence.", "✈️"],
+            "Dog + Games": ["Controller Tug", "He wants to play tug-of-war while you're in the middle of a boss fight.", "🎮"],
+            "Cat + Games": ["Cursor Hunter", "She is chasing the cursor on the screen with lethal, tiny-tiger intent.", "🎮"],
+            "Dog + Work": ["Chief Morale Officer", "He’s checking in to make sure you’ve taken your mandatory snack break.", "💼"],
+            "Cat + Work": ["Keyboard Editor", "The cat just sent a 400-page email of pure gibberish to your boss.", "💼"],
+            "Dog + Chocolate": ["LAB SAFETY ALERT", "DO NOT FEED! This synthesis is prohibited by international law.", "⚠️"],
+            "Cat + Chocolate": ["Total Indifference", "She smelled it and went back to licking her elbow. Typical.", "🍫"],
+            "Dog + Hiking": ["Trail Scout", "He’s 50 yards ahead, making sure the path is clear of squirrels.", "🥾"],
+            "Cat + Hiking": ["Backpack General", "She’s in the mesh carrier, judging your slow pace and weak calves.", "🎒"],
+            "Dog + Sushi": ["Ginger Hopes", "He thinks the pink ginger is a treat. He is about to be very shocked.", "🍣"],
+            "Cat + Sushi": ["The Flash", "If you blink, that tuna nigiri is gone forever. Gone like the wind.", "🍣"],
+            "Dog + Avocado": ["Pit Confusion", "He tried to swallow it whole. We had to perform a tactical intervention.", "🥑"],
+            "Cat + Avocado": ["Rolling Toy", "She’s batting the avocado under the stove. Goodbye, expensive fruit.", "🥑"],
+            "Dog + Camera": ["Natural Model", "He’s sitting perfectly still. He knows he’s the handsome boy.", "📸"],
+            "Cat + Camera": ["The Shadow", "Every photo is just a blur of fur or a single, glowing yellow eye.", "📸"],
+            "Dog + Books": ["The Editor", "He didn't read the book, but he certainly chewed through the plot.", "📚"],
+            "Cat + Books": ["Literal Bookmark", "She is laying directly on the sentence you were trying to finish.", "📖"],
+
+            "Coffee + Wine": ["Heart Rate Rollercoaster", "You are tired but ready to party. Your pulse is a drum solo.", "🌀"],
+            "Coffee + Pizza": ["College Flashback", "The true fuel of the modern era. Heartburn levels: Critical.", "☕️"],
+            "Coffee + Tacos": ["Bold Choice", "You’ve made a dangerous gamble. Stay near the facilities.", "🌮"],
+            "Coffee + Sleep": ["The Nap-uccino", "You drank the espresso and fell asleep immediately. A total waste.", "😴"],
+            "Coffee + Work": ["The Engine Room", "You’ve solved three problems that don't even exist yet. Calm down.", "💼"],
+            "Wine + Pizza": ["Fancy Friday", "You’re eating with your hands, but drinking from a stemmed glass. Elegant.", "🍷"],
+            "Wine + Chocolate": ["Pure Luxury", "You are currently winning at life. Do not let anyone tell you otherwise.", "🍫"],
+            "Wine + Sleep": ["The Instant Out", "You made it through one glass and now you're dreaming in purple.", "😴"],
+            "Wine + Work": ["Dangerous Game", "The emails you send now will be a 'surprise' for tomorrow morning.", "🍷"],
+            "Pizza + Tacos": ["The Pizz-aco", "Carb loading achieved. Science has gone too far this time.", "🍕"],
+            "Pizza + Sushi": ["Confused Palate", "A very weird dinner choice. Your stomach is currently filing a complaint.", "🍣"],
+            "Pizza + Chocolate": ["Dessert First", "You’re going to regret this sugar rush at 2 AM. Totally worth it.", "🍫"],
+            "Tacos + Sushi": ["Fusion Disaster", "Raw fish in a tortilla. You’ve been banned from the kitchen.", "🌮"],
+            "Tacos + Chocolate": ["Mole Attempt", "You’re trying to be fancy, but it just looks like a messy taco.", "🍫"],
+            "Sushi + Avocado": ["The Californian", "Trendy, healthy, and predictable. You feel very sophisticated.", "🥑"],
+            "Sushi + Chocolate": ["Culinary Crime", "Why? Just... why would you do this to the fish?", "🤢"],
+            "Avocado + Chocolate": ["The Vegan Trap", "You’re trying to convince yourself it tastes like real pudding. It doesn't.", "🥑"],
+            "Sleep + Travel": ["Permanent Jet Lag", "You slept for 12 hours and you're still in the wrong timezone.", "✈️"],
+            "Sleep + Games": ["AFK Nap", "You fell asleep with the headset on. Your character is running into a tree.", "🎮"],
+            "Sleep + Work": ["Dreaming of Pay", "You dreamt you were working, so you should technically get overtime.", "😴"],
+            "Gym + Pizza": ["The Great Neutralizer", "You just canceled out 45 minutes of cardio in three bites.", "🍕"],
+            "Gym + Netflix": ["Active Watching", "You spent 40 minutes 'stretching' while watching a documentary.", "📺"],
+            "Gym + Travel": ["Unused Gear", "You brought workout clothes but they never left the suitcase. Respect.", "🥾"],
+            "Gym + Work": ["Huffing on Zoom", "You’re trying to type while on the treadmill. Your typos are legendary.", "💼"],
+            "Netflix + Travel": ["The Long Haul", "You watched four movies and you're still over the ocean. Help.", "✈️"],
+            "Netflix + Work": ["Productivity Background", "You're 'working' but you've seen every episode of this show twice.", "📺"],
+            "Travel + Work": ["Digital Nomad Fail", "The Wi-Fi at the beach is nonexistent. You are now just on vacation.", "💻"],
+            "Games + Work": ["Slack Slack", "You're playing a 'quick' round while your status is 'In a Meeting'.", "🎮"],
+            "Hiking + Camera": ["The Shutterbug", "You've walked 10 miles but only have photos of your own shoes.", "📸"],
+            "Hiking + Sushi": ["Trail Sushi", "A very high-risk lunch choice. Watch out for the sun.", "🍣"],
+            "Camera + Books": ["The Bibliophile Aesthetic", "Taking photos of books you haven't actually read yet. Classy.", "📸"],
+            "Work + Books": ["Manual Stand", "You bought a book for work, but it's just a stand for your monitor.", "📚"],
+            "Chocolate + Hiking": ["Melted Mess", "The chocolate melted in your pocket. You are now a sticky mess.", "🍫"],
+            "Chocolate + Gym": ["The Motivation", "You did one pushup. You earned that entire chocolate bar.", "🏋️"]
+        };
+
+        if (eggs[combo]) {
+            showResult(eggs[combo][0], eggs[combo][1], eggs[combo][2]);
+        } 
+        else {
+            const item1 = selected[0];
+            const item2 = selected[1];
+            const dynamicTitles = ["Interesting Pair", "Synthesis Found", "Molecular Bond", "Lab Result"];
+            const title = dynamicTitles[Math.floor(Math.random() * dynamicTitles.length)];
+            let text = "";
+            if (typeCombo.includes("person")) {
+                const person = selected.find(i => i.t === 'person').n;
+                const other = selected.find(i => i.n !== person).n;
+                text = `Synthesis complete! ${person} is now distractedly interacting with the ${other}. Results are inconclusive but adorable.`;
+            } else if (typeCombo.includes("pet")) {
+                const pet = selected.find(i => i.t === 'pet').n;
+                const other = selected.find(i => i.n !== pet).n;
+                text = `The ${pet} has decided that the ${other} is its new favorite toy. The lab is currently a disaster zone.`;
+            } else {
+                text = `Combining ${item1.n} and ${item2.n} created a highly stable, yet slightly weird molecular bond. No life forms detected... yet.`;
+            }
+            showResult(title, text, "🧪");
+        }
+    }
+</script>
+</body>
+</html>
