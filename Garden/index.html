@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Garden of Earthly Delights - Interactive Exploration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600&display=swap');
+
+        :root {
+            --amber-glow: rgba(245, 158, 11, 0.4);
+        }
+
+        body {
+            background-color: #0a0a0a;
+            color: #e5e5e5;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .font-serif-bosch {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Marker Pulse Animation */
+        @keyframes pulse-ring {
+            0% { transform: scale(.33); opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        .marker-pulse {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: #f59e0b;
+            border-radius: 50%;
+            animation: pulse-ring 2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+        }
+
+        .marker-dot {
+            position: relative;
+            width: 10px;
+            height: 10px;
+            background: #f59e0b;
+            border: 1.5px solid white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease;
+        }
+
+        .marker-container:hover .marker-dot {
+            transform: scale(1.4);
+            background: #fbbf24;
+        }
+
+        /* Tooltip behavior */
+        .pin-tooltip {
+            visibility: hidden;
+            opacity: 0;
+            transform: translate(-50%, 10px) scale(0.95);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .marker-container:hover .pin-tooltip {
+            visibility: visible;
+            opacity: 1;
+            transform: translate(-50%, -10px) scale(1);
+        }
+
+        /* Zoom Functionality */
+        #interactive-container {
+            transition: transform 0.1s ease-out;
+            cursor: zoom-in;
+            transform-origin: center center;
+        }
+
+        #interactive-container.zoomed {
+            transform: scale(2.5);
+            cursor: zoom-out;
+            z-index: 40;
+        }
+
+        .zoom-wrapper {
+            overflow: hidden;
+            width: 100%;
+            touch-action: none;
+        }
+
+        /* Detail Panel */
+        #detail-panel {
+            transform: translate(-50%, 150%);
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+        }
+
+        #detail-panel.active {
+            transform: translate(-50%, 0);
+            opacity: 1;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #111; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #444; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <header class="max-w-4xl mx-auto text-center mb-12">
+        <h1 class="text-4xl md:text-6xl font-bold mb-3 text-amber-200 font-serif-bosch">The Garden of Earthly Delights</h1>
+        <p class="text-neutral-500 italic font-serif-bosch text-lg">Hieronymus Bosch, c. 1490–1510</p>
+        <p class="mt-6 text-neutral-400 max-w-2xl mx-auto leading-relaxed">
+            Click to zoom and explore. Explore the glowing markers to uncover over 40 intricate details.
+        </p>
+    </header>
+
+    <main class="zoom-wrapper relative max-w-6xl mx-auto rounded-xl shadow-2xl border-4 border-neutral-800 bg-neutral-900">
+        <div id="interactive-container" class="relative">
+            <!-- The Painting -->
+            <img 
+                id="bosch-img"
+                src="image/garden-lg.png" 
+                alt="The Garden of Earthly Delights" 
+                class="w-full h-auto block"
+                onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/9/96/The_Garden_of_earthly_delights.jpg'"
+            >
+
+            <!-- Pins Overlay -->
+            <div id="pins-overlay" class="absolute inset-0 pointer-events-none"></div>
+        </div>
+    </main>
+
+    <!-- Slide-up Detail Panel -->
+    <div id="detail-panel" class="fixed bottom-8 left-1/2 w-[92%] max-w-2xl bg-neutral-900/98 backdrop-blur-xl p-6 rounded-2xl border-t-4 border-amber-500 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] z-[100] opacity-0">
+        <div class="flex flex-col md:flex-row gap-6 items-center md:items-start">
+            <div class="flex-1">
+                <span id="detail-panel-tag" class="text-amber-500 text-xs font-bold uppercase tracking-[0.2em]"></span>
+                <h2 id="detail-panel-title" class="text-2xl font-bold text-white mt-1 mb-3 font-serif-bosch"></h2>
+                <p id="detail-panel-desc" class="text-neutral-300 leading-relaxed text-sm md:text-base"></p>
+            </div>
+            <button onclick="closePanel()" class="shrink-0 px-6 py-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded-full text-sm font-semibold transition-colors border border-neutral-700">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <footer class="mt-16 mb-24 text-neutral-600 text-sm max-w-2xl mx-auto text-center leading-relaxed">
+        <p>This triptych is one of the most enigmatic works in art history. It portrays the progression of sin: from the pure beginnings in Eden, through the chaotic indulgences of the world, to the final, terrifying punishments of Hell.</p>
+    </footer>
+
+    <script>
+        const pins = [
+            // --- EDEN (LEFT PANEL: 0% - 25%) ---
+            { id: 1, x: 12.5, y: 36, panel: "Eden", title: "The Fountain of Life", desc: "The pink structure in Eden. Its biological design suggests the complexity of creation." },
+            { id: 2, x: 18, y: 78, panel: "Eden", title: "The Creation of Eve", desc: "God presents Eve to Adam. Note Adam's expression of wonder." },
+            { id: 10, x: 5.5, y: 41, panel: "Eden", title: "Exotic Giraffe", desc: "Bosch drew exotic animals based on traveler accounts and bestiaries." },
+            { id: 11, x: 15.5, y: 88, panel: "Eden", title: "Cat with Lizard", desc: "Indicates that the cycle of predation and death existed from the start." },
+            { id: 12, x: 3.5, y: 92, panel: "Eden", title: "Three-Headed Bird", desc: "A hybrid creature representing the potential for corruption even in Paradise." },
+            { id: 21, x: 7.5, y: 62, panel: "Eden", title: "The Elephant", desc: "A symbol of wisdom and memory, appearing in the exotic landscape of Paradise." },
+            { id: 22, x: 21, y: 68, panel: "Eden", title: "Exotic Monkeys", desc: "Monkeys often symbolized 'imitation' or 'folly' in Northern Renaissance art." },
+            { id: 23, x: 11, y: 26, panel: "Eden", title: "White Unicorn/Stag", desc: "A mythological creature representing purity, standing at the edge of the Source." },
+            { id: 24, x: 12.5, y: 46, panel: "Eden", title: "The Owl in the Fountain", desc: "The owl here is debated; it might represent wisdom or a darker, watchful presence in paradise." },
+            { id: 25, x: 19, y: 12, panel: "Eden", title: "Exotic Birds", desc: "Spoonbills and other rare birds occupy the upper skies of God's garden." },
+
+            // --- THE GARDEN (CENTER PANEL: 25% - 75%) ---
+            { id: 9, x: 50, y: 19, panel: "Garden", title: "The Cavorting Cavalcade", desc: "Men riding animals around a pool of females, symbolizing animalistic pursuit of desire." },
+            { id: 13, x: 35, y: 31, panel: "Garden", title: "Blue Fountain", desc: "A fragile, mechanical structure representing the instability of earthly carnal joy." },
+            { id: 3, x: 51, y: 58, panel: "Garden", title: "Strawberry Lovers", desc: "Strawberries symbolize the fleeting nature of pleasure—sweet but quickly gone." },
+            { id: 4, x: 37, y: 65, panel: "Garden", title: "Giant Birds", desc: "Oversized kingfishers and mallards highlight the surreal reversal of the natural order." },
+            { id: 14, x: 32, y: 58, panel: "Garden", title: "The Glass Bubble", desc: "Happiness is as fragile as glass; once broken, it cannot be mended." },
+            { id: 15, x: 68, y: 72, panel: "Garden", title: "The Giant Mussel", desc: "A man carries a couple in a shell, symbolizing the entrapment of sexual infidelity." },
+            { id: 16, x: 71, y: 50, panel: "Garden", title: "The Giant Owl", desc: "Often represents 'false wisdom' or blindness to spiritual light in Bosch's work." },
+            { id: 26, x: 44, y: 81, panel: "Garden", title: "Man with Giant Cherry", desc: "Cherries were associated with lust; here the fruit is so large it consumes the man." },
+            { id: 27, x: 32, y: 46, panel: "Garden", title: "The Glass Cylinder", desc: "Human figures trapped inside a vertical glass structure, another symbol of fragility." },
+            { id: 28, x: 62, y: 62, panel: "Garden", title: "Floating Castle", desc: "One of the many impossible 'living' architectures in the background landscape." },
+            { id: 29, x: 41, y: 88, panel: "Garden", title: "Man with Owl Hat", desc: "A figure wearing an owl, suggesting he is being guided by folly or sin." },
+            { id: 30, x: 50, y: 35, panel: "Garden", title: "The Center Pool", desc: "The 'Fountain of Youth' or 'Pool of Lust,' where all humanity seems to congregate." },
+            { id: 31, x: 36, y: 12, panel: "Garden", title: "Flying Fish", desc: "Creatures flying through the air, showing that in this garden, the laws of physics are suspended." },
+            { id: 32, x: 66, y: 40, panel: "Garden", title: "Group inside Fruit", desc: "Humans literally living inside giant berries, consumed by their own appetites." },
+
+            // --- HELL (RIGHT PANEL: 75% - 100%) ---
+            { id: 17, x: 87, y: 12, panel: "Hell", title: "The Burning City", desc: "Depicts a world consumed by war and industrial fire—the end of a moral society." },
+            { id: 18, x: 92, y: 40, panel: "Hell", title: "The Knife and Ears", desc: "A giant pair of ears pierced by a knife, symbolizing sins of gossip and hearing heresy." },
+            { id: 5, x: 83, y: 48, panel: "Hell", title: "The Tree-Man", desc: "A massive creature whose hollow body contains a tavern. Often thought to be a self-portrait." },
+            { id: 20, x: 78, y: 58, panel: "Hell", title: "The Frozen Lake", desc: "Some sinners are punished with cold, representing a coldness of heart." },
+            { id: 19, x: 82, y: 77, panel: "Hell", title: "Gambling and Glee", desc: "Dice and cards used to punish the greedy; their vices become their torture." },
+            { id: 6, x: 90, y: 75, panel: "Hell", title: "The Musical Hell", desc: "Harp and lute used as torture devices for those who indulged in idle music." },
+            { id: 7, x: 80, y: 85, panel: "Hell", title: "The Prince of Hell", desc: "A bird-headed monster devouring souls and excreting them into a pit." },
+            { id: 8, x: 95, y: 86, panel: "Hell", title: "Pig in a Nun's Habit", desc: "A critique of church corruption; the pig tries to force a man to sign a contract." },
+            { id: 33, x: 88, y: 30, panel: "Hell", title: "The Skating Demon", desc: "A bird-demon with skates, carrying a soul toward a hole in the ice." },
+            { id: 34, x: 85, y: 82, panel: "Hell", title: "Kettle-Headed Bird", desc: "A strange demon wearing a kettle as a helmet, representing industrial madness." },
+            { id: 35, x: 83.5, y: 54, panel: "Hell", title: "Tree-Man's Tavern", desc: "Inside the Tree-Man's body, a scene of drinking continues, even in Hell." },
+            { id: 36, x: 93, y: 65, panel: "Hell", title: "The Tortured Hunter", desc: "A rabbit carries a hunter as its prey—the ultimate reversal of life's order." },
+            { id: 37, x: 77, y: 25, panel: "Hell", title: "The Lantern Demon", desc: "A demon holding a light that reveals the horrors of the burning background." },
+            { id: 38, x: 82.5, y: 28, panel: "Hell", title: "Severe Head", desc: "A disembodied head on the Tree-Man's cap, watching the viewer with a grim gaze." },
+            { id: 39, x: 94, y: 15, panel: "Hell", title: "Dark Machinery", desc: "The horizon is filled with black smoke and strange, skeletal architectural ruins." },
+            { id: 40, x: 80, y: 92, panel: "Hell", title: "Demon with Bell", desc: "A small demon ringing a bell, perhaps announcing the arrival of new souls." }
+        ];
+
+        const interactiveContainer = document.getElementById('interactive-container');
+        const pinsOverlay = document.getElementById('pins-overlay');
+        const detailPanel = document.getElementById('detail-panel');
+        const detailTag = document.getElementById('detail-panel-tag');
+        const detailTitle = document.getElementById('detail-panel-title');
+        const detailDesc = document.getElementById('detail-panel-desc');
+
+        let isZoomed = false;
+
+        function createPins() {
+            pinsOverlay.innerHTML = '';
+            pins.forEach(pin => {
+                const container = document.createElement('div');
+                container.className = 'marker-container absolute cursor-pointer pointer-events-auto z-20';
+                container.style.left = `${pin.x}%`;
+                container.style.top = `${pin.y}%`;
+                container.style.transform = 'translate(-50%, -50%)';
+
+                container.innerHTML = `
+                    <div class="relative flex items-center justify-center">
+                        <div class="marker-pulse"></div>
+                        <div class="marker-dot"></div>
+                    </div>
+                    <div class="pin-tooltip absolute z-50 bottom-full mb-6 left-1/2 w-48 p-3 bg-black/95 border border-amber-500/30 rounded-xl shadow-2xl">
+                        <div class="text-[8px] uppercase tracking-[0.2em] text-amber-500 font-bold mb-1 font-sans">${pin.panel}</div>
+                        <h3 class="text-sm font-bold text-white leading-tight">${pin.title}</h3>
+                        <div class="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-black/95"></div>
+                    </div>
+                `;
+
+                container.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openPanel(pin);
+                });
+
+                pinsOverlay.appendChild(container);
+            });
+        }
+
+        // Zoom functionality
+        interactiveContainer.addEventListener('click', (e) => {
+            isZoomed = !isZoomed;
+            if (isZoomed) {
+                interactiveContainer.classList.add('zoomed');
+                updateZoomPosition(e);
+            } else {
+                interactiveContainer.classList.remove('zoomed');
+                interactiveContainer.style.transform = '';
+            }
+        });
+
+        interactiveContainer.addEventListener('mousemove', (e) => {
+            if (isZoomed) {
+                updateZoomPosition(e);
+            }
+        });
+
+        function updateZoomPosition(e) {
+            const rect = interactiveContainer.parentElement.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+            
+            // Set transform origin based on mouse position
+            interactiveContainer.style.transformOrigin = `${x}% ${y}%`;
+        }
+
+        function openPanel(pin) {
+            detailTag.textContent = pin.panel;
+            detailTitle.textContent = pin.title;
+            detailDesc.textContent = pin.desc;
+            detailPanel.classList.add('active');
+        }
+
+        function closePanel() {
+            detailPanel.classList.remove('active');
+        }
+
+        // Close panel if clicking outside markers
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.marker-container') && !e.target.closest('#detail-panel') && !e.target.closest('#interactive-container')) {
+                closePanel();
+            }
+        });
+
+        // Initialize
+        window.onload = createPins;
+    </script>
+</body>
+</html>
