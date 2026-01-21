@@ -263,7 +263,7 @@
         }
         
         const status = document.getElementById('status');
-        if (selected.length === 0) status.innerText = "Select two items...";
+        if (selected.length === 0) status.innerText = "Select two items and click Synthesize to watch their fusion!";
         else if (selected.length === 1) status.innerText = `Adding ${selected[0].n}...`;
         else status.innerText = `${selected[0].n} + ${selected[1].n}`;
     }
@@ -271,7 +271,7 @@
     function resetLab() {
         selected = [];
         document.querySelectorAll('.item').forEach(i => i.classList.remove('selected'));
-        document.getElementById('status').innerText = "Select two items...";
+        document.getElementById('status').innerText = "Select two items and click Synthesize to watch their fusion!";
     }
 
     function showResult(title, text, emoji = "🧪") {
