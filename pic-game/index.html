@@ -135,7 +135,7 @@
             <!-- Overlays -->
             <!-- Grand Win Overlay -->
             <div id="grand-win-screen" class="hidden absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#5865F2]/60 backdrop-blur-md p-4">
-                <div class="bg-[#1E1F22] p-6 md:p-12 rounded-2xl md:rounded-3xl shadow-[0_0_50px_rgba(88,101,242,0.5)] border-4 md:border-8 border-[#5865F2] text-center w-full max-w-sm md:max-w-none">
+                <div class="bg-[#1E1F22] p-6 md:p-12 rounded-2xl md:rounded-3xl shadow-[0_0_50px_rgba(88,101,242,0.5)] border-4 md:border-8 border-[#5865F2] text-center w-full max-sm md:max-w-none">
                     <div class="text-4xl md:text-6xl mb-2 md:mb-4">🏆</div>
                     <h2 class="text-3xl md:text-6xl font-black text-white mb-2 italic uppercase">BIG WEINER!</h2>
                     <p class="text-sm md:text-2xl mb-2 text-gray-300 uppercase font-bold tracking-widest">You won all rounds!</p>
@@ -300,7 +300,14 @@
 
             if (marathon.revealsUsed >= marathon.maxReveals) {
                 elements.limitMsg.classList.remove('hidden');
-                elements.skipContainer.classList.remove('hidden');
+                
+                // --- UPDATE: Make the last round unskippable ---
+                if (marathon.currentRoundIndex < 9) {
+                    elements.skipContainer.classList.remove('hidden');
+                } else {
+                    // It's the last round, ensure skip stays hidden
+                    elements.skipContainer.classList.add('hidden');
+                }
             }
         }
 
