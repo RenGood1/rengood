@@ -164,6 +164,29 @@
                 grid.appendChild(div);
             });
 
+            let mTouch1, mTouch2;
+
+canvas.on('mouse:down', function (opt) {
+    if (opt.e.touches && opt.e.touches.length > 1) {
+        // Stop the browser from zooming the whole page
+        opt.e.preventDefault();
+        canvas.isDragging = true;
+        canvas.selection = false; // Disable selecting objects while panning
+    }
+});
+
+canvas.on('mouse:wheel', function(opt) {
+    var delta = opt.e.deltaY;
+    var zoom = canvas.getZoom();
+    zoom *= 0.999 ** delta;
+    if (zoom > 20) zoom = 20;
+    if (zoom < 0.01) zoom = 0.01;
+    canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
+    opt.e.preventDefault();
+    opt.e.stopPropagation();
+    updateMenu(); // Keep your arrow buttons attached!
+});
+
             window.addEventListener('resize', resizeCanvas);
             resizeCanvas(); 
             renderBody(PATH_NORMAL);
