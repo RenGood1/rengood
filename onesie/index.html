@@ -19,7 +19,6 @@
             display: flex; flex-direction: column; height: 100vh; overflow: hidden;
         }
 
-        /* Prevent long-press selection on mobile */
         .canvas-container {
             -webkit-tap-highlight-color: transparent;
             touch-action: none;
@@ -64,12 +63,22 @@
         .sticker-item { flex: 0 0 60px; height: 60px; background: white; border-radius: 8px; border: 1px solid #ddd; padding: 5px; cursor: pointer; }
         .sticker-item img { width: 100%; pointer-events: none; }
 
-        #context-menu { position: absolute; display: none; gap: 5px; background: white; padding: 6px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 100; }
+        /* Updated Context Menu Styling */
+        #context-menu { 
+            position: absolute; 
+            display: none; 
+            gap: 5px; 
+            background: white; 
+            padding: 6px; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
+            z-index: 100;
+            flex-direction: row;
+        }
         .menu-btn { padding: 8px 12px; font-size: 18px; border: none; background: #f0f0f0; border-radius: 6px; cursor: pointer; }
 
         select, .btn-main { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit; font-weight: 700; cursor: pointer; }
         .btn-main { background: var(--baby-blue); color: white; border: none; margin-top: 5px; }
-        .btn-toggle.active { background: #333; color: white; }
         
         .type-selector { display: flex; gap: 8px; margin-bottom: 10px; }
         .type-btn { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ddd; background: #eee; font-size: 0.8em; cursor: pointer; font-weight: bold; }
@@ -174,16 +183,13 @@
                 grid.appendChild(div);
             });
 
-            // Persistence triggers
             canvas.on('object:modified', saveProgress);
             canvas.on('object:added', (e) => { if(e.target && e.target.customType !== 'onesie') saveProgress(); });
             canvas.on('object:removed', saveProgress);
 
-            // Desktop Spacebar logic
             window.addEventListener('keydown', (e) => {
                 if (e.code === 'Space' && !isSpaceDown) {
-                    const active = canvas.getActiveObject();
-                    if (active && active.isEditing) return;
+                    if (canvas.getActiveObject() && canvas.getActiveObject().isEditing) return;
                     isSpaceDown = true;
                     canvas.defaultCursor = 'grab';
                     canvas.selection = false;
@@ -202,18 +208,14 @@
                 }
             });
 
-            // TOUCH & MOUSE EVENT HANDLING
             canvas.on('mouse:down', function (opt) {
                 var evt = opt.e;
-                
-                // MULTI-TOUCH DETECT (MOBILE ZOOM SHIELD)
                 if (evt.touches && evt.touches.length > 1) {
                     this.selection = false;
                     canvas.discardActiveObject(); 
                     canvas.forEachObject(obj => { if (obj.customType !== 'onesie') obj.selectable = false; });
                     return; 
                 }
-
                 if (isSpaceDown === true) {
                     this.isDragging = true;
                     this.selection = false;
@@ -240,8 +242,6 @@
             canvas.on('mouse:up', function () {
                 this.setViewportTransform(this.viewportTransform);
                 this.isDragging = false;
-                
-                // RESTORE SELECTION (Only if not in desktop spacebar mode)
                 if (!isSpaceDown) {
                     this.selection = true;
                     canvas.forEachObject(obj => { if (obj.customType !== 'onesie') obj.selectable = true; });
@@ -249,7 +249,6 @@
                 this.requestRenderAll();
             });
 
-            // NATIVE WHEEL / PINCH ZOOM
             canvas.on('mouse:wheel', function(opt) {
                 var delta = opt.e.deltaY;
                 var zoom = canvas.getZoom();
@@ -292,11 +291,8 @@
             switchBodyType(type);
             canvas.loadFromJSON(data.canvas, () => {
                 canvas.getObjects().forEach(obj => {
-                    if (obj.customType === 'onesie') {
-                        canvas.remove(obj); // Remove saved base to use current path-clipping version
-                    } else {
-                        obj.selectable = true;
-                    }
+                    if (obj.customType === 'onesie') canvas.remove(obj);
+                    else { obj.selectable = true; }
                 });
                 if(mainBody) canvas.sendToBack(mainBody);
                 canvas.renderAll();
@@ -378,16 +374,19 @@
             canvas.on('selection:cleared', () => document.getElementById('context-menu').style.display = 'none');
             canvas.on('object:moving', updateMenu);
             canvas.on('object:scaling', updateMenu);
+            canvas.on('object:rotating', updateMenu); // Added rotation listener
         }
 
+        // --- UPDATED: Controls anchored to bottom-right corner ---
         function updateMenu() {
             const active = canvas.getActiveObject();
             if (active && active.customType !== 'onesie') {
                 const menu = document.getElementById('context-menu');
                 const bound = active.getBoundingRect();
                 menu.style.display = 'flex';
-                menu.style.left = bound.left + 'px';
-                menu.style.top = (bound.top - 60) + 'px';
+                // Anchor to bottom-right (right edge of bound, bottom edge of bound)
+                menu.style.left = (bound.left + bound.width + 10) + 'px';
+                menu.style.top = (bound.top + bound.height - 20) + 'px';
             }
         }
 
