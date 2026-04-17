@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Onesie Studio</title>
+    <title>Charles' Onesie Studio</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Schoolbell&family=Playfair+Display:ital,wght@0,700;1,700&family=Fredoka+One&family=Pacifico&family=Indie+Flower&family=Bangers&family=Modak&family=Lobster&family=Comfortaa:wght@700&display=swap" rel="stylesheet">
     <style>
@@ -166,11 +166,16 @@
                 grid.appendChild(div);
             });
 
-            // Spacebar Panning Logic
+            // --- LISTENERS FOR AUTO-SAVE ---
+            canvas.on('object:modified', saveProgress);
+            canvas.on('object:added', (e) => { if(e.target !== mainBody) saveProgress(); });
+            canvas.on('object:removed', saveProgress);
+
+            // --- SPACEBAR PANNING ---
             window.addEventListener('keydown', (e) => {
                 if (e.code === 'Space' && !isSpaceDown) {
                     const active = canvas.getActiveObject();
-                    if (active && active.isEditing) return; // Don't pan if typing
+                    if (active && active.isEditing) return;
                     isSpaceDown = true;
                     canvas.defaultCursor = 'grab';
                     canvas.selection = false;
@@ -239,6 +244,35 @@
             canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
             canvas.freeDrawingBrush.color = "#ff0000";
             canvas.freeDrawingBrush.width = 5;
+
+            // --- LOAD SAVED WORK ---
+            loadProgress();
+        }
+
+        // --- PROGRESS PERSISTENCE ---
+        function saveProgress() {
+            const activeBtn = document.querySelector('.type-btn.active');
+            const state = {
+                canvas: canvas.toJSON(),
+                clothingType: activeBtn ? activeBtn.id : 'type-normal'
+            };
+            localStorage.setItem('charles_onesie_project', JSON.stringify(state));
+        }
+
+        function loadProgress() {
+            const savedData = localStorage.getItem('charles_onesie_project');
+            if (!savedData) return;
+            const data = JSON.parse(savedData);
+            const type = data.clothingType === 'type-full' ? 'full' : 'normal';
+            switchBodyType(type);
+            canvas.loadFromJSON(data.canvas, () => {
+                canvas.getObjects().forEach(obj => {
+                    if (obj.strokeWidth === 1 && obj.selectable === false) mainBody = obj;
+                    else obj.selectable = true;
+                });
+                canvas.renderAll();
+                resizeCanvas();
+            });
         }
 
         function resizeCanvas() {
@@ -266,12 +300,34 @@
             canvas.renderAll();
         }
 
-        function switchBodyType(t) { renderBody(t === 'normal' ? PATH_NORMAL : PATH_FULL); document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active')); event.target.classList.add('active'); }
-        function changeFabric(c) { if(mainBody) { mainBody.set('fill', c); canvas.renderAll(); } }
-        function addText() { const t = new fabric.IText('Charles', { left: baseWidth/2, top: baseHeight/2, originX: 'center', originY: 'center', fontFamily: 'Poppins', fontSize: 40 }); canvas.add(t).setActiveObject(t); if(window.innerWidth <= 1000) toggleMenu(); }
-        function changeFont(f) { const a = canvas.getActiveObject(); if(a && a.type === 'i-text') { a.set('fontFamily', f); canvas.renderAll(); } }
-        function updateHue(h) { const a = canvas.getActiveObject(); if(a) { a.set('fill', `hsl(${h}, 80%, 50%)`); canvas.renderAll(); } }
-        function addIcon(url) { fabric.Image.fromURL(url, (img) => { img.set({ left: baseWidth/2, top: baseHeight/2, originX: 'center', originY: 'center', scaleX: 0.2, scaleY: 0.2 }); canvas.add(img).setActiveObject(img); if(window.innerWidth <= 1000) toggleMenu(); }, { crossOrigin: 'anonymous' }); }
+        function switchBodyType(t) { 
+            renderBody(t === 'normal' ? PATH_NORMAL : PATH_FULL); 
+            document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active')); 
+            const btn = document.getElementById('type-' + t);
+            if(btn) btn.classList.add('active');
+            saveProgress();
+        }
+
+        function changeFabric(c) { if(mainBody) { mainBody.set('fill', c); canvas.renderAll(); saveProgress(); } }
+
+        function addText() { 
+            const t = new fabric.IText('Charles', { left: baseWidth/2, top: baseHeight/2, originX: 'center', originY: 'center', fontFamily: 'Poppins', fontSize: 40 }); 
+            canvas.add(t).setActiveObject(t); 
+            if(window.innerWidth <= 1000) toggleMenu(); 
+            saveProgress();
+        }
+
+        function changeFont(f) { const a = canvas.getActiveObject(); if(a && a.type === 'i-text') { a.set('fontFamily', f); canvas.renderAll(); saveProgress(); } }
+        function updateHue(h) { const a = canvas.getActiveObject(); if(a) { a.set('fill', `hsl(${h}, 80%, 50%)`); canvas.renderAll(); saveProgress(); } }
+        
+        function addIcon(url) { 
+            fabric.Image.fromURL(url, (img) => { 
+                img.set({ left: baseWidth/2, top: baseHeight/2, originX: 'center', originY: 'center', scaleX: 0.2, scaleY: 0.2 }); 
+                canvas.add(img).setActiveObject(img); 
+                if(window.innerWidth <= 1000) toggleMenu(); 
+                saveProgress();
+            }, { crossOrigin: 'anonymous' }); 
+        }
 
         document.getElementById('img-up').onchange = (e) => {
             const r = new FileReader();
@@ -281,6 +337,7 @@
                     img.set({ left: baseWidth/2, top: baseHeight/2, originX: 'center', originY: 'center'});
                     canvas.add(img).setActiveObject(img);
                     if(window.innerWidth <= 1000) toggleMenu();
+                    saveProgress();
                 });
             };
             r.readAsDataURL(e.target.files[0]);
@@ -289,32 +346,23 @@
         function toggleDraw() { canvas.isDrawingMode = !canvas.isDrawingMode; document.getElementById('draw-mode').innerHTML = canvas.isDrawingMode ? "Finish" : "Brush: OFF"; if(canvas.isDrawingMode && window.innerWidth <= 1000) toggleMenu(); }
         function updateBrushHue(h) { const c = `hsl(${h}, 80%, 50%)`; canvas.freeDrawingBrush.color = c; document.getElementById('brush-preview').style.backgroundColor = c; }
         function setBrushWidth(w) { canvas.freeDrawingBrush.width = parseInt(w, 10); }
-        function bringToFront() { const a = canvas.getActiveObject(); if(a){ canvas.bringToFront(a); canvas.renderAll(); } }
-        function sendToBack() { const a = canvas.getActiveObject(); if(a){ canvas.moveTo(a, 0); canvas.moveTo(mainBody, 0); canvas.renderAll(); } }
+        function bringToFront() { const a = canvas.getActiveObject(); if(a){ canvas.bringToFront(a); canvas.renderAll(); saveProgress(); } }
+        function sendToBack() { const a = canvas.getActiveObject(); if(a){ canvas.moveTo(a, 0); canvas.moveTo(mainBody, 0); canvas.renderAll(); saveProgress(); } }
         
         function duplicateObj() {
             const active = canvas.getActiveObject();
             if (!active || active === mainBody) return;
             active.clone(function(cloned) {
                 canvas.discardActiveObject();
-                cloned.set({
-                    left: cloned.left + 20,
-                    top: cloned.top + 20,
-                    evented: true,
-                });
-                if (cloned.type === 'activeSelection') {
-                    cloned.canvas = canvas;
-                    cloned.forEachObject(function(obj) { canvas.add(obj); });
-                    cloned.setCoords();
-                } else {
-                    canvas.add(cloned);
-                }
+                cloned.set({ left: cloned.left + 20, top: cloned.top + 20, evented: true });
+                canvas.add(cloned);
                 canvas.setActiveObject(cloned);
                 canvas.requestRenderAll();
+                saveProgress();
             });
         }
 
-        function deleteObj() { canvas.getActiveObjects().forEach(o => canvas.remove(o)); document.getElementById('context-menu').style.display = 'none'; }
+        function deleteObj() { canvas.getActiveObjects().forEach(o => canvas.remove(o)); document.getElementById('context-menu').style.display = 'none'; saveProgress(); }
         
         function setupContextMenu() {
             canvas.on('selection:created', updateMenu);
@@ -353,22 +401,12 @@
             const exportHeight = 670 + (padding * 2);
             const exportLeft = 75 - padding; 
             const exportTop = 30 - padding; 
-
-            const dataURL = canvas.toDataURL({
-                format: 'png',
-                multiplier: 2,
-                left: exportLeft,
-                top: exportTop,
-                width: exportWidth,
-                height: exportHeight
-            });
-
+            const dataURL = canvas.toDataURL({ format: 'png', multiplier: 2, left: exportLeft, top: exportTop, width: exportWidth, height: exportHeight });
             canvas.setZoom(oldZoom);
             canvas.viewportTransform = oldVpt;
             canvas.renderAll();
-
             const l = document.createElement('a');
-            l.download = 'charles-onesie-design.png';
+            l.download = 'onesie.png';
             l.href = dataURL;
             l.click();
         }
