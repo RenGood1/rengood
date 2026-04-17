@@ -140,6 +140,7 @@
             <div id="context-menu">
                 <button class="menu-btn" onclick="bringToFront()">↑</button>
                 <button class="menu-btn" onclick="sendToBack()">↓</button>
+                <button class="menu-btn" onclick="duplicateObj()">+</button>
                 <button class="menu-btn del" onclick="deleteObj()" style="background:#dc3545; color:white;">×</button>
             </div>
             <canvas id="c"></canvas>
@@ -152,6 +153,7 @@
         const PATH_NORMAL = "M180,60 C144,60 120,84 120,120 L120,480 C120,540 180,660 300,660 C420,660 480,540 480,480 L480,120 C480,84 456,60 420,60 L360,60 C360,96 240,96 240,60 Z";
         const PATH_FULL = "M180,60 C144,60 120,84 120,120 L100,250 L100,350 L120,350 L120,580 L220,680 L280,680 L280,500 L320,500 L320,680 L380,680 L480,580 L480,350 L500,350 L500,250 L480,120 C480,84 456,60 420,60 L360,60 C360,96 240,96 240,60 Z";
         let mainBody = null;
+        let isSpaceDown = false;
 
         function init() {
             const icons = ['rubber-duck', 'duck', 'baby-bottle', 'pacifier', 'teddy-bear', 'rocket--v1', 'rainbow', 'heart-puzzle', 'crown', 'safety-pin', 'rattle', 'baby-feet'];
@@ -164,28 +166,69 @@
                 grid.appendChild(div);
             });
 
-            let mTouch1, mTouch2;
+            // Spacebar Panning Logic
+            window.addEventListener('keydown', (e) => {
+                if (e.code === 'Space' && !isSpaceDown) {
+                    const active = canvas.getActiveObject();
+                    if (active && active.isEditing) return; // Don't pan if typing
+                    isSpaceDown = true;
+                    canvas.defaultCursor = 'grab';
+                    canvas.selection = false;
+                    canvas.forEachObject(obj => obj.selectable = false);
+                    canvas.renderAll();
+                }
+            });
 
-canvas.on('mouse:down', function (opt) {
-    if (opt.e.touches && opt.e.touches.length > 1) {
-        // Stop the browser from zooming the whole page
-        opt.e.preventDefault();
-        canvas.isDragging = true;
-        canvas.selection = false; // Disable selecting objects while panning
-    }
-});
+            window.addEventListener('keyup', (e) => {
+                if (e.code === 'Space') {
+                    isSpaceDown = false;
+                    canvas.defaultCursor = 'default';
+                    canvas.selection = true;
+                    canvas.forEachObject(obj => { if(obj !== mainBody) obj.selectable = true; });
+                    canvas.renderAll();
+                }
+            });
 
-canvas.on('mouse:wheel', function(opt) {
-    var delta = opt.e.deltaY;
-    var zoom = canvas.getZoom();
-    zoom *= 0.999 ** delta;
-    if (zoom > 20) zoom = 20;
-    if (zoom < 0.01) zoom = 0.01;
-    canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
-    opt.e.preventDefault();
-    opt.e.stopPropagation();
-    updateMenu(); // Keep your arrow buttons attached!
-});
+            canvas.on('mouse:down', function (opt) {
+                var evt = opt.e;
+                if (isSpaceDown === true || (evt.touches && evt.touches.length > 1)) {
+                    this.isDragging = true;
+                    this.lastPosX = evt.clientX || evt.touches[0].clientX;
+                    this.lastPosY = evt.clientY || evt.touches[0].clientY;
+                }
+            });
+
+            canvas.on('mouse:move', function (opt) {
+                if (this.isDragging) {
+                    var e = opt.e;
+                    var vpt = this.viewportTransform;
+                    const clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+                    const clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+                    vpt[4] += clientX - this.lastPosX;
+                    vpt[5] += clientY - this.lastPosY;
+                    this.requestRenderAll();
+                    this.lastPosX = clientX;
+                    this.lastPosY = clientY;
+                    updateMenu();
+                }
+            });
+
+            canvas.on('mouse:up', function () {
+                this.setViewportTransform(this.viewportTransform);
+                this.isDragging = false;
+            });
+
+            canvas.on('mouse:wheel', function(opt) {
+                var delta = opt.e.deltaY;
+                var zoom = canvas.getZoom();
+                zoom *= 0.999 ** delta;
+                if (zoom > 20) zoom = 20;
+                if (zoom < 0.01) zoom = 0.01;
+                canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
+                opt.e.preventDefault();
+                opt.e.stopPropagation();
+                updateMenu();
+            });
 
             window.addEventListener('resize', resizeCanvas);
             resizeCanvas(); 
@@ -248,6 +291,29 @@ canvas.on('mouse:wheel', function(opt) {
         function setBrushWidth(w) { canvas.freeDrawingBrush.width = parseInt(w, 10); }
         function bringToFront() { const a = canvas.getActiveObject(); if(a){ canvas.bringToFront(a); canvas.renderAll(); } }
         function sendToBack() { const a = canvas.getActiveObject(); if(a){ canvas.moveTo(a, 0); canvas.moveTo(mainBody, 0); canvas.renderAll(); } }
+        
+        function duplicateObj() {
+            const active = canvas.getActiveObject();
+            if (!active || active === mainBody) return;
+            active.clone(function(cloned) {
+                canvas.discardActiveObject();
+                cloned.set({
+                    left: cloned.left + 20,
+                    top: cloned.top + 20,
+                    evented: true,
+                });
+                if (cloned.type === 'activeSelection') {
+                    cloned.canvas = canvas;
+                    cloned.forEachObject(function(obj) { canvas.add(obj); });
+                    cloned.setCoords();
+                } else {
+                    canvas.add(cloned);
+                }
+                canvas.setActiveObject(cloned);
+                canvas.requestRenderAll();
+            });
+        }
+
         function deleteObj() { canvas.getActiveObjects().forEach(o => canvas.remove(o)); document.getElementById('context-menu').style.display = 'none'; }
         
         function setupContextMenu() {
@@ -276,21 +342,17 @@ canvas.on('mouse:wheel', function(opt) {
             });
         }
 
-        // --- UPDATED EXPORT LOGIC WITH INCREASED SPACE ---
         function exportDesign() {
             canvas.discardActiveObject();
             const oldZoom = canvas.getZoom();
             const oldVpt = [...canvas.viewportTransform];
-            
             canvas.setZoom(1);
             canvas.viewportTransform = [1, 0, 0, 1, 0, 0];
-            
-            // Increased padding for more "breathing room"
             const padding = 25; 
             const exportWidth = 450 + (padding * 2);
             const exportHeight = 670 + (padding * 2);
-            const exportLeft = 75 - padding; // Slightly shifted left to account for wider padding
-            const exportTop = 30 - padding;  // Shifted up to catch the collar properly
+            const exportLeft = 75 - padding; 
+            const exportTop = 30 - padding; 
 
             const dataURL = canvas.toDataURL({
                 format: 'png',
