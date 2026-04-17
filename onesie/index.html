@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Charles' Studio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Onesie Studio</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Schoolbell&family=Playfair+Display:ital,wght@0,700;1,700&family=Fredoka+One&family=Pacifico&family=Indie+Flower&family=Bangers&family=Modak&family=Lobster&family=Comfortaa:wght@700&display=swap" rel="stylesheet">
     <style>
@@ -13,251 +13,237 @@
         }
 
         body { 
-            font-family: 'Poppins', sans-serif; margin: 0; padding: 10px;
+            font-family: 'Poppins', sans-serif; margin: 0; padding: 0;
             background-color: var(--baby-blue);
             background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.15' fill-rule='evenodd'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");
-            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
         }
 
-        .header { text-align: center; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.3); margin-bottom: 20px; width: 100%; }
-        
-        .app-container { 
-            display: flex; flex-direction: row; gap: 20px; max-width: 1200px; width: 100%; 
-            background: var(--card-bg); padding: 20px; border-radius: 25px; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.1); border: 4px solid white;
-            box-sizing: border-box;
+        .top-nav { 
+            display: flex; justify-content: space-between; align-items: center; 
+            background: lightblue; padding: 10px 20px; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
         }
+        .burger-btn { background: none; border: none; font-size: 28px; cursor: pointer; color: #333; }
 
-        @media (max-width: 1000px) { 
-            .app-container { flex-direction: column; padding: 10px; } 
-            .controls { width: 100% !important; order: 2; }
-            .canvas-area { order: 1; height: 450px !important; min-height: 450px !important; }
-        }
-
-        .controls { width: 310px; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0; }
-        .control-group { background: #fff; padding: 15px; border-radius: 15px; border: 1px solid #e1eef5; }
-        label { display: block; margin-bottom: 8px; font-weight: 700; color: var(--baby-blue-dark); text-transform: uppercase; font-size: 0.8em; letter-spacing: 1px; }
-
-        .color-block-container { display: flex; align-items: center; gap: 12px; margin-top: 10px; background: #fdfdfd; padding: 8px; border-radius: 10px; border: 1px solid #eee; }
-        .color-preview-circle { width: 30px; height: 30px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); flex-shrink: 0; }
-        .color-slider-wrapper { flex-grow: 1; display: flex; align-items: center; }
-
-        input[type="range"].rainbow-slider {
-            -webkit-appearance: none; width: 100%; height: 8px; border-radius: 5px; outline: none;
-            background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);
-        }
-        input[type="range"].rainbow-slider::-webkit-slider-thumb {
-            -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: white; border: 2px solid #ddd; cursor: pointer;
-        }
-
-        .sticker-menu { 
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; 
-            max-height: 180px; overflow-y: auto; padding: 10px; border: 1px inset #eee; border-radius: 10px; background: #fafafa;
-        }
-        .sticker-item { cursor: pointer; background: white; border-radius: 8px; padding: 5px; border: 1px solid #eee; transition: transform 0.2s; }
-        .sticker-item:hover { transform: scale(1.1); border-color: var(--baby-blue); }
-        .sticker-item img { width: 100%; display: block; }
+        .app-container { display: flex; flex: 1; position: relative; width: 100%; overflow: hidden; }
 
         .canvas-area { 
-            flex-grow: 1; background: #E0E0E0; border-radius: 20px; 
+            flex: 1; background: #E0E0E0; position: relative; 
             display: flex; align-items: center; justify-content: center; 
-            position: relative; border: 2px dashed #d1d1d1; 
-            height: 650px; overflow: hidden; width: 100%;
+            overflow: hidden; touch-action: none; 
         }
 
-        .canvas-container { margin: auto !important; }
-        canvas#c { touch-action: none; outline: none; }
-
-        button { border: none; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; text-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .btn-add { background: var(--baby-blue); color: white; width: 100%; }
-        .btn-toggle { background: #6c757d; color: white; width: 100%; }
-        .btn-toggle.active { background: #333; }
-        .btn-download { background: #28a745; color: white; font-size: 1.1em; padding: 15px; margin-top: 10px; }
-        .btn-delete { background: #dc3545; color: white; font-size: 0.8em; }
+        .sidebar-wrapper {
+            position: fixed; top: 0; left: 0; height: 100%; width: 320px;
+            background: white; z-index: 2000; transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; flex-direction: column; box-shadow: 5px 0 15px rgba(0,0,0,0.2);
+        }
+        .sidebar-wrapper.active { transform: translateX(0); }
         
-        select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; margin-top: 5px; }
+        @media (min-width: 1001px) {
+            .burger-btn { display: none; }
+            .sidebar-wrapper { position: relative; transform: translateX(0); box-shadow: none; border-right: 1px solid #ddd; }
+            .close-drawer { display: none; }
+        }
+
+        .controls { padding: 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 15px; }
+        .control-group { background: #fdfdfd; padding: 15px; border-radius: 12px; border: 1px solid #e1eef5; }
+        label { display: block; margin-bottom: 8px; font-weight: 700; color: var(--baby-blue-dark); text-transform: uppercase; font-size: 0.75em; letter-spacing: 1px; }
+
+        .sticker-menu { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-height: 200px; overflow-y: auto; background: #fafafa; padding: 10px; border-radius: 10px; }
+        @media (max-width: 1000px) { .sticker-menu { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; } }
+        .sticker-item { flex: 0 0 60px; height: 60px; background: white; border-radius: 8px; border: 1px solid #ddd; padding: 5px; cursor: pointer; }
+        .sticker-item img { width: 100%; pointer-events: none; }
+
+        #context-menu { position: absolute; display: none; gap: 5px; background: white; padding: 6px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 100; }
+        .menu-btn { padding: 8px 12px; font-size: 18px; border: none; background: #f0f0f0; border-radius: 6px; cursor: pointer; }
+
+        select, .btn-main { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit; font-weight: 700; cursor: pointer; }
+        .btn-main { background: var(--baby-blue); color: white; border: none; margin-top: 5px; }
+        .btn-toggle.active { background: #333; color: white; }
+        
         .type-selector { display: flex; gap: 8px; margin-bottom: 10px; }
-        .type-btn { flex: 1; background: #eee; font-size: 0.8em; }
-        .type-btn.active { background: var(--baby-blue); color: white; }
+        .type-btn { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ddd; background: #eee; font-size: 0.8em; cursor: pointer; font-weight: bold; }
+        .type-btn.active { background: var(--baby-blue); color: white; border-color: var(--baby-blue); }
+
         .color-row { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
-        .color-dot { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .color-dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer; }
+        input[type="range"].rainbow-slider { -webkit-appearance: none; width: 100%; height: 8px; border-radius: 5px; background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%); outline: none; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>Onesie Studio</h1>
-        <p>Design a Custom onesie for Ducky & Daniel's Boy</p>
+    <div class="top-nav">
+        <button class="burger-btn" onclick="toggleMenu()">&#9776;</button>
+        <div style="font-weight:700; color:#333; font-size: 1.1em;">Charles' Onesie Studio</div>
+        <div style="width:28px;"></div>
     </div>
 
     <div class="app-container">
-        <div class="controls">
-            <div class="control-group">
-                <label>1. Clothing Type</label>
-                <div class="type-selector">
-                    <button id="type-normal" class="type-btn active" onclick="switchBodyType('normal')">Onesie</button>
-                    <button id="type-full" class="type-btn" onclick="switchBodyType('full')">Full Sleeper</button>
-                </div>
-                <label>Fabric Color</label>
-                <div class="color-row">
-                    <div class="color-dot" style="background:#ffffff" onclick="changeFabric('#ffffff')"></div>
-                    <div class="color-dot" style="background:#CDE5F1" onclick="changeFabric('#CDE5F1')"></div>
-                    <div class="color-dot" style="background:#FFFFD1" onclick="changeFabric('#FFFFD1')"></div>
-                    <input type="color" oninput="changeFabric(this.value)" style="width:32px; height:32px; padding:0; border:none; background:none; cursor:pointer;">
-                </div>
+        <div class="sidebar-wrapper" id="sidebar">
+            <div class="close-drawer" style="padding:15px; text-align:right;">
+                <button onclick="toggleMenu()" style="background:none; border:none; font-size:24px;">&#10005;</button>
             </div>
-
-            <div class="control-group">
-                <label>2. Text & Fonts</label>
-                <button class="btn-add" onclick="addText()">+ Add Text Block</button>
-                <select id="font-family" onchange="changeFont(this.value)">
-                    <option value="Poppins">Simple (Poppins)</option>
-                    <option value="Fredoka One">Bold Round (Fredoka)</option>
-                    <option value="Pacifico">Cursive (Pacifico)</option>
-                    <option value="Schoolbell">Handwritten (Schoolbell)</option>
-                    <option value="Playfair Display">Elegant (Playfair)</option>
-                    <option value="Indie Flower">Sketchy (Indie)</option>
-                    <option value="Bangers">Comic (Bangers)</option>
-                    <option value="Modak">Chubby (Modak)</option>
-                    <option value="Lobster">Retro (Lobster)</option>
-                    <option value="Comfortaa">Modern Round</option>
-                </select>
-                <div class="color-block-container">
-                    <div id="text-color-preview" class="color-preview-circle" style="background-color: #333333;"></div>
-                    <div class="color-slider-wrapper">
-                        <input type="range" min="0" max="360" value="0" class="rainbow-slider" oninput="updateHue(this.value)">
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label>1. Clothing Style</label>
+                    <div class="type-selector">
+                        <button id="type-normal" class="type-btn active" onclick="switchBodyType('normal')">Onesie</button>
+                        <button id="type-full" class="type-btn" onclick="switchBodyType('full')">Sleeper</button>
+                    </div>
+                    <div class="color-row">
+                        <div class="color-dot" style="background:#ffffff" onclick="changeFabric('#ffffff')"></div>
+                        <div class="color-dot" style="background:#CDE5F1" onclick="changeFabric('#CDE5F1')"></div>
+                        <div class="color-dot" style="background:#FFFFD1" onclick="changeFabric('#FFFFD1')"></div>
+                        <input type="color" oninput="changeFabric(this.value)" style="width:30px; height:30px; border:none; background:none; padding:0; cursor:pointer;">
                     </div>
                 </div>
-            </div>
 
-            <div class="control-group">
-                <label>3. Stickers</label>
-                <div class="sticker-menu" id="sticker-grid"></div>
-                <button class="btn-add" style="margin-top:10px; background:#A99AE8" onclick="document.getElementById('img-up').click()">Upload Photo</button>
-                <input type="file" id="img-up" hidden accept="image/*">
-            </div>
-
-            <div class="control-group">
-                <label>4. Freehand Brush</label>
-                <button id="draw-mode" class="btn-toggle" onclick="toggleDraw()">Brush: OFF</button>
-                <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
-                    <input type="range" id="brush-width-slider" min="1" max="40" value="5" oninput="setBrushWidth(this.value)">
-                    <div id="brush-color-preview" class="color-preview-circle" style="background-color: #ff0000; width:24px; height:24px;"></div>
+                <div class="control-group">
+                    <label>2. Text & Fonts</label>
+                    <button class="btn-main" onclick="addText()">+ Add Text</button>
+                    <select id="font-family" onchange="changeFont(this.value)" style="margin-top:10px;">
+                        <option value="Poppins">Simple</option>
+                        <option value="Fredoka One">Bold Round</option>
+                        <option value="Pacifico">Cursive</option>
+                        <option value="Schoolbell">Handwritten</option>
+                        <option value="Bangers">Comic</option>
+                        <option value="Modak">Chubby</option>
+                    </select>
+                    <input type="range" min="0" max="360" value="0" class="rainbow-slider" style="margin-top:15px;" oninput="updateHue(this.value)">
                 </div>
-                <div class="color-slider-wrapper" style="margin-top: 10px;">
-                    <input type="range" min="0" max="360" value="0" class="rainbow-slider" oninput="updateBrushHue(this.value)">
-                </div>
-            </div>
 
-            <button class="btn-delete" onclick="deleteObj()">Delete Selected</button>
-            <button class="btn-download" onclick="exportDesign()">Download Final PNG</button>
+                <div class="control-group">
+                    <label>3. Stickers & Upload</label>
+                    <div class="sticker-menu" id="sticker-grid"></div>
+                    <button class="btn-main" style="background:#A99AE8; margin-top:10px;" onclick="document.getElementById('img-up').click()">Upload Photo</button>
+                    <input type="file" id="img-up" hidden accept="image/*">
+                </div>
+
+                <div class="control-group">
+                    <label>4. Freehand Brush</label>
+                    <button id="draw-mode" class="btn-main btn-toggle" onclick="toggleDraw()" style="background:#6c757d;">Brush: OFF</button>
+                    <div style="display:flex; align-items:center; gap:10px; margin-top:12px;">
+                        <input type="range" id="brush-width" min="1" max="40" value="5" oninput="setBrushWidth(this.value)" style="flex:1">
+                        <div id="brush-preview" style="width:24px; height:24px; border-radius:50%; background:#ff0000; border:1px solid #ddd;"></div>
+                    </div>
+                    <input type="range" min="0" max="360" value="0" class="rainbow-slider" style="margin-top:12px;" oninput="updateBrushHue(this.value)">
+                </div>
+
+                <button onclick="exportDesign()" style="background:#28a745; color:white; padding:15px; border-radius:12px; border:none; font-weight:bold; font-size:1.1em; cursor:pointer;">Download PNG</button>
+            </div>
         </div>
 
         <div class="canvas-area" id="canvas-wrapper">
+            <div id="context-menu">
+                <button class="menu-btn" onclick="bringToFront()">↑</button>
+                <button class="menu-btn" onclick="sendToBack()">↓</button>
+                <button class="menu-btn del" onclick="deleteObj()" style="background:#dc3545; color:white;">×</button>
+            </div>
             <canvas id="c"></canvas>
         </div>
     </div>
 
     <script>
-        const canvas = new fabric.Canvas('c', {
-            isDrawingMode: false
-        });
-        
+        const baseWidth = 600, baseHeight = 700;
+        const canvas = new fabric.Canvas('c', { preserveObjectStacking: true, imageSmoothingEnabled: true });
         const PATH_NORMAL = "M180,60 C144,60 120,84 120,120 L120,480 C120,540 180,660 300,660 C420,660 480,540 480,480 L480,120 C480,84 456,60 420,60 L360,60 C360,96 240,96 240,60 Z";
         const PATH_FULL = "M180,60 C144,60 120,84 120,120 L100,250 L100,350 L120,350 L120,580 L220,680 L280,680 L280,500 L320,500 L320,680 L380,680 L480,580 L480,350 L500,350 L500,250 L480,120 C480,84 456,60 420,60 L360,60 C360,96 240,96 240,60 Z";
-
         let mainBody = null;
-        const baseWidth = 600;
-        const baseHeight = 700;
 
         function init() {
-            const icons = ['rubber-duck', 'duck', 'baby-bottle', 'pacifier', 'teddy-bear', 'rocket--v1', 'fairytale', 'cheburashka', 'rainbow', 'heart-puzzle', 'crown', 'safety-pin', 'rattle', 'baby-feet'];
+            const icons = ['rubber-duck', 'duck', 'baby-bottle', 'pacifier', 'teddy-bear', 'rocket--v1', 'rainbow', 'heart-puzzle', 'crown', 'safety-pin', 'rattle', 'baby-feet'];
             const grid = document.getElementById('sticker-grid');
             icons.forEach(icon => {
                 const div = document.createElement('div');
                 div.className = 'sticker-item';
-                div.innerHTML = `<img src="https://img.icons8.com/color/96/${icon}.png">`;
-                div.onclick = () => addIcon(`https://img.icons8.com/color/96/${icon}.png`);
+                div.innerHTML = `<img src="https://img.icons8.com/color/512/${icon}.png">`;
+                div.onclick = () => addIcon(`https://img.icons8.com/color/512/${icon}.png`);
                 grid.appendChild(div);
             });
 
-            setupHotkeys();
             window.addEventListener('resize', resizeCanvas);
             resizeCanvas(); 
             renderBody(PATH_NORMAL);
-            
-            // Initialize brush properties explicitly
+            setupContextMenu();
+            setupHotkeys();
+
             canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
             canvas.freeDrawingBrush.color = "#ff0000";
             canvas.freeDrawingBrush.width = 5;
-
-            load();
         }
 
         function resizeCanvas() {
             const wrapper = document.getElementById('canvas-wrapper');
-            const width = wrapper.clientWidth;
-            const height = wrapper.clientHeight;
-            
-            canvas.setWidth(width);
-            canvas.setHeight(height);
-            
-            const scale = Math.min(width / baseWidth, height / baseHeight);
+            canvas.setWidth(wrapper.clientWidth);
+            canvas.setHeight(wrapper.clientHeight);
+            const scale = Math.min(wrapper.clientWidth / baseWidth, wrapper.clientHeight / baseHeight) * 0.95;
             canvas.setZoom(scale);
-            
             const vpt = canvas.viewportTransform;
-            vpt[4] = (width - baseWidth * scale) / 2;
-            vpt[5] = (height - baseHeight * scale) / 2;
-            
+            vpt[4] = (wrapper.clientWidth - baseWidth * scale) / 2;
+            vpt[5] = (wrapper.clientHeight - baseHeight * scale) / 2;
             canvas.requestRenderAll();
         }
 
-        function updateHue(hue) {
-            const color = `hsl(${hue}, 80%, 50%)`;
-            document.getElementById('text-color-preview').style.backgroundColor = color;
-            const active = canvas.getActiveObject();
-            if(active && active.type === 'i-text') {
-                active.set('fill', color);
-                canvas.renderAll();
-                save();
-            }
-        }
-
-        // FIXED: Explicitly set the color on the brush object
-        function updateBrushHue(hue) {
-            const color = `hsl(${hue}, 80%, 50%)`;
-            document.getElementById('brush-color-preview').style.backgroundColor = color;
-            if(canvas.freeDrawingBrush) {
-                canvas.freeDrawingBrush.color = color;
-            }
-        }
+        function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
 
         function renderBody(pathStr) {
             if(mainBody) canvas.remove(mainBody);
-            
             mainBody = new fabric.Path(pathStr, { 
-                fill: '#ffffff', stroke: '#d1d1d1', strokeWidth: 1, 
-                selectable: false, evented: false,
-                left: baseWidth / 2, top: baseHeight / 2, originX: 'center', originY: 'center',
-                scaleX: 1.1, scaleY: 1.1
+                fill: '#ffffff', stroke: '#d1d1d1', strokeWidth: 1, selectable: false, evented: false,
+                left: baseWidth/2, top: baseHeight/2, originX: 'center', originY: 'center', scaleX: 1.1, scaleY: 1.1
             });
-            
-            canvas.add(mainBody);
-            canvas.sendToBack(mainBody);
-            
-            const clip = new fabric.Path(pathStr, { 
-                absolutePositioned: true,
-                left: baseWidth / 2, top: baseHeight / 2, originX: 'center', originY: 'center',
-                scaleX: 1.1, scaleY: 1.1
-            });
-            canvas.clipPath = clip;
-            canvas.requestRenderAll();
+            canvas.add(mainBody).sendToBack(mainBody);
+            canvas.clipPath = new fabric.Path(pathStr, { absolutePositioned: true, left: baseWidth/2, top: baseHeight/2, originX: 'center', originY: 'center', scaleX: 1.1, scaleY: 1.1 });
+            canvas.renderAll();
         }
 
-        function switchBodyType(type) {
-            document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('type-' + type).classList.add('active');
-            renderBody(type === 'normal' ? PATH_NORMAL : PATH_FULL);
+        function switchBodyType(t) { renderBody(t === 'normal' ? PATH_NORMAL : PATH_FULL); document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active')); event.target.classList.add('active'); }
+        function changeFabric(c) { if(mainBody) { mainBody.set('fill', c); canvas.renderAll(); } }
+        function addText() { const t = new fabric.IText('Charles', { left: baseWidth/2, top: baseHeight/2, originX: 'center', originY: 'center', fontFamily: 'Poppins', fontSize: 40 }); canvas.add(t).setActiveObject(t); if(window.innerWidth <= 1000) toggleMenu(); }
+        function changeFont(f) { const a = canvas.getActiveObject(); if(a && a.type === 'i-text') { a.set('fontFamily', f); canvas.renderAll(); } }
+        function updateHue(h) { const a = canvas.getActiveObject(); if(a) { a.set('fill', `hsl(${h}, 80%, 50%)`); canvas.renderAll(); } }
+        function addIcon(url) { fabric.Image.fromURL(url, (img) => { img.set({ left: baseWidth/2, top: baseHeight/2, originX: 'center', originY: 'center', scaleX: 0.2, scaleY: 0.2 }); canvas.add(img).setActiveObject(img); if(window.innerWidth <= 1000) toggleMenu(); }, { crossOrigin: 'anonymous' }); }
+
+        document.getElementById('img-up').onchange = (e) => {
+            const r = new FileReader();
+            r.onload = (f) => {
+                fabric.Image.fromURL(f.target.result, (img) => {
+                    img.scaleToWidth(150);
+                    img.set({ left: baseWidth/2, top: baseHeight/2, originX: 'center', originY: 'center'});
+                    canvas.add(img).setActiveObject(img);
+                    if(window.innerWidth <= 1000) toggleMenu();
+                });
+            };
+            r.readAsDataURL(e.target.files[0]);
+        };
+
+        function toggleDraw() { canvas.isDrawingMode = !canvas.isDrawingMode; document.getElementById('draw-mode').innerHTML = canvas.isDrawingMode ? "Finish" : "Brush: OFF"; if(canvas.isDrawingMode && window.innerWidth <= 1000) toggleMenu(); }
+        function updateBrushHue(h) { const c = `hsl(${h}, 80%, 50%)`; canvas.freeDrawingBrush.color = c; document.getElementById('brush-preview').style.backgroundColor = c; }
+        function setBrushWidth(w) { canvas.freeDrawingBrush.width = parseInt(w, 10); }
+        function bringToFront() { const a = canvas.getActiveObject(); if(a){ canvas.bringToFront(a); canvas.renderAll(); } }
+        function sendToBack() { const a = canvas.getActiveObject(); if(a){ canvas.moveTo(a, 0); canvas.moveTo(mainBody, 0); canvas.renderAll(); } }
+        function deleteObj() { canvas.getActiveObjects().forEach(o => canvas.remove(o)); document.getElementById('context-menu').style.display = 'none'; }
+        
+        function setupContextMenu() {
+            canvas.on('selection:created', updateMenu);
+            canvas.on('selection:updated', updateMenu);
+            canvas.on('selection:cleared', () => document.getElementById('context-menu').style.display = 'none');
+            canvas.on('object:moving', updateMenu);
+            canvas.on('object:scaling', updateMenu);
+        }
+
+        function updateMenu() {
+            const active = canvas.getActiveObject();
+            if (active && active !== mainBody) {
+                const menu = document.getElementById('context-menu');
+                const bound = active.getBoundingRect();
+                menu.style.display = 'flex';
+                menu.style.left = bound.left + 'px';
+                menu.style.top = (bound.top - 60) + 'px';
+            }
         }
 
         function setupHotkeys() {
@@ -267,100 +253,35 @@
             });
         }
 
-        function deleteObj() {
-            canvas.getActiveObjects().forEach(o => { if(o.selectable !== false) canvas.remove(o); });
-            canvas.discardActiveObject().requestRenderAll();
-            save();
-        }
-
-        function changeFabric(color) {
-            if(mainBody) {
-                mainBody.set('fill', color);
-                canvas.renderAll();
-                save();
-            }
-        }
-
-        function addText() {
-            const color = document.getElementById('text-color-preview').style.backgroundColor;
-            const t = new fabric.IText('Charles', { 
-                left: baseWidth / 2, top: baseHeight / 2, originX: 'center', originY: 'center',
-                fontFamily: 'Poppins', fontSize: 40, fill: color || '#333333' 
-            });
-            canvas.add(t).setActiveObject(t);
-            save();
-        }
-
-        function changeFont(f) {
-            const active = canvas.getActiveObject();
-            if(active && active.type === 'i-text') { active.set('fontFamily', f); canvas.renderAll(); save(); }
-        }
-
-        function addIcon(url) {
-            fabric.Image.fromURL(url, (img) => {
-                img.set({
-                    left: baseWidth / 2, top: baseHeight / 2, originX: 'center', originY: 'center',
-                    scaleX: 0.7, scaleY: 0.7
-                });
-                canvas.add(img).setActiveObject(img);
-                save();
-            }, { crossOrigin: 'anonymous' });
-        }
-
-        document.getElementById('img-up').onchange = (e) => {
-            const r = new FileReader();
-            r.onload = (f) => {
-                fabric.Image.fromURL(f.target.result, (img) => {
-                    img.scaleToWidth(150);
-                    img.set({ left: baseWidth / 2, top: baseHeight / 2, originX: 'center', originY: 'center'});
-                    canvas.add(img).setActiveObject(img);
-                });
-            };
-            r.readAsDataURL(e.target.files[0]);
-        };
-
-        // FIXED: Ensure brush inherits color on toggle
-        function toggleDraw() {
-            canvas.isDrawingMode = !canvas.isDrawingMode;
-            const btn = document.getElementById('draw-mode');
-            btn.innerHTML = canvas.isDrawingMode ? "Finish Drawing" : "Brush: OFF";
-            btn.classList.toggle('active');
-            
-            if(canvas.isDrawingMode) {
-                // Force sync the color from the preview block
-                const currentColor = document.getElementById('brush-color-preview').style.backgroundColor;
-                canvas.freeDrawingBrush.color = currentColor || "#ff0000";
-                canvas.freeDrawingBrush.width = parseInt(document.getElementById('brush-width-slider').value, 10);
-            } else {
-                save();
-            }
-        }
-
-        function setBrushWidth(w) { 
-            if(canvas.freeDrawingBrush) {
-                canvas.freeDrawingBrush.width = parseInt(w, 10); 
-            }
-        }
-
-        function save() { localStorage.setItem('charles_clean_vFinal_v3', JSON.stringify(canvas.toJSON())); }
-        function load() {
-            const s = localStorage.getItem('charles_clean_vFinal_v3');
-            if(s) canvas.loadFromJSON(s, () => {
-                canvas.getObjects().forEach(o => { if(o.type==='path' && o.strokeWidth===1) { o.selectable=false; mainBody=o; } });
-                resizeCanvas();
-            });
-        }
-
+        // --- UPDATED EXPORT LOGIC WITH INCREASED SPACE ---
         function exportDesign() {
             canvas.discardActiveObject();
             const oldZoom = canvas.getZoom();
-            const oldVpt = canvas.viewportTransform;
+            const oldVpt = [...canvas.viewportTransform];
+            
             canvas.setZoom(1);
             canvas.viewportTransform = [1, 0, 0, 1, 0, 0];
-            const dataURL = canvas.toDataURL({ format: 'png', multiplier: 2, left: 100, top: 40, width: 400, height: 650 });
+            
+            // Increased padding for more "breathing room"
+            const padding = 25; 
+            const exportWidth = 450 + (padding * 2);
+            const exportHeight = 670 + (padding * 2);
+            const exportLeft = 75 - padding; // Slightly shifted left to account for wider padding
+            const exportTop = 30 - padding;  // Shifted up to catch the collar properly
+
+            const dataURL = canvas.toDataURL({
+                format: 'png',
+                multiplier: 2,
+                left: exportLeft,
+                top: exportTop,
+                width: exportWidth,
+                height: exportHeight
+            });
+
             canvas.setZoom(oldZoom);
             canvas.viewportTransform = oldVpt;
             canvas.renderAll();
+
             const l = document.createElement('a');
             l.download = 'charles-onesie-design.png';
             l.href = dataURL;
