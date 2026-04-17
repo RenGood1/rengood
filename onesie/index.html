@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Charles' Onesie Studio</title>
+    <title>Onesie Studio</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Schoolbell&family=Playfair+Display:ital,wght@0,700;1,700&family=Fredoka+One&family=Pacifico&family=Indie+Flower&family=Bangers&family=Modak&family=Lobster&family=Comfortaa:wght@700&display=swap" rel="stylesheet">
     <style>
@@ -19,14 +19,6 @@
             display: flex; flex-direction: column; height: 100vh; overflow: hidden;
         }
 
-        /* Prevent long-press selection on mobile */
-        canvas {
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
-            outline: none;
-        }
-
         .top-nav { 
             display: flex; justify-content: space-between; align-items: center; 
             background: lightblue; padding: 10px 20px; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
@@ -38,8 +30,11 @@
         .canvas-area { 
             flex: 1; background: #E0E0E0; position: relative; 
             display: flex; align-items: center; justify-content: center; 
-            overflow: hidden; touch-action: none; 
+            overflow: hidden; 
         }
+
+        /* CRITICAL: Allow touches to pass to Fabric or Browser correctly */
+        #c { touch-action: none; }
 
         .sidebar-wrapper {
             position: fixed; top: 0; left: 0; height: 100%; width: 320px;
@@ -174,12 +169,7 @@
                 grid.appendChild(div);
             });
 
-            // --- AUTO-SAVE LISTENERS ---
-            canvas.on('object:modified', saveProgress);
-            canvas.on('object:added', (e) => { if(e.target !== mainBody) saveProgress(); });
-            canvas.on('object:removed', saveProgress);
-
-            // --- SPACEBAR & MULTI-TOUCH PANNING ---
+            // Spacebar Panning Logic
             window.addEventListener('keydown', (e) => {
                 if (e.code === 'Space' && !isSpaceDown) {
                     const active = canvas.getActiveObject();
@@ -202,20 +192,20 @@
                 }
             });
 
+            // MOBILE & DESKTOP TOUCH/MOUSE PANNING
             canvas.on('mouse:down', function (opt) {
                 var evt = opt.e;
-                
-                // MULTI-TOUCH DETECT: Disable canvas logic to allow native pinch-zoom
-                if (evt.touches && evt.touches.length > 1) {
-                    canvas.selection = false;
-                    canvas.forEachObject(obj => { if(obj !== mainBody) obj.evented = false; });
-                    return;
-                }
-
-                if (isSpaceDown === true) {
+                // If Spacebar is down OR it's a multi-touch (2+ fingers), enable dragging
+                if (isSpaceDown === true || (evt.touches && evt.touches.length > 1)) {
                     this.isDragging = true;
+                    this.selection = false;
                     this.lastPosX = evt.clientX || (evt.touches ? evt.touches[0].clientX : 0);
                     this.lastPosY = evt.clientY || (evt.touches ? evt.touches[0].clientY : 0);
+                    
+                    // If multi-touch, we stop Fabric from trying to select objects
+                    if (evt.touches && evt.touches.length > 1) {
+                        canvas.discardActiveObject();
+                    }
                 }
             });
 
@@ -225,8 +215,10 @@
                     var vpt = this.viewportTransform;
                     const clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
                     const clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+                    
                     vpt[4] += clientX - this.lastPosX;
                     vpt[5] += clientY - this.lastPosY;
+                    
                     this.requestRenderAll();
                     this.lastPosX = clientX;
                     this.lastPosY = clientY;
@@ -237,11 +229,12 @@
             canvas.on('mouse:up', function () {
                 this.setViewportTransform(this.viewportTransform);
                 this.isDragging = false;
-                // Re-enable object events after lifting fingers
-                canvas.selection = true;
-                canvas.forEachObject(obj => { if(obj !== mainBody) obj.evented = true; });
+                if (!isSpaceDown) {
+                    this.selection = true;
+                }
             });
 
+            // NATIVE ZOOM LOGIC
             canvas.on('mouse:wheel', function(opt) {
                 var delta = opt.e.deltaY;
                 var zoom = canvas.getZoom();
@@ -263,33 +256,6 @@
             canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
             canvas.freeDrawingBrush.color = "#ff0000";
             canvas.freeDrawingBrush.width = 5;
-
-            loadProgress();
-        }
-
-        function saveProgress() {
-            const activeBtn = document.querySelector('.type-btn.active');
-            const state = {
-                canvas: canvas.toJSON(),
-                clothingType: activeBtn ? activeBtn.id : 'type-normal'
-            };
-            localStorage.setItem('charles_onesie_project', JSON.stringify(state));
-        }
-
-        function loadProgress() {
-            const savedData = localStorage.getItem('charles_onesie_project');
-            if (!savedData) return;
-            const data = JSON.parse(savedData);
-            const type = data.clothingType === 'type-full' ? 'full' : 'normal';
-            switchBodyType(type);
-            canvas.loadFromJSON(data.canvas, () => {
-                canvas.getObjects().forEach(obj => {
-                    if (obj.strokeWidth === 1 && obj.selectable === false) mainBody = obj;
-                    else obj.selectable = true;
-                });
-                canvas.renderAll();
-                resizeCanvas();
-            });
         }
 
         function resizeCanvas() {
@@ -317,34 +283,12 @@
             canvas.renderAll();
         }
 
-        function switchBodyType(t) { 
-            renderBody(t === 'normal' ? PATH_NORMAL : PATH_FULL); 
-            document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active')); 
-            const btn = document.getElementById('type-' + t);
-            if(btn) btn.classList.add('active');
-            saveProgress();
-        }
-
-        function changeFabric(c) { if(mainBody) { mainBody.set('fill', c); canvas.renderAll(); saveProgress(); } }
-
-        function addText() { 
-            const t = new fabric.IText('Charles', { left: baseWidth/2, top: baseHeight/2, originX: 'center', originY: 'center', fontFamily: 'Poppins', fontSize: 40 }); 
-            canvas.add(t).setActiveObject(t); 
-            if(window.innerWidth <= 1000) toggleMenu(); 
-            saveProgress();
-        }
-
-        function changeFont(f) { const a = canvas.getActiveObject(); if(a && a.type === 'i-text') { a.set('fontFamily', f); canvas.renderAll(); saveProgress(); } }
-        function updateHue(h) { const a = canvas.getActiveObject(); if(a) { a.set('fill', `hsl(${h}, 80%, 50%)`); canvas.renderAll(); saveProgress(); } }
-        
-        function addIcon(url) { 
-            fabric.Image.fromURL(url, (img) => { 
-                img.set({ left: baseWidth/2, top: baseHeight/2, originX: 'center', originY: 'center', scaleX: 0.2, scaleY: 0.2 }); 
-                canvas.add(img).setActiveObject(img); 
-                if(window.innerWidth <= 1000) toggleMenu(); 
-                saveProgress();
-            }, { crossOrigin: 'anonymous' }); 
-        }
+        function switchBodyType(t) { renderBody(t === 'normal' ? PATH_NORMAL : PATH_FULL); document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active')); event.target.classList.add('active'); }
+        function changeFabric(c) { if(mainBody) { mainBody.set('fill', c); canvas.renderAll(); } }
+        function addText() { const t = new fabric.IText('Charles', { left: baseWidth/2, top: baseHeight/2, originX: 'center', originY: 'center', fontFamily: 'Poppins', fontSize: 40 }); canvas.add(t).setActiveObject(t); if(window.innerWidth <= 1000) toggleMenu(); }
+        function changeFont(f) { const a = canvas.getActiveObject(); if(a && a.type === 'i-text') { a.set('fontFamily', f); canvas.renderAll(); } }
+        function updateHue(h) { const a = canvas.getActiveObject(); if(a) { a.set('fill', `hsl(${h}, 80%, 50%)`); canvas.renderAll(); } }
+        function addIcon(url) { fabric.Image.fromURL(url, (img) => { img.set({ left: baseWidth/2, top: baseHeight/2, originX: 'center', originY: 'center', scaleX: 0.2, scaleY: 0.2 }); canvas.add(img).setActiveObject(img); if(window.innerWidth <= 1000) toggleMenu(); }, { crossOrigin: 'anonymous' }); }
 
         document.getElementById('img-up').onchange = (e) => {
             const r = new FileReader();
@@ -354,7 +298,6 @@
                     img.set({ left: baseWidth/2, top: baseHeight/2, originX: 'center', originY: 'center'});
                     canvas.add(img).setActiveObject(img);
                     if(window.innerWidth <= 1000) toggleMenu();
-                    saveProgress();
                 });
             };
             r.readAsDataURL(e.target.files[0]);
@@ -363,23 +306,32 @@
         function toggleDraw() { canvas.isDrawingMode = !canvas.isDrawingMode; document.getElementById('draw-mode').innerHTML = canvas.isDrawingMode ? "Finish" : "Brush: OFF"; if(canvas.isDrawingMode && window.innerWidth <= 1000) toggleMenu(); }
         function updateBrushHue(h) { const c = `hsl(${h}, 80%, 50%)`; canvas.freeDrawingBrush.color = c; document.getElementById('brush-preview').style.backgroundColor = c; }
         function setBrushWidth(w) { canvas.freeDrawingBrush.width = parseInt(w, 10); }
-        function bringToFront() { const a = canvas.getActiveObject(); if(a){ canvas.bringToFront(a); canvas.renderAll(); saveProgress(); } }
-        function sendToBack() { const a = canvas.getActiveObject(); if(a){ canvas.moveTo(a, 0); canvas.moveTo(mainBody, 0); canvas.renderAll(); saveProgress(); } }
+        function bringToFront() { const a = canvas.getActiveObject(); if(a){ canvas.bringToFront(a); canvas.renderAll(); } }
+        function sendToBack() { const a = canvas.getActiveObject(); if(a){ canvas.moveTo(a, 0); canvas.moveTo(mainBody, 0); canvas.renderAll(); } }
         
         function duplicateObj() {
             const active = canvas.getActiveObject();
             if (!active || active === mainBody) return;
             active.clone(function(cloned) {
                 canvas.discardActiveObject();
-                cloned.set({ left: cloned.left + 20, top: cloned.top + 20, evented: true });
-                canvas.add(cloned);
+                cloned.set({
+                    left: cloned.left + 20,
+                    top: cloned.top + 20,
+                    evented: true,
+                });
+                if (cloned.type === 'activeSelection') {
+                    cloned.canvas = canvas;
+                    cloned.forEachObject(function(obj) { canvas.add(obj); });
+                    cloned.setCoords();
+                } else {
+                    canvas.add(cloned);
+                }
                 canvas.setActiveObject(cloned);
                 canvas.requestRenderAll();
-                saveProgress();
             });
         }
 
-        function deleteObj() { canvas.getActiveObjects().forEach(o => canvas.remove(o)); document.getElementById('context-menu').style.display = 'none'; saveProgress(); }
+        function deleteObj() { canvas.getActiveObjects().forEach(o => canvas.remove(o)); document.getElementById('context-menu').style.display = 'none'; }
         
         function setupContextMenu() {
             canvas.on('selection:created', updateMenu);
@@ -418,10 +370,20 @@
             const exportHeight = 670 + (padding * 2);
             const exportLeft = 75 - padding; 
             const exportTop = 30 - padding; 
-            const dataURL = canvas.toDataURL({ format: 'png', multiplier: 2, left: exportLeft, top: exportTop, width: exportWidth, height: exportHeight });
+
+            const dataURL = canvas.toDataURL({
+                format: 'png',
+                multiplier: 2,
+                left: exportLeft,
+                top: exportTop,
+                width: exportWidth,
+                height: exportHeight
+            });
+
             canvas.setZoom(oldZoom);
             canvas.viewportTransform = oldVpt;
             canvas.renderAll();
+
             const l = document.createElement('a');
             l.download = 'charles-onesie-design.png';
             l.href = dataURL;
