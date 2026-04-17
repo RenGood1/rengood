@@ -19,6 +19,14 @@
             display: flex; flex-direction: column; height: 100vh; overflow: hidden;
         }
 
+        /* Prevent long-press selection on mobile */
+        canvas {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            outline: none;
+        }
+
         .top-nav { 
             display: flex; justify-content: space-between; align-items: center; 
             background: lightblue; padding: 10px 20px; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
@@ -166,12 +174,12 @@
                 grid.appendChild(div);
             });
 
-            // --- LISTENERS FOR AUTO-SAVE ---
+            // --- AUTO-SAVE LISTENERS ---
             canvas.on('object:modified', saveProgress);
             canvas.on('object:added', (e) => { if(e.target !== mainBody) saveProgress(); });
             canvas.on('object:removed', saveProgress);
 
-            // --- SPACEBAR PANNING ---
+            // --- SPACEBAR & MULTI-TOUCH PANNING ---
             window.addEventListener('keydown', (e) => {
                 if (e.code === 'Space' && !isSpaceDown) {
                     const active = canvas.getActiveObject();
@@ -196,10 +204,18 @@
 
             canvas.on('mouse:down', function (opt) {
                 var evt = opt.e;
-                if (isSpaceDown === true || (evt.touches && evt.touches.length > 1)) {
+                
+                // MULTI-TOUCH DETECT: Disable canvas logic to allow native pinch-zoom
+                if (evt.touches && evt.touches.length > 1) {
+                    canvas.selection = false;
+                    canvas.forEachObject(obj => { if(obj !== mainBody) obj.evented = false; });
+                    return;
+                }
+
+                if (isSpaceDown === true) {
                     this.isDragging = true;
-                    this.lastPosX = evt.clientX || evt.touches[0].clientX;
-                    this.lastPosY = evt.clientY || evt.touches[0].clientY;
+                    this.lastPosX = evt.clientX || (evt.touches ? evt.touches[0].clientX : 0);
+                    this.lastPosY = evt.clientY || (evt.touches ? evt.touches[0].clientY : 0);
                 }
             });
 
@@ -221,6 +237,9 @@
             canvas.on('mouse:up', function () {
                 this.setViewportTransform(this.viewportTransform);
                 this.isDragging = false;
+                // Re-enable object events after lifting fingers
+                canvas.selection = true;
+                canvas.forEachObject(obj => { if(obj !== mainBody) obj.evented = true; });
             });
 
             canvas.on('mouse:wheel', function(opt) {
@@ -245,11 +264,9 @@
             canvas.freeDrawingBrush.color = "#ff0000";
             canvas.freeDrawingBrush.width = 5;
 
-            // --- LOAD SAVED WORK ---
             loadProgress();
         }
 
-        // --- PROGRESS PERSISTENCE ---
         function saveProgress() {
             const activeBtn = document.querySelector('.type-btn.active');
             const state = {
@@ -406,7 +423,7 @@
             canvas.viewportTransform = oldVpt;
             canvas.renderAll();
             const l = document.createElement('a');
-            l.download = 'onesie.png';
+            l.download = 'charles-onesie-design.png';
             l.href = dataURL;
             l.click();
         }
