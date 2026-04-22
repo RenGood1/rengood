@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Emma-on-Thames</title>
     <style>
         :root {
@@ -26,32 +26,30 @@
             flex-direction: column;
         }
 
-     #map-viewport {
+    #map-viewport {
     flex: 1;
-    overflow: auto; /* Allows the scroll */
+    overflow: auto; /* Crucial: allows scrolling/panning */
     background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
     display: flex;
-    flex-direction: column;
-    align-items: center; /* Horizontally centers the SVG */
-    justify-content: flex-start; /* Keeps Scotland at the top */
-    -webkit-overflow-scrolling: touch;
-    width: 100vw;
+    justify-content: center; /* Centers the map horizontally in the scroll area */
+    align-items: flex-start;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling for iOS */
 }
 
 svg {
     display: block;
-    /* Use 'min-height' to ensure it's scrollable, 
-       but 'width' to ensure it fits the screen width */
-    width: 95vw; 
+    /* Change width to 250vw to make it 2.5x the width of the phone screen */
+    width: 250vw; 
     height: auto;
-    min-height: 150vh; 
+    /* Keep the min-height tall for the vertical UK shape */
+    min-height: 250vh; 
     
     margin: 0 auto;
     padding-top: 40px;
-    padding-bottom: 400px; /* Space so the drawer doesn't hide the South Coast */
+    /* Massive padding at bottom so the UI drawer never blocks the South Coast */
+    padding-bottom: 500px; 
     
     filter: drop-shadow(0 0 15px rgba(0, 255, 204, 0.2));
-    /* Force ignore any internal SVG positioning */
     transform: none !important; 
 }
 
@@ -174,8 +172,8 @@ svg {
     <div class="tap-instruction">TAP THE MAP TO DISCOVER</div>
 
     <div id="map-viewport">
-<svg id="gb-map" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMin meet">
-     <g id="features">
+<svg id="gb-map" viewBox="350 0 600 1000" preserveAspectRatio="xMidYMin meet">
+         <g id="features">
   <path d="M431.8 567.2l0.3-0.5 0.1-0.7-0.3-2.1 0.2-0.6 0.3-0.1 0.1-0.1-0.2-0.7 1.3-2.1 0.5-0.5 0.6-0.5 2.9-0.4 0.4-0.5 0.4-0.5 0.4-0.6 0.9-0.3-0.4 1.5 0.7 0.1 2.1-0.7 0.9 0.1 1.3 0.7-0.1 0.1-1.1 1.3 1 1.1 1 2.8 0.8-0.3 1.3 0.3-0.5 1.6 0.2 1.9 0.5 1.3 1.4 1.1 0.4 1.9 0.5 0.6-0.3 1 0 2.4 1.4 1.9-1.7 0.1-1.1 0.7-1.8-0.7-0.3-0.8-2.2-2.2-1.6 0.5-0.5-0.2 0.5-0.7-0.6-0.7 0-1.5-3.2-0.3-0.1-0.6 0.9-1.3-0.1-0.3-2.6-0.7-1.3 0.6-1.3-0.2-0.9-1.6-1-0.5-0.1-0.1z" id="GBDRY" name="Derry">
   </path>
   <path d="M418.1 594.8l-0.1-1.6-0.5-0.1-0.7 0.5-0.8 0.4-0.7-0.3-1.5-1.3-0.7-0.4-0.3 0.1-0.8 0.6-0.4-0.1-0.3-0.4-0.5-1-0.4-0.2-0.8-0.3-0.8-0.5-0.4-0.8 0.4-1.2-0.3-0.2-0.8-0.6 2.4-1.2 1.6-1.6 0.6 0 1.3 1.2 1.6 0.8 1.6-0.1 1.6-0.9 1.6-1.7 0.9-0.5 1.6 0.5 1.4-0.4 0.8 0.4 0.5 0.1 0.6-0.3 0-0.2-0.2-0.2-0.2-0.7 0.1-2 0.3-1.1 3.4-4.2 0.8-1.5 0.5-1.7 0-0.9-0.2-2 0.1-1 0.4-0.5 0.9-0.4 0.1-0.1 0.1 0.1 1 0.5 0.9 1.6 1.3 0.2 1.3-0.6 2.6 0.7 0.1 0.3-0.9 1.3 0.1 0.6 3.2 0.3 0 1.5 0.6 0.7-0.5 0.7 0.5 0.2 1.6-0.5 2.2 2.2 0.3 0.8 1.8 0.7 1.1-0.7 1.7-0.1 0.9-0.8 1.2 0.2 1.1-0.4 1.2 1-0.1 1.1 0.9 1 0.1 0.6-0.2 0.6-1.3 0.6-1.2 0-0.9-0.6-1.2-0.2-1.1 0.7-2.8 0.7-1.3 0.9-4.4-0.3-1.7 0.7-1.3 1.2-0.6-0.4-1.2 0.2-1.1 1.8-2.8 1.4-1.1 2-1.2 1-0.1 1-1.1 0.1-0.8-0.7-1.3 0.2-1.6 0.9-0.1-0.5-0.6 0.1-2.5 1.4-1.9-0.1-1.9 2-0.7-0.3z" id="GBSTB" name="Strabane">
@@ -1154,10 +1152,10 @@ const prefixes = [
 ];
 
 const middles = [
-    "Bum-crack", "Brexit-Regret", "Ketamine-Cottage", "Nonces-Landing", "Milf-Meadow", 
-    "Sausage-Fest", "Bell-End", "Sticky-Finger", "Sweaty-Crotch", "Wimbledon", "Greggs",
-    "Yorkshire-Pudding", "Spunk", "Kebab", "Pint-of-Mild", "Bin-Fire", "Council-House",
-    "Tracksuit", "Vape-Shop", "Hand-Job", "OnlyFans", "Tinder-Fail", "Nando's", "Wetherspoons"
+    "Bum", "Regret", "Ketamine", "Nonces", "Milf", 
+    "Sausage-Fest", "Bellend", "Sticky", "Sweaty", "Wimbledon", "Greggs",
+    "Crotch", "Spunk", "Kebab", "Pint-of-Mild", "Bin-Fire", "Pub-",
+    "Tracksuit", "Vape-Shop", "Hand-Job", "OnlyFans", "Tinder", "Nando's", "Wetherspoons"
 ];
 
 const suffixes = [
@@ -1247,7 +1245,7 @@ const memeRatings = [
             const m = middles[Math.floor(Math.random() * middles.length)];
             const s = suffixes[Math.floor(Math.random() * suffixes.length)];
 
-            document.getElementById('town-name').innerText = `${p} ${m}${s}`;
+            document.getElementById('town-name').innerText = `${p}${m}${s}`;
             document.getElementById('town-fact').innerText = facts[Math.floor(Math.random() * facts.length)];
             document.getElementById('voice-prompt').innerText = voicePrompts[Math.floor(Math.random() * voicePrompts.length)];
             document.getElementById('meme-rating').innerText = memeRatings[Math.floor(Math.random() * memeRatings.length)];
