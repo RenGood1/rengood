@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Emma's Eye Hitter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            touch-action: none; /* Prevent scrolling while playing */
+            overflow: hidden;
+            background-color: #0f172a;
+        }
+        canvas {
+            touch-action: none;
+            cursor: crosshair;
+            display: block;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen text-white overflow-hidden">
+
+    <!-- Game Header -->
+    <header id="gameHeader" class="p-4 flex justify-between items-center z-10 shrink-0">
+        <div>
+            <h1 class="text-xl font-black tracking-tight text-blue-400">Emma's<span class="text-white">Eye</span></h1>
+            <div id="livesContainer" class="flex gap-1 mt-1">
+                <div class="w-3 h-3 bg-red-500 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.6)]"></div>
+                <div class="w-3 h-3 bg-red-500 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.6)]"></div>
+                <div class="w-3 h-3 bg-red-500 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.6)]"></div>
+            </div>
+        </div>
+        <div class="text-right">
+            <div class="text-sm font-bold text-slate-400 uppercase">Score</div>
+            <div id="scoreDisplay" class="text-3xl font-black text-white">0</div>
+        </div>
+    </header>
+
+    <!-- Main Game Area -->
+    <main id="gameContainer" class="flex-grow relative overflow-hidden">
+        <canvas id="gameCanvas" class="w-full h-full"></canvas>
+
+        <!-- Message Overlay -->
+        <div id="overlay" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none transition-opacity duration-300 opacity-0 z-20">
+            <div class="glass-panel p-8 rounded-3xl text-center shadow-2xl min-w-[280px]">
+                <h2 id="overlayTitle" class="text-4xl font-black mb-2 uppercase italic">BULLSEYE!</h2>
+                <p id="overlaySub" class="text-lg text-slate-300 mb-6 font-medium">+100 Points</p>
+                
+                <div id="finalScoreStats" class="hidden mb-6 py-4 border-y border-white/10">
+                    <div class="text-slate-400 text-xs uppercase font-bold tracking-widest mb-1">Total Score</div>
+                    <div id="finalScoreValue" class="text-5xl font-black text-blue-400">0</div>
+                </div>
+
+                <button id="restartBtn" class="pointer-events-auto w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 px-8 rounded-2xl transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2">
+                    <span>NEXT DART</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Instruction Indicator -->
+        <div id="instructions" class="absolute bottom-32 left-1/2 -translate-x-1/2 text-center pointer-events-none transition-opacity">
+            <div class="w-10 h-10 border-2 border-dashed border-blue-400/50 rounded-full mx-auto mb-2 animate-pulse"></div>
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Pull back & aim</p>
+        </div>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const gameContainer = document.getElementById('gameContainer');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const overlay = document.getElementById('overlay');
+        const overlayTitle = document.getElementById('overlayTitle');
+        const overlaySub = document.getElementById('overlaySub');
+        const restartBtn = document.getElementById('restartBtn');
+        const instructions = document.getElementById('instructions');
+        const livesContainer = document.getElementById('livesContainer');
+        const finalScoreStats = document.getElementById('finalScoreStats');
+        const finalScoreValue = document.getElementById('finalScoreValue');
+
+        let width, height;
+        let score = 0;
+        let lives = 3;
+        let gameState = 'ready'; // ready, aiming, throwing, landed, result
+        
+        const gravity = 0.25; 
+        const friction = 0.98;
+        const target = {
+            x: 0,
+            y: 100,
+            baseY: 100, 
+            width: 80,
+            height: 80,
+            speed: 2,
+            baseSpeed: 2,
+            direction: 1,
+            oscillationTimer: 0,
+            changeTimer: 0,
+            img: new Image()
+        };
+
+        // --- UPDATE THIS PATH TO YOUR IMAGE ---
+        // Change 'target.png' to the name of your file
+        target.img.src = "./images/emma-eye.png"; 
+
+        // Fallback in case the image fails to load
+        target.img.onerror = () => {
+            console.log("Image not found in /images folder, using fallback emoji.");
+            target.img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='15' fill='%233b82f6'/%3E%3Ctext y='50%25' x='50%25' font-size='50' text-anchor='middle' dy='.3em'%3E🎯%3C/text%3E%3C/svg%3E";
+        };
+
+        const dart = {
+            x: 0,
+            y: 0,
+            vx: 0,
+            vy: 0,
+            angle: 0,
+            active: false,
+            trail: []
+        };
+
+        const input = {
+            startX: 0,
+            startY: 0,
+            currentX: 0,
+            currentY: 0,
+            isDragging: false
+        };
+
+        function resetDart() {
+            dart.x = width / 2;
+            dart.y = height - 200; 
+            dart.vx = 0;
+            dart.vy = 0;
+            dart.active = false;
+            dart.trail = [];
+            dart.angle = -Math.PI / 2;
+        }
+
+        function updateLivesUI() {
+            livesContainer.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                const heart = document.createElement('div');
+                heart.className = `w-3 h-3 rounded-full transition-all duration-300 ${i < lives ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]' : 'bg-slate-700'}`;
+                livesContainer.appendChild(heart);
+            }
+        }
+
+        function showOverlay(title, sub, btnText) {
+            overlayTitle.innerText = title;
+            overlaySub.innerText = sub;
+            restartBtn.querySelector('span').innerText = btnText;
+            overlay.classList.remove('opacity-0', 'pointer-events-none');
+            overlay.classList.add('opacity-100');
+        }
+
+        function hideOverlay() {
+            overlay.classList.add('opacity-0', 'pointer-events-none');
+            overlay.classList.remove('opacity-100');
+            
+            if (lives <= 0) {
+                score = 0;
+                lives = 3;
+                scoreDisplay.innerText = score;
+                updateLivesUI();
+                finalScoreStats.classList.add('hidden');
+                randomizeTarget();
+            } else {
+                randomizeTarget();
+            }
+            
+            resetDart();
+            gameState = 'ready';
+            instructions.style.opacity = '1';
+        }
+
+        function endGame(title) {
+            finalScoreValue.innerText = score;
+            finalScoreStats.classList.remove('hidden');
+            showOverlay(title, "She deserves it, HIT HER EYE", "RESTART GAME");
+        }
+
+        function resize() {
+            const rect = gameContainer.getBoundingClientRect();
+            width = canvas.width = rect.width;
+            height = canvas.height = rect.height;
+            
+            target.width = Math.min(width * 0.25, 100);
+            target.height = target.width;
+            
+            resetDart();
+            randomizeTarget();
+        }
+
+        function randomizeTarget() {
+            const minY = height * 0.1;
+            const maxY = height * 0.35;
+            target.baseY = Math.random() * (maxY - minY) + minY;
+            target.y = target.baseY;
+
+            const minX = 20;
+            const maxX = width - target.width - 20;
+            target.x = Math.random() * (maxX - minX) + minX;
+
+            target.direction = Math.random() > 0.5 ? 1 : -1;
+            target.baseSpeed = 2.5 + (score / 150); 
+            target.speed = target.baseSpeed;
+            target.oscillationTimer = Math.random() * Math.PI * 2;
+            target.changeTimer = Math.random() * 100 + 50; 
+        }
+
+        function hitTarget() {
+            dart.active = false;
+            const centerT = target.x + target.width / 2;
+            const distanceToCenter = Math.abs(dart.x - centerT);
+            
+            let points = Math.max(20, Math.floor(100 - (distanceToCenter / (target.width / 2)) * 80));
+            
+            const isTopHit = dart.y < (target.y + target.height * 0.25);
+            let hitTitle = "STRIKE!";
+            
+            if (isTopHit) {
+                points *= 2;
+                hitTitle = "TOP EDGE! x2";
+            }
+            
+            score += points;
+            scoreDisplay.innerText = score;
+            
+            showOverlay(hitTitle, `+${points} Points. Speeding up!`, "KEEP GOING");
+            gameState = 'result';
+        }
+
+        function missed() {
+            dart.active = false;
+            lives--; 
+            updateLivesUI();
+            
+            if (lives <= 0) {
+                endGame("GAME OVER");
+            } else {
+                showOverlay("MISSED!", `${lives} chances left!`, "TRY AGAIN");
+            }
+            gameState = 'result';
+        }
+
+        function update() {
+            if (gameState === 'result') return;
+
+            target.changeTimer--;
+            if (target.changeTimer <= 0) {
+                if (Math.random() > 0.6) target.direction *= -1;
+                target.changeTimer = Math.random() * 100 + 40; 
+            }
+
+            const speedVar = Math.sin(Date.now() / 400) * (1.5 + score/500);
+            target.speed = target.baseSpeed + speedVar;
+
+            target.x += target.speed * target.direction;
+
+            if (target.x + target.width > width) {
+                target.x = width - target.width;
+                target.direction = -1;
+            } else if (target.x < 0) {
+                target.x = 0;
+                target.direction = 1;
+            }
+
+            target.oscillationTimer += 0.05;
+            target.y = target.baseY + Math.sin(target.oscillationTimer) * 25;
+
+            if (dart.active) {
+                dart.trail.push({ x: dart.x, y: dart.y });
+                if (dart.trail.length > 15) dart.trail.shift();
+
+                dart.x += dart.vx;
+                dart.y += dart.vy;
+                dart.vy += gravity;
+                dart.vx *= friction;
+                
+                dart.angle = Math.atan2(dart.vy, dart.vx);
+
+                const targetCenterX = target.x + target.width / 2;
+                const targetCenterY = target.y + target.height / 2;
+                const dist = Math.hypot(dart.x - targetCenterX, dart.y - targetCenterY);
+
+                if (dist < target.width / 2 + 10) {
+                    hitTarget();
+                } else if (dart.y > height + 100 || dart.x < -100 || dart.x > width + 100) {
+                    missed();
+                }
+            }
+        }
+
+        function drawTrajectory() {
+            if (!input.isDragging) return;
+
+            const dx = (input.startX - input.currentX) * 0.12;
+            const dy = (input.startY - input.currentY) * 0.12;
+            
+            const power = Math.min(Math.sqrt(dx*dx + dy*dy), 25);
+            const angle = Math.atan2(dy, dx);
+            
+            let tempX = dart.x;
+            let tempY = dart.y;
+            let tempVx = Math.cos(angle) * power;
+            let tempVy = Math.sin(angle) * power;
+
+            ctx.beginPath();
+            ctx.setLineDash([4, 8]);
+            ctx.strokeStyle = 'rgba(59, 130, 246, 0.6)';
+            ctx.lineWidth = 2;
+            ctx.moveTo(tempX, tempY);
+
+            for (let i = 0; i < 30; i++) {
+                tempX += tempVx;
+                tempY += tempVy;
+                tempVy += gravity;
+                tempVx *= friction;
+                ctx.lineTo(tempX, tempY);
+                if (tempY < 0 || tempY > height) break;
+            }
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+
+            // Subtle Grid
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+            ctx.lineWidth = 1;
+            for(let i=0; i<width; i+=width/8) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, height); ctx.stroke();
+            }
+
+            // Target fallback drawing
+            if (target.img.complete && target.img.naturalWidth > 0) {
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = 'rgba(59, 130, 246, 0.4)';
+                ctx.drawImage(target.img, target.x, target.y, target.width, target.height);
+                ctx.shadowBlur = 0;
+            } else {
+                ctx.fillStyle = '#3b82f6';
+                ctx.beginPath();
+                ctx.roundRect(target.x, target.y, target.width, target.height, 10);
+                ctx.fill();
+            }
+
+            if (gameState === 'aiming') {
+                drawTrajectory();
+            }
+
+            // Dart Trail
+            if (dart.active && dart.trail.length > 1) {
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(59, 130, 246, 0.4)';
+                ctx.lineWidth = 3;
+                ctx.lineCap = 'round';
+                ctx.moveTo(dart.trail[0].x, dart.trail[0].y);
+                for(let p of dart.trail) ctx.lineTo(p.x, p.y);
+                ctx.stroke();
+            }
+
+            // Draw Dart
+            ctx.save();
+            ctx.translate(dart.x, dart.y);
+            const scale = 1.2;
+            ctx.scale(scale, scale);
+
+            if (dart.active) {
+                ctx.rotate(dart.angle);
+            } else if (gameState === 'aiming') {
+                const angle = Math.atan2(input.startY - input.currentY, input.startX - input.currentX);
+                ctx.rotate(angle);
+                
+                ctx.restore(); ctx.save();
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+                ctx.arc(input.startX, input.startY, 45, 0, Math.PI*2);
+                ctx.stroke();
+                ctx.translate(dart.x, dart.y);
+                ctx.scale(scale, scale);
+                ctx.rotate(angle);
+            } else {
+                ctx.rotate(-Math.PI/2);
+            }
+
+            ctx.fillStyle = '#f8fafc';
+            ctx.shadowBlur = 4;
+            ctx.shadowColor = 'black';
+            ctx.beginPath();
+            ctx.moveTo(22, 0);
+            ctx.lineTo(-12, 7);
+            ctx.lineTo(-12, -7);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#ef4444';
+            ctx.shadowBlur = 0;
+            ctx.beginPath();
+            ctx.moveTo(-12, 0);
+            ctx.lineTo(-28, 14);
+            ctx.lineTo(-22, 0);
+            ctx.lineTo(-28, -14);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+
+            requestAnimationFrame(() => {
+                update();
+                draw();
+            });
+        }
+
+        function handleStart(e) {
+            if (gameState !== 'ready') return;
+            const rect = canvas.getBoundingClientRect();
+            const t = e.touches ? e.touches[0] : e;
+            input.startX = t.clientX - rect.left;
+            input.startY = t.clientY - rect.top;
+            input.currentX = input.startX;
+            input.currentY = input.startY;
+            input.isDragging = true;
+            gameState = 'aiming';
+            instructions.style.opacity = '0';
+        }
+
+        function handleMove(e) {
+            if (!input.isDragging) return;
+            const rect = canvas.getBoundingClientRect();
+            const t = e.touches ? e.touches[0] : e;
+            input.currentX = t.clientX - rect.left;
+            input.currentY = t.clientY - rect.top;
+        }
+
+        function handleEnd(e) {
+            if (!input.isDragging) return;
+            input.isDragging = false;
+            
+            const dx = (input.startX - input.currentX) * 0.12;
+            const dy = (input.startY - input.currentY) * 0.12;
+            const power = Math.min(Math.sqrt(dx*dx + dy*dy), 25);
+            
+            if (power > 2) {
+                const angle = Math.atan2(dy, dx);
+                dart.vx = Math.cos(angle) * power;
+                dart.vy = Math.sin(angle) * power;
+                dart.active = true;
+                gameState = 'throwing';
+            } else {
+                gameState = 'ready';
+                instructions.style.opacity = '1';
+            }
+        }
+
+        window.addEventListener('resize', resize);
+        canvas.addEventListener('mousedown', handleStart);
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('mouseup', handleEnd);
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleStart(e); }, {passive: false});
+        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); handleMove(e); }, {passive: false});
+        canvas.addEventListener('touchend', (e) => { e.preventDefault(); handleEnd(e); }, {passive: false});
+
+        restartBtn.addEventListener('click', hideOverlay);
+        
+        window.onload = () => {
+            resize();
+            draw();
+        };
+    </script>
+</body>
+</html>
