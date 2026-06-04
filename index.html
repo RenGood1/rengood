@@ -55,17 +55,80 @@
 </head>
 <body class="min-h-screen flex flex-col">
     <header class="border-b border-red-500/20">
-        <div class="container mx-auto px-4 py-6">
-            <div class="flex justify-between items-center">
-                <h1 class="text-3xl md:text-4xl font-bold glow text-red-500"><a href="https://rengood.com" target="_self">REN GOOD</a></h1>
-                <div class="hidden md:flex space-x-1">
-                    <span class="text-red-500 font-mono text-sm">FRONTEND_DEV</span>
-                    <span class="text-gray-500 animate-pulse">|</span>
-                    <span class="text-gray-400 font-mono text-sm">and more.</span>
-                </div>
+    <div class="container mx-auto px-4 py-6">
+        <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+            <h1 class="text-3xl md:text-4xl font-bold glow text-red-500">
+                <a href="https://rengood.com" target="_self">REN GOOD</a>
+            </h1>
+            
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+                <span class="text-red-500 font-mono text-sm">CMS_SPECIALIST</span>
+                <span class="text-gray-500 animate-pulse hidden sm:inline">|</span>
+                <span class="text-gray-400 font-mono text-sm hidden sm:inline">projects:</span>
+                
+                <nav>
+                    <ul id="dynamic-nav" class="flex flex-wrap items-center gap-x-4 font-mono text-sm">
+                        <li>
+                            <a href="/" class="text-gray-400 hover:text-red-500 transition-colors duration-200">Home</a>
+                        </li>
+                        </ul>
+                </nav>
             </div>
         </div>
-    </header>
+    </div>
+</header>
+
+<script>
+    // GitHub Repository Configuration
+    const username = "RenGood1"; 
+    const repo = "rengood"; 
+
+    async function buildNav() {
+        const navList = document.getElementById('dynamic-nav');
+        
+        try {
+            // Fetch root directory contents
+            const response = await fetch(`https://api.github.com/repos/${username}/${repo}/contents/`);
+            if (!response.ok) throw new Error('Network response was not ok');
+            
+            const items = await response.json();
+            
+            // Filter out everything except directories, ignoring hidden folders
+            const folders = items.filter(item => item.type === 'dir' && !item.name.startsWith('.'));
+            
+            folders.forEach(folder => {
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                
+                // Set relative URL and apply Tailwind styles matching your theme
+                a.href = `./${folder.name}/`;
+                a.className = "text-gray-400 hover:text-red-500 transition-colors duration-200";
+                
+                // Clean up camelCase / PascalCase folder names
+                let displayName = folder.name
+                    .replace(/([A-Z])/g, ' $1')
+                    .replace(/^./, str => str.toUpperCase())
+                    .trim();
+                
+                a.textContent = displayName;
+                li.appendChild(a);
+                navList.appendChild(li);
+            });
+        } catch (error) {
+            console.error("Could not load navigation dynamically:", error);
+            
+            // Local fallback style matching the UI
+            if (window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost") {
+                const li = document.createElement('li');
+                li.className = "text-gray-600 font-mono text-xs italic";
+                li.textContent = "[links_offline_local_preview]";
+                navList.appendChild(li);
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', buildNav);
+</script>
 
     <main class="flex-grow scanline">
         <div class="container mx-auto px-4 py-12 md:py-24">
