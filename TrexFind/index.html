@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hidden T-Rex Hunt: Netherlands</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            user-select: none;
+        }
+
+        h1 {
+            margin-bottom: 5px;
+            color: #222;
+        }
+
+        /* Container scales and locks the aspect ratio of your image (16:9 format) */
+        #game-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 1000px;
+            aspect-ratio: 16 / 9; 
+            border: 4px solid #1a1a1a;
+            border-radius: 8px;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.18);
+            overflow: hidden;
+            background-color: #fff;
+        }
+
+        /* The actual high-quality generated illustration */
+        #background-img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: fill;
+        }
+
+        /* Interactive Click Targets for the T-Rexes */
+        .dino-target {
+            position: absolute;
+            border-radius: 50%;
+            cursor: pointer;
+            background-color: rgba(0, 0, 0, 0); /* Completely hidden at start */
+            transition: background-color 0.25s ease, border 0.25s ease;
+            z-index: 10;
+        }
+
+        /* When clicked, it applies a crisp translucent blue tint over the dinosaur line-art */
+        .dino-target.found {
+            background-color: rgba(52, 152, 219, 0.45); 
+            border: 2px solid #2980b9;
+            pointer-events: none; /* Deactivates further clicks */
+        }
+
+        /* Hint Pulse Ring */
+        .hint-ring {
+            position: absolute;
+            border: 3px dashed #ff4757;
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+        }
+
+        @keyframes pulse {
+            0% { width: 10px; height: 10px; opacity: 1; }
+            100% { width: 90px; height: 90px; opacity: 0; }
+        }
+
+        .pulse-active {
+            animation: pulse 1.2s ease-out 2;
+        }
+
+        /* UI Panel */
+        #ui-panel {
+            margin-top: 20px;
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            background: white;
+            padding: 12px 30px;
+            border: 3px solid #1a1a1a;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        #hint-btn {
+            background: #1a1a1a;
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        #hint-btn:hover {
+            background: #444;
+        }
+        /* Change background-color from rgba(0, 0, 0, 0) to this: */
+
+    </style>
+</head>
+
+<body>
+
+    <h1>Dino Hunt: Netherlands</h1>
+    <p>Find the 20 hidden T-Rexes embedded in the artwork!</p>
+
+    <div id="game-wrapper">
+        <img id="background-img" src="trex-fixed.png" alt="Netherlands Hidden Dino Map">
+
+        <div class="dino-target" id="dino-NEW" style="top: 3.0%; left: 64.5%; width: 3.0%; height: 5.5%;"></div>
+        <div class="dino-target" id="dino-NEW" style="top: 10.1%; left: 62.4%; width: 3.0%; height: 5.5%;"></div>
+        <div class="dino-target" id="dino-NEW" style="top: 63.4%; left: 56.5%; width: 3.0%; height: 5.5%;"></div>
+        <div class="dino-target" id="dino-NEW" style="top: 68.5%; left: 63.3%; width: 3.0%; height: 5.5%;"></div>
+        <div class="dino-target" id="dino-NEW" style="top: 49.8%; left: 70.8%; width: 3.0%; height: 5.5%;"></div>
+        <div class="dino-target" id="dino-NEW" style="top: 51.0%; left: 80.9%; width: 3.0%; height: 5.5%;"></div>
+        <div class="dino-target" id="dino-NEW" style="top: 45.9%; left: 88.5%; width: 3.0%; height: 5.5%;"></div>
+        <div class="dino-target" id="dino-NEW" style="top: 42.4%; left: 96.5%; width: 3.0%; height: 5.5%;"></div>
+        <div class="dino-target" id="dino-NEW" style="top: 49.8%; left: 96.9%; width: 3.0%; height: 5.5%;"></div>
+        <div class="dino-target" id="dino-NEW" style="top: 73.9%; left: 84.3%; width: 3.0%; height: 5.5%;"></div>
+        <div class="dino-target" id="dino-NEW" style="top: 91.7%; left: 88.3%; width: 3.0%; height: 5.5%;"></div>
+        <div class="dino-target" id="dino-NEW" style="top: 13.5%; left: 91.8%; width: 3.0%; height: 5.5%;"></div>
+        <div class="dino-target" id="dino-NEW" style="top: 16.3%; left: 75.1%; width: 3.0%; height: 5.5%;"></div>
+        <div class="dino-target" id="dino-NEW" style="top: 31.4%; left: 73.6%; width: 3.0%; height: 5.5%;"></div>
+        <div class="dino-target" id="dino-NEW" style="top: 38.6%; left: 56.2%; width: 3.0%; height: 5.5%;"></div>
+        <div class="dino-target" id="dino-NEW" style="top: 24.5%; left: 40.6%; width: 3.0%; height: 5.5%;"></div>
+        <div class="dino-target" id="dino-NEW" style="top: 52.9%; left: 19.9%; width: 3.0%; height: 5.5%;"></div>
+        <div class="dino-target" id="dino-NEW" style="top: 55.9%; left: 6.0%; width: 3.0%; height: 5.5%;"></div>
+        <div class="dino-target" id="dino-NEW" style="top: 87.9%; left: 27.0%; width: 3.0%; height: 5.5%;"></div>
+        <div class="dino-target" id="dino-NEW" style="top: 64.5%; left: 31.1%; width: 3.0%; height: 5.5%;"></div>
+
+        <div id="hint-element" class="hint-ring"></div>
+    </div>
+
+    <div id="ui-panel">
+        <button id="hint-btn" onclick="triggerHint()">💡 Get Hint</button>
+        <div>Dinos Found: <span id="counter">0</span> / 20</div>
+    </div>
+
+    <script>
+        // Total configuration array up to 20 dino objects
+        const gameState = {};
+        for (let i = 1; i <= 20; i++) {
+            gameState[`dino-${i}`] = false;
+        }
+        let foundCount = 0;
+
+        document.querySelectorAll('.dino-target').forEach(target => {
+            target.addEventListener('click', function() {
+                if (this.classList.contains('found')) return;
+
+                this.classList.add('found');
+                gameState[this.id] = true;
+                foundCount++;
+                
+                document.getElementById('counter').innerText = foundCount;
+
+                if (foundCount === 20) {
+                    setTimeout(() => { alert("🎉 Incredible! You found all 20 hidden T-Rexes across the Netherlands map!"); }, 300);
+                }
+            });
+        });
+
+        function triggerHint() {
+            const unfound = Object.keys(gameState).filter(id => !gameState[id]);
+            
+            if (unfound.length === 0) {
+                alert("Splendid! You've already found them all!");
+                return;
+            }
+
+            // Picks one random remaining un-clicked dino to pulse
+            const targetId = unfound[Math.floor(Math.random() * unfound.length)];
+            const targetEl = document.getElementById(targetId);
+            const hintRing = document.getElementById('hint-element');
+
+            // Find center offsets dynamically
+            const topPercent = parseFloat(targetEl.style.top) + (parseFloat(targetEl.style.height) / 2);
+            const leftPercent = parseFloat(targetEl.style.left) + (parseFloat(targetEl.style.width) / 2);
+
+            // Shift radar tracking element to target coordinates
+            hintRing.style.top = `${topPercent}%`;
+            hintRing.style.left = `${leftPercent}%`;
+            
+            hintRing.classList.remove('pulse-active');
+            void hintRing.offsetWidth; // Force redraw execution step
+            hintRing.classList.add('pulse-active');
+        }
+    </script>
+
+</body>
+</html>
