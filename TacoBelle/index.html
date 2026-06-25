@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quest for the Baja Frens</title>
+  <style>
+    :root {
+      --tb-purple: #702082;
+      --tb-neon: #a77bca;
+      --bg-dark: #120a1c;
+      --panel-bg: #1c1129;
+      --slot-bg: #251836;
+      --error-red: #8b2222;
+      --placeholder-gray: #4e445c;
+      --success-green: #00ff66;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      margin-bottom: 5px;
+      text-shadow: 0 0 10px var(--tb-purple);
+    }
+
+    /* --- THE MYSTERY ITEM DISPLAY --- */
+    #item-showcase {
+      background: var(--panel-bg);
+      padding: 30px;
+      border-radius: 12px;
+      border: 2px solid var(--tb-purple);
+      width: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 25px;
+      position: relative;
+    }
+
+    .shadow-container {
+      width: 220px;
+      height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--slot-bg);
+      border-radius: 12px;
+      margin-bottom: 15px;
+      border: 2px dashed var(--tb-neon);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Target Image Display */
+    #mystery-silhouette {
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+      user-select: none;
+      filter: brightness(0);
+    }
+
+    /* Solid black mystery cutout when hidden */
+    .completely-hidden {
+      filter: brightness(0) !important;
+      transition: none;
+    }
+
+    /* When completed, it bursts into full color */
+    .fully-revealed {
+      filter: brightness(1) !important;
+      transform: scale(1.08);
+      transition: filter 0.6s ease, transform 0.4s ease;
+      animation: celebration 0.5s ease-in-out;
+    }
+
+    @keyframes celebration {
+      0%, 100% { transform: scale(1.08); }
+      50% { transform: scale(1.18) rotate(3deg); }
+    }
+
+    /* --- CHECKLIST TRACKER --- */
+    #ingredient-tracker {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .check-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #44325c;
+      transition: background 0.3s;
+    }
+    .check-dot.filled {
+      background: var(--success-green);
+      box-shadow: 0 0 8px var(--success-green);
+    }
+
+    /* --- NEXT STEP CONTROL BUTTON --- */
+    #next-level-btn {
+      display: none;
+      margin-top: 15px;
+      background: var(--success-green);
+      color: #120a1c;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(0, 255, 102, 0.4);
+      transition: transform 0.2s;
+    }
+    #next-level-btn:hover {
+      transform: scale(1.05);
+    }
+
+    /* --- PANTRY DISPENSERS --- */
+    .pantry-section {
+      background: var(--panel-bg);
+      padding: 15px;
+      border-radius: 12px;
+      width: 520px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .pantry-section h4 { margin: 0 0 15px 0; color: var(--tb-neon); text-transform: uppercase; }
+    
+    .pantry-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    
+    .pantry-btn {
+      background: var(--slot-bg);
+      color: #fff;
+      border: 1px solid var(--tb-purple);
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: bold;
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+    .pantry-btn:hover { background: var(--tb-purple); }
+    
+    /* Highlight state for correctly chosen items */
+    .pantry-btn.correct-glow {
+      border-color: var(--success-green) !important;
+      background-color: #1b382b !important;
+      box-shadow: 0 0 12px var(--success-green);
+      animation: popKeyframe 0.3s ease-in-out;
+    }
+
+    .pantry-img {
+      width: 38px;
+      height: 38px;
+      object-fit: contain;
+    }
+
+    .btn-image-placeholder {
+      width: 38px;
+      height: 38px;
+      background-color: var(--placeholder-gray);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: #ccc;
+    }
+
+    #error-flash {
+      color: #ff6666;
+      font-weight: bold;
+      height: 20px;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    /* --- CUTE CUSTOM TOAST NOTIFICATION POP-UP --- */
+    #toast-notification {
+      visibility: hidden;
+      min-width: 280px;
+      background-color: var(--panel-bg);
+      color: #fff;
+      text-align: center;
+      border-radius: 12px;
+      border: 2px solid var(--success-green);
+      padding: 16px;
+      position: fixed;
+      z-index: 101;
+      top: 30px;
+      font-size: 15px;
+      box-shadow: 0 5px 20px rgba(0, 255, 102, 0.2);
+      transform: translateY(-100px);
+      transition: transform 0.4s ease, visibility 0.4s;
+    }
+
+    #toast-notification.show {
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    #toast-notification h4 {
+      margin: 0 0 5px 0;
+      color: var(--success-green);
+    }
+
+    /* --- PRIZE MODAL REWARD SYSTEM --- */
+    #prize-modal, #victory-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(18, 10, 28, 0.9);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: var(--panel-bg);
+      border: 3px solid var(--tb-neon);
+      border-radius: 16px;
+      padding: 30px;
+      text-align: center;
+      max-width: 400px;
+      box-shadow: 0 0 25px var(--tb-purple);
+    }
+    .modal-content h2 { color: var(--success-green); margin-top: 0; }
+    .voucher-preview {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin: 15px 0;
+      border: 1px solid var(--tb-purple);
+    }
+    .download-btn, .close-btn {
+      display: inline-block;
+      padding: 10px 20px;
+      margin: 5px;
+      border-radius: 6px;
+      font-weight: bold;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+    }
+
+    /* Shake animation for errors */
+    .shake {
+      animation: shakeKeyframe 0.4s ease-in-out;
+    }
+    @keyframes shakeKeyframe {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      75% { transform: translateX(8px); }
+    }
+
+    /* Pop animation for correct clicks */
+    @keyframes popKeyframe {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+
+    .download-btn { background: var(--success-green); color: #120a1c; }
+    .close-btn { background: #555; color: #fff; }
+  </style>
+</head>
+<body>
+
+  <h1>Quest for the Baja Frens</h1>
+  <p style="margin: 0 0 20px 0; color: var(--tb-neon);">Gather the correct ingredients to find the mystery Taco Bell order!!</p>
+
+  <div id="item-showcase">
+    <div class="shadow-container">
+      <img id="mystery-silhouette" class="completely-hidden" src="" alt="Mystery Menu Item" />
+    </div>
+    <div id="recipe-hints" style="font-weight: bold; text-align: center;">Loading Recipe...</div>
+    <div id="ingredient-tracker"></div>
+    <div id="error-flash"></div>
+    <button id="next-level-btn" onclick="handleNextClick()">Next Item ➡️</button>
+  </div>
+
+  <div class="pantry-section">
+    <h4>1. Choose a Base</h4>
+    <div class="pantry-grid" id="vessel-buttons"></div>
+  </div>
+
+  <div class="pantry-section">
+    <h4>2. Choose Toppings & Fillings</h4>
+    <div class="pantry-grid" id="ingredient-buttons"></div>
+  </div>
+
+  <div id="toast-notification">
+    <h4 id="toast-title">🎉 ITEM REVEALED!</h4>
+    <div id="toast-message">Item unlocked successfully.</div>
+  </div>
+
+  <div id="prize-modal">
+    <div class="modal-content">
+      <h2 id="modal-title">🎮 GAMING VOUCHER UNLOCKED!</h2>
+      <p id="modal-desc">You earned a pass for a gaming session with us!</p>
+      <img id="voucher-image-element" src="" alt="Your Gaming Voucher" class="voucher-preview">
+      <div>
+        <a id="download-anchor" href="" download="" class="download-btn">Claim Voucher</a>
+        <button class="close-btn" onclick="closePrizeModal()">Keep Playing</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="victory-modal">
+    <div class="modal-content" style="max-width: 500px;">
+      <h2 style="color: gold;">🏆 MAESTRO ARCHITECT!</h2>
+      <p>All shadows have been completely revealed and our menu is cleared!</p>
+      <div id="victory-gallery" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 20px 0;"></div>
+      <p style="color: var(--tb-neon); font-weight: bold;">Thank you for playing!</p>
+    </div>
+  </div>
+
+  <script>
+    const PANTRY = {
+      cup_ice:       { name: "Cup with Ice",  label: "CUP",   image: "./images/ingredients/CupWithIce.png", isBase: true },
+      bowl:          { name: "Bowl Base",     label: "BOWL",  image: "./images/ingredients/PlasticBowl.png", isBase: true },
+      tortilla:      { name: "Flour Tortilla",label: "WRAP",  image: "./images/ingredients/FlourTortilla.png", isBase: true },
+      flatbread:     { name: "Flatbread",     label: "BREAD", image: "./images/ingredients/Flatbread.png", isBase: true },
+      crunchy_shell: { name: "Crunchy Shell", label: "SHELL", image: "./images/ingredients/CrunchyShell.png", isBase: true },
+      
+      beef:          { name: "Seasoned Beef", label: "BEEF",  image: "./images/ingredients/SeasonedBeef.png", isBase: false },
+      chicken:       { name: "Chicken",       label: "CHIX",  image: "./images/ingredients/Chicken.png", isBase: false },
+      steak:         { name: "Steak",         label: "STEAK", image: "./images/ingredients/Steak.png", isBase: false },
+      black_beans:   { name: "Black Beans",   label: "BEANS", image: "./images/ingredients/BlackBeans.png", isBase: false },
+      
+      rice:          { name: "Seasoned Rice", label: "RICE",  image: "./images/ingredients/SeasonedRice.png", isBase: false },
+      fries:         { name: "Fries",         label: "FRIES", image: "./images/ingredients/Fries.png", isBase: false },
+      lettuce:       { name: "Lettuce",       label: "LETC",  image: "./images/ingredients/Lettuce.png", isBase: false },
+      purple_cabbage:{ name: "Purple Cabbage",label: "CABB",  image: "./images/ingredients/PurpleCabbage.png", isBase: false },
+      tomato:        { name: "Tomatoes",      label: "TOM",   image: "./images/ingredients/Tomato.png", isBase: false },
+      guacamole:     { name: "Guacamole",     label: "GUAC",  image: "./images/ingredients/Guacamole.png", isBase: false },
+      cheese:        { name: "Shred Cheese",  label: "CHZ",   image: "./images/ingredients/ShreddedCheese.png", isBase: false },
+      sour_cream:    { name: "Sour Cream",    label: "SOUR",  image: "./images/ingredients/SourCream.png", isBase: false },
+      
+      nacho_cheese:  { name: "Nacho Cheese",  label: "NACHO", image: "./images/ingredients/NachoCheese.png", isBase: false },
+      creamy_jalapeno:{ name: "Jalapeño Sauce",label: "JAL-S", image: "./images/ingredients/JalapenoSauce.png", isBase: false },
+      fire_sauce:    { name: "Fire Sauce",    label: "FIRE",  image: "./images/ingredients/FireSauce.png", isBase: false },
+      baja_soda:     { name: "Baja Blast Soda",label: "BAJA",  image: "./images/ingredients/BajaSoda.png", isBase: false }
+    };
+
+    const LEVELS = [
+      {
+        name: "Baja Blast",
+        image: "./images/BajaBlast.png",
+        hintText: "Hint: Iconic drink that makes you blaAaAaAast your pants",
+        required: ["cup_ice", "baja_soda"]
+      },
+      {
+        name: "Cantina Chicken Bowl",
+        image: "./images/CantinaBowl.png",
+        hintText: "Hint: Help's Pig Out Bowl",
+        required: ["bowl", "chicken", "rice", "black_beans", "lettuce", "purple_cabbage", "guacamole", "fire_sauce", "cheese"]
+      },
+      {
+        name: "Crunchwrap Supreme",
+        image: "./images/CrunchWrapSupreme.png",
+        hintText: "Hint: Like a burrito, but with trust issues and extra armor",
+        required: ["tortilla", "crunchy_shell", "beef", "nacho_cheese", "sour_cream", "lettuce",  "tomato"]
+      },
+      {
+        name: "Gordita",
+        image: "./images/Gordita.png",
+        hintText: "Hint: A tortilla hugging a flatbread because life is hard",
+        required: ["flatbread", "beef", "lettuce", "cheese", "tomato", "sour_cream"]
+      },
+      {
+        name: "Grilled Cheese Chicken Burrito",
+        image: "./images/GrilledCheeseChickenBurrito.png",
+        hintText: "Hint: Help's Cheesy Pig Out Pocket",
+        required: ["tortilla", "chicken", "rice", "nacho_cheese", "sour_cream", "cheese"]
+      },
+      {
+        name: "Ground Beef Chalupa Supreme",
+        image: "./images/GroundBeefChalupaSupreme.png",
+        hintText: "Hint: The drama queen of the menu: fried, loaded, and demanding attention",
+        required: ["flatbread", "beef", "sour_cream", "lettuce", "cheese", "tomato"]
+      },
+      {
+        name: "Ground Beef Soft Taco",
+        image: "./images/GroundBeefSoftTaco.png",
+        hintText: "It starts off completely soft, but it's still ready to get stuffed with meat",
+        required: ["tortilla", "beef", "lettuce", "cheese"]
+      },
+      {
+        name: "Loaded Fries Burrito",
+        image: "./images/LoadedFriesBurrito.png",
+        hintText: "Hint: Heavy carb burrito stuffed with seasoned fries",
+        required: ["tortilla", "beef", "fries", "nacho_cheese", "sour_cream"]
+      },
+      {
+        name: "Steak Quesadilla",
+        image: "./images/SteakQuesadilla.png",
+        hintText: "Hint: Flat-grilled cheese and steak slice foldout",
+        required: ["tortilla", "steak", "cheese", "creamy_jalapeno"]
+      }
+    ];
+
+    const VOUCHER_IMAGES = [
+      "./images/Game_Vouchers.png",
+      "./images/Game_Vouchers_1.png",
+      "./images/Game_Vouchers_2.png",
+      "./images/Game_Vouchers_3.png"
+    ];
+
+    let currentLevel = 0;
+    let itemsCompletedTotal = 0; 
+    let vouchersAwardedCount = 0; 
+    let collectedPool = [];
+    let isLevelComplete = false;
+
+    // Fixed preloader deployment order execution boundary mapping
+    function preloadGameAssets() {
+      LEVELS.forEach(level => {
+        const img = new Image();
+        img.src = level.image;
+      });
+      VOUCHER_IMAGES.forEach(src => {
+        const img = new Image();
+        img.src = src;
+      });
+    }
+    preloadGameAssets();
+
+    // Restored correct dual grid loading mechanics layout
+    function initPantry() {
+      const vesselGrid = document.getElementById('vessel-buttons');
+      const ingredientGrid = document.getElementById('ingredient-buttons');
+      
+      vesselGrid.innerHTML = '';
+      ingredientGrid.innerHTML = '';
+      
+      for (let key in PANTRY) {
+        let graphicEl = `<div class="btn-image-placeholder">${PANTRY[key].label}</div>`;
+        
+        if (PANTRY[key].image !== "") {
+          graphicEl = `<img src="${PANTRY[key].image}" class="pantry-img" alt="${PANTRY[key].name}" onerror="this.style.display='none'">`;
+        }
+
+        let btnHtml = `
+          <button class="pantry-btn" id="btn-${key}" onclick="addIngredient('${key}')">
+            ${graphicEl}
+            ${PANTRY[key].name}
+          </button>`;
+
+        if (PANTRY[key].isBase) {
+          vesselGrid.innerHTML += btnHtml;
+        } else {
+          ingredientGrid.innerHTML += btnHtml;
+        }
+      }
+    }
+
+    function loadLevel() {
+      collectedPool = [];
+      isLevelComplete = false;
+      document.getElementById('error-flash').innerText = '';
+      document.getElementById('next-level-btn').style.display = 'none';
+      
+      const buttons = document.querySelectorAll('.pantry-btn');
+      buttons.forEach(btn => btn.classList.remove('correct-glow'));
+      
+      let levelData = LEVELS[currentLevel];
+      let silhouette = document.getElementById('mystery-silhouette');
+      
+      silhouette.className = "completely-hidden";
+      silhouette.src = levelData.image;
+
+      document.getElementById('recipe-hints').innerText = `${levelData.hintText} (${levelData.required.length} Items)`;
+
+      const tracker = document.getElementById('ingredient-tracker');
+      tracker.innerHTML = '';
+      levelData.required.forEach(() => {
+        tracker.innerHTML += `<div class="check-dot"></div>`;
+      });
+    }
+
+    function addIngredient(key) {
+      if (isLevelComplete) return; 
+      
+      let levelData = LEVELS[currentLevel];
+      
+      if (levelData.required.includes(key) && !collectedPool.includes(key)) {
+        collectedPool.push(key);
+        document.getElementById('error-flash').innerText = '';
+
+        document.getElementById(`btn-${key}`).classList.add('correct-glow');
+
+        let dots = document.getElementsByClassName('check-dot');
+        if (dots[collectedPool.length - 1]) {
+          dots[collectedPool.length - 1].classList.add('filled');
+        }
+
+        if (collectedPool.length === levelData.required.length) {
+          revealFinalItem();
+        }
+      } else if (collectedPool.includes(key)) {
+        document.getElementById('error-flash').innerText = "Already added that ingredient!";
+      } else {
+        // Correct error layout handling mechanics implemented safely here
+        document.getElementById('error-flash').innerText = "Wrong ingredient for this item!";
+        const showcase = document.getElementById('item-showcase');
+        showcase.classList.add('shake');
+        setTimeout(() => showcase.classList.remove('shake'), 400);
+      }
+    }
+
+    function revealFinalItem() {
+      isLevelComplete = true;
+      let silhouette = document.getElementById('mystery-silhouette');
+      silhouette.className = "fully-revealed";
+
+      itemsCompletedTotal++;
+      showToastNotification(`Unlocked ${LEVELS[currentLevel].name}!`);
+
+      setTimeout(() => {
+        document.getElementById('next-level-btn').style.display = 'block';
+      }, 600);
+    }
+
+    function handleNextClick() {
+      if (itemsCompletedTotal === 1 || (itemsCompletedTotal > 1 && itemsCompletedTotal % 2 === 1)) {
+        openPrizeModal();
+      } else {
+        advanceNextLevel();
+      }
+    }
+
+    function showToastNotification(message) {
+      const toast = document.getElementById('toast-notification');
+      document.getElementById('toast-message').innerText = message;
+      toast.classList.add('show');
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2000);
+    }
+
+    function advanceNextLevel() {
+      currentLevel++;
+      if (currentLevel < LEVELS.length) {
+        loadLevel();
+      } else {
+        const gallery = document.getElementById('victory-gallery');
+        gallery.innerHTML = LEVELS.map(lvl => `
+          <div style="background: var(--slot-bg); padding: 5px; border-radius: 8px; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+            <img src="${lvl.image}" style="max-width: 100%; max-height: 100%; object-fit: contain;" title="${lvl.name}">
+          </div>
+        `).join('');
+        
+        document.getElementById('victory-modal').style.display = 'flex';
+      }
+    }
+
+    function openPrizeModal() {
+      let voucherIndex = vouchersAwardedCount % VOUCHER_IMAGES.length;
+      let voucherSrc = VOUCHER_IMAGES[voucherIndex];
+
+      const voucherImg = document.getElementById('voucher-image-element');
+      const downloadLink = document.getElementById('download-anchor');
+      
+      voucherImg.src = voucherSrc;
+      voucherImg.alt = `Gaming Voucher Pass`;
+      
+      downloadLink.href = voucherSrc;
+      downloadLink.download = `Gaming_Session_Voucher_${voucherIndex + 1}.png`;
+      downloadLink.setAttribute('target', '_blank'); 
+
+      document.getElementById('prize-modal').style.display = 'flex';
+      vouchersAwardedCount++;
+    }
+
+    function closePrizeModal() {
+      document.getElementById('prize-modal').style.display = 'none';
+      advanceNextLevel(); 
+    }
+
+    initPantry();
+    loadLevel();
+  </script>
+</body>
+</html>
