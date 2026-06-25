@@ -21,24 +21,45 @@
       color: #fff;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
-      padding: 20px;
+      padding: 15px;
       display: flex;
       flex-direction: column;
       align-items: center;
+      box-sizing: border-box;
     }
 
     h1 {
+      margin-top: 10px;
       margin-bottom: 5px;
+      text-align: center;
+      font-size: 1.8rem;
       text-shadow: 0 0 10px var(--tb-purple);
+    }
+
+    p {
+      text-align: center;
+      margin: 0 0 20px 0;
+      font-size: 0.95rem;
+    }
+
+    /* Global responsive content wrapper */
+    .game-container {
+      width: 100%;
+      max-width: 460px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-sizing: border-box;
     }
 
     /* --- THE MYSTERY ITEM DISPLAY --- */
     #item-showcase {
       background: var(--panel-bg);
-      padding: 30px;
+      padding: 20px;
       border-radius: 12px;
       border: 2px solid var(--tb-purple);
-      width: 400px;
+      width: 100%;
+      box-sizing: border-box;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -47,17 +68,34 @@
     }
 
     .shadow-container {
-      width: 220px;
-      height: 220px;
+      width: 180px;
+      height: 180px;
       display: flex;
       align-items: center;
       justify-content: center;
       background: var(--slot-bg);
       border-radius: 12px;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
       border: 2px dashed var(--tb-neon);
       position: relative;
       overflow: hidden;
+    }
+
+    /* Dynamic Unlocked Name Display Element */
+    #revealed-dish-name {
+      font-size: 1.25rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      margin-top: 5px;
+      margin-bottom: 5px;
+      color: #888;
+      text-transform: uppercase;
+      text-align: center;
+      transition: color 0.3s ease, text-shadow 0.3s ease;
+    }
+    #revealed-dish-name.lit {
+      color: var(--success-green);
+      text-shadow: 0 0 8px rgba(0, 255, 102, 0.6);
     }
 
     /* Target Image Display */
@@ -94,7 +132,7 @@
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
       margin-top: 15px;
     }
     .check-dot {
@@ -133,23 +171,24 @@
       background: var(--panel-bg);
       padding: 15px;
       border-radius: 12px;
-      width: 520px;
+      width: 100%;
+      box-sizing: border-box;
       text-align: center;
       margin-bottom: 20px;
     }
-    .pantry-section h4 { margin: 0 0 15px 0; color: var(--tb-neon); text-transform: uppercase; }
+    .pantry-section h4 { margin: 0 0 15px 0; color: var(--tb-neon); text-transform: uppercase; font-size: 0.95rem; }
     
     .pantry-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
+      gap: 8px;
     }
     
     .pantry-btn {
       background: var(--slot-bg);
       color: #fff;
       border: 1px solid var(--tb-purple);
-      padding: 10px;
+      padding: 8px 4px;
       border-radius: 8px;
       cursor: pointer;
       display: flex;
@@ -159,6 +198,7 @@
       font-size: 11px;
       font-weight: bold;
       transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+      box-sizing: border-box;
     }
     .pantry-btn:hover { background: var(--tb-purple); }
     
@@ -171,20 +211,20 @@
     }
 
     .pantry-img {
-      width: 38px;
-      height: 38px;
+      width: 32px;
+      height: 32px;
       object-fit: contain;
     }
 
     .btn-image-placeholder {
-      width: 38px;
-      height: 38px;
+      width: 32px;
+      height: 32px;
       background-color: var(--placeholder-gray);
       border-radius: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 9px;
+      font-size: 8px;
       color: #ccc;
     }
 
@@ -193,25 +233,26 @@
       font-weight: bold;
       height: 20px;
       margin-top: 10px;
-      font-size: 14px;
+      font-size: 13px;
     }
 
     /* --- CUTE CUSTOM TOAST NOTIFICATION POP-UP --- */
     #toast-notification {
       visibility: hidden;
-      min-width: 280px;
+      width: 85%;
+      max-width: 320px;
       background-color: var(--panel-bg);
       color: #fff;
       text-align: center;
       border-radius: 12px;
       border: 2px solid var(--success-green);
-      padding: 16px;
+      padding: 14px;
       position: fixed;
       z-index: 101;
-      top: 30px;
-      font-size: 15px;
+      top: 20px;
+      font-size: 14px;
       box-shadow: 0 5px 20px rgba(0, 255, 102, 0.2);
-      transform: translateY(-100px);
+      transform: translateY(-150px);
       transition: transform 0.4s ease, visibility 0.4s;
     }
 
@@ -234,30 +275,46 @@
       z-index: 100;
       justify-content: center;
       align-items: center;
+      padding: 20px;
+      box-sizing: border-box;
     }
     .modal-content {
       background: var(--panel-bg);
       border: 3px solid var(--tb-neon);
       border-radius: 16px;
-      padding: 30px;
+      padding: 24px;
       text-align: center;
-      max-width: 400px;
+      width: 100%;
+      max-width: 380px;
       box-shadow: 0 0 25px var(--tb-purple);
+      box-sizing: border-box;
+      perspective: 1000px; /* Enables clean 3D card layout perspective profiles */
     }
-    .modal-content h2 { color: var(--success-green); margin-top: 0; }
+    .modal-content h2 { color: var(--success-green); margin-top: 0; font-size: 1.4rem; }
+    
+    /* ADDED SMOOTH 3D CARD ENTRANCE SPIN FOR REWARD VOUCHERS */
     .voucher-preview {
       max-width: 100%;
       height: auto;
       border-radius: 8px;
       margin: 15px 0;
       border: 1px solid var(--tb-purple);
+      transform: rotateY(-90deg) scale(0.3);
     }
+    .animate-voucher {
+      animation: voucherEntrance 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    @keyframes voucherEntrance {
+      to { transform: rotateY(0deg) scale(1); }
+    }
+
     .download-btn, .close-btn {
       display: inline-block;
-      padding: 10px 20px;
+      padding: 10px 16px;
       margin: 5px;
       border-radius: 6px;
       font-weight: bold;
+      font-size: 13px;
       text-decoration: none;
       cursor: pointer;
       border: none;
@@ -286,27 +343,30 @@
 </head>
 <body>
 
-  <h1>Quest for the Baja Frens</h1>
-  <p style="margin: 0 0 20px 0; color: var(--tb-neon);">Gather the correct ingredients to find the mystery Taco Bell order!!</p>
+  <div class="game-container">
+    <h1>Quest for the Baja Frens</h1>
+    <p style="color: var(--tb-neon);">Gather the correct ingredients to find the mystery Taco Bell order!!</p>
 
-  <div id="item-showcase">
-    <div class="shadow-container">
-      <img id="mystery-silhouette" class="completely-hidden" src="" alt="Mystery Menu Item" />
+    <div id="item-showcase">
+      <div class="shadow-container">
+        <img id="mystery-silhouette" class="completely-hidden" src="" alt="Mystery Menu Item" />
+      </div>
+      <div id="revealed-dish-name">???</div>
+      <div id="recipe-hints" style="font-weight: bold; text-align: center; font-size: 0.9rem; padding: 0 10px;">Recipe Loading...</div>
+      <div id="ingredient-tracker"></div>
+      <div id="error-flash"></div>
+      <button id="next-level-btn" onclick="handleNextClick()">Next Item ➡️</button>
     </div>
-    <div id="recipe-hints" style="font-weight: bold; text-align: center;">Loading Recipe...</div>
-    <div id="ingredient-tracker"></div>
-    <div id="error-flash"></div>
-    <button id="next-level-btn" onclick="handleNextClick()">Next Item ➡️</button>
-  </div>
 
-  <div class="pantry-section">
-    <h4>1. Choose a Base</h4>
-    <div class="pantry-grid" id="vessel-buttons"></div>
-  </div>
+    <div class="pantry-section">
+      <h4>1. Choose a Base</h4>
+      <div class="pantry-grid" id="vessel-buttons"></div>
+    </div>
 
-  <div class="pantry-section">
-    <h4>2. Choose Toppings & Fillings</h4>
-    <div class="pantry-grid" id="ingredient-buttons"></div>
+    <div class="pantry-section">
+      <h4>2. Choose Toppings & Fillings</h4>
+      <div class="pantry-grid" id="ingredient-buttons"></div>
+    </div>
   </div>
 
   <div id="toast-notification">
@@ -317,7 +377,7 @@
   <div id="prize-modal">
     <div class="modal-content">
       <h2 id="modal-title">🎮 GAMING VOUCHER UNLOCKED!</h2>
-      <p id="modal-desc">You earned a pass for a gaming session with us!</p>
+      <p id="modal-desc" style="font-size: 0.9rem;">You earned a voucher to boss us to play, whenever, whatever you want!<br><br>There are <b>4</b> to collect!<br><span style="font-size:60%">* Only Redeemable by HelpImLit</span></p>
       <img id="voucher-image-element" src="" alt="Your Gaming Voucher" class="voucher-preview">
       <div>
         <a id="download-anchor" href="" download="" class="download-btn">Claim Voucher</a>
@@ -327,11 +387,11 @@
   </div>
 
   <div id="victory-modal">
-    <div class="modal-content" style="max-width: 500px;">
-      <h2 style="color: gold;">🏆 MAESTRO ARCHITECT!</h2>
-      <p>All shadows have been completely revealed and our menu is cleared!</p>
-      <div id="victory-gallery" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 20px 0;"></div>
-      <p style="color: var(--tb-neon); font-weight: bold;">Thank you for playing!</p>
+    <div class="modal-content" style="max-width: 420px;">
+      <h2 style="color: gold;">🏆 WOOO-HOOO YOU WIN!</h2>
+      <p style="font-size: 0.95rem;">All shadows have been completely revealed and our menu is cleared!</p>
+      <div id="victory-gallery" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 15px 0;"></div>
+      <p style="color: var(--tb-neon); font-weight: bold; margin-bottom: 0;">Thank you for playing!</p>
     </div>
   </div>
 
@@ -355,9 +415,9 @@
       tomato:        { name: "Tomatoes",      label: "TOM",   image: "./images/ingredients/Tomato.png", isBase: false },
       guacamole:     { name: "Guacamole",     label: "GUAC",  image: "./images/ingredients/Guacamole.png", isBase: false },
       cheese:        { name: "Shred Cheese",  label: "CHZ",   image: "./images/ingredients/ShreddedCheese.png", isBase: false },
-      sour_cream:    { name: "Sour Cream",    label: "SOUR",  image: "./images/ingredients/SourCream.png", isBase: false },
+      sour_cream:    { name: "Dary's Sour<br>Jizzy Cream",    label: "SOUR",  image: "./images/ingredients/SourCream.png", isBase: false },
       
-      nacho_cheese:  { name: "Nacho Cheese",  label: "NACHO", image: "./images/ingredients/NachoCheese.png", isBase: false },
+      nacho_cheese:  { name: "Ren's Nacho<br>Dick Cheese",  label: "NACHO", image: "./images/ingredients/NachoCheese.png", isBase: false },
       creamy_jalapeno:{ name: "Jalapeño Sauce",label: "JAL-S", image: "./images/ingredients/JalapenoSauce.png", isBase: false },
       fire_sauce:    { name: "Fire Sauce",    label: "FIRE",  image: "./images/ingredients/FireSauce.png", isBase: false },
       baja_soda:     { name: "Baja Blast Soda",label: "BAJA",  image: "./images/ingredients/BajaSoda.png", isBase: false }
@@ -380,7 +440,7 @@
         name: "Crunchwrap Supreme",
         image: "./images/CrunchWrapSupreme.png",
         hintText: "Hint: Like a burrito, but with trust issues and extra armor",
-        required: ["tortilla", "crunchy_shell", "beef", "nacho_cheese", "sour_cream", "lettuce",  "tomato"]
+        required: ["tortilla", "crunchy_shell", "beef", "nacho_cheese", "sour_cream", "lettuce", "tomato"]
       },
       {
         name: "Gordita",
@@ -432,8 +492,48 @@
     let vouchersAwardedCount = 0; 
     let collectedPool = [];
     let isLevelComplete = false;
+    
+    let bajaBlastWinAudio = new Audio("./images/baja_blast_win.mp3");
+    let hasPlayedBajaAudio = false;
 
-    // Fixed preloader deployment order execution boundary mapping
+    // NATIVE SYNTHETIC AUDIO GENERATOR (No file downloads required)
+   // SYNTHETIC BELL TOLL GENERATOR
+    function playSyntheticDing() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const now = ctx.currentTime;
+        
+        // Frequencies for a metallic brass bell chord (Root note + ring overtones)
+        const bellFrequencies = [440.00, 554.37, 659.25, 880.00, 1200.00];
+        
+        bellFrequencies.forEach((freq, index) => {
+          const osc = ctx.createOscillator();
+          const gainNode = ctx.createGain();
+          
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now);
+          
+          // Higher overtones should fade out faster to sound realistically metallic
+          const decayDuration = index === 0 ? 0.8 : 0.4 / (index * 0.5);
+          const initialVolume = index === 0 ? 0.08 : 0.04;
+          
+          gainNode.gain.setValueAtTime(initialVolume, now);
+          // Exponential decay simulates the natural ring-down of a bell strike
+          gainNode.gain.exponentialRampToValueAtTime(0.0001, now + decayDuration);
+          
+          osc.connect(gainNode);
+          gainNode.connect(ctx.destination);
+          
+          osc.start(now);
+          osc.stop(now + decayDuration);
+        });
+      } catch (e) {
+        console.log("AudioContext blocked or uninitialized:", e);
+      }
+    }
+
     function preloadGameAssets() {
       LEVELS.forEach(level => {
         const img = new Image();
@@ -444,9 +544,7 @@
         img.src = src;
       });
     }
-    preloadGameAssets();
 
-    // Restored correct dual grid loading mechanics layout
     function initPantry() {
       const vesselGrid = document.getElementById('vessel-buttons');
       const ingredientGrid = document.getElementById('ingredient-buttons');
@@ -464,7 +562,7 @@
         let btnHtml = `
           <button class="pantry-btn" id="btn-${key}" onclick="addIngredient('${key}')">
             ${graphicEl}
-            ${PANTRY[key].name}
+            <span style="display:block; text-overflow:ellipsis; overflow:hidden; width:100%; white-space:nowrap;">${PANTRY[key].name}</span>
           </button>`;
 
         if (PANTRY[key].isBase) {
@@ -480,6 +578,10 @@
       isLevelComplete = false;
       document.getElementById('error-flash').innerText = '';
       document.getElementById('next-level-btn').style.display = 'none';
+      
+      const dishLabel = document.getElementById('revealed-dish-name');
+      dishLabel.innerText = "???";
+      dishLabel.classList.remove('lit');
       
       const buttons = document.querySelectorAll('.pantry-btn');
       buttons.forEach(btn => btn.classList.remove('correct-glow'));
@@ -510,6 +612,9 @@
 
         document.getElementById(`btn-${key}`).classList.add('correct-glow');
 
+        // TRIGGER AUDIO ENGINE ON CORRECT TAPS
+        playSyntheticDing();
+
         let dots = document.getElementsByClassName('check-dot');
         if (dots[collectedPool.length - 1]) {
           dots[collectedPool.length - 1].classList.add('filled');
@@ -521,7 +626,6 @@
       } else if (collectedPool.includes(key)) {
         document.getElementById('error-flash').innerText = "Already added that ingredient!";
       } else {
-        // Correct error layout handling mechanics implemented safely here
         document.getElementById('error-flash').innerText = "Wrong ingredient for this item!";
         const showcase = document.getElementById('item-showcase');
         showcase.classList.add('shake');
@@ -531,11 +635,21 @@
 
     function revealFinalItem() {
       isLevelComplete = true;
+      let levelData = LEVELS[currentLevel];
       let silhouette = document.getElementById('mystery-silhouette');
       silhouette.className = "fully-revealed";
 
+      const dishLabel = document.getElementById('revealed-dish-name');
+      dishLabel.innerText = levelData.name;
+      dishLabel.classList.add('lit');
+
       itemsCompletedTotal++;
-      showToastNotification(`Unlocked ${LEVELS[currentLevel].name}!`);
+      showToastNotification(`Unlocked ${levelData.name}!`);
+
+      if (levelData.name === "Baja Blast" && !hasPlayedBajaAudio) {
+        bajaBlastWinAudio.play().catch(err => console.log("Audio skipped due to user interaction restrictions:", err));
+        hasPlayedBajaAudio = true;
+      }
 
       setTimeout(() => {
         document.getElementById('next-level-btn').style.display = 'block';
@@ -583,6 +697,9 @@
       const voucherImg = document.getElementById('voucher-image-element');
       const downloadLink = document.getElementById('download-anchor');
       
+      // Reset layout animation classes to clear cached rendering cycles
+      voucherImg.classList.remove('animate-voucher');
+      
       voucherImg.src = voucherSrc;
       voucherImg.alt = `Gaming Voucher Pass`;
       
@@ -591,6 +708,11 @@
       downloadLink.setAttribute('target', '_blank'); 
 
       document.getElementById('prize-modal').style.display = 'flex';
+      
+      // Force a tiny layout reflow to make the 3D spinning animation trigger smoothly
+      void voucherImg.offsetWidth;
+      voucherImg.classList.add('animate-voucher');
+
       vouchersAwardedCount++;
     }
 
@@ -599,8 +721,11 @@
       advanceNextLevel(); 
     }
 
-    initPantry();
-    loadLevel();
+    window.onload = function() {
+      preloadGameAssets();
+      initPantry();
+      loadLevel();
+    };
   </script>
 </body>
 </html>
