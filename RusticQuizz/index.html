@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Ultimate Which Rustic Are You? Quiz</title>
+    <style>
+        /* 2000s Alt / Emo Night Theme Palette */
+        :root {
+            --bg-dark: #0b090f;
+            --card-bg: #130f1a;
+            --text-main: #f5f0fa;
+            --text-muted: #8b8296;
+            --neon-pink: #ff2a85;
+            --deep-purple: #6a1b9a;
+            --vamp-red: #900c3f;
+            --border-glow: #2c1a3a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            background-image: linear-gradient(rgba(44, 26, 58, 0.3) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(44, 26, 58, 0.3) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background-color: var(--card-bg);
+            border: 2px solid var(--neon-pink);
+            border-radius: 4px;
+            padding: 40px;
+            box-shadow: 0 0 20px var(--deep-purple), inset 0 0 10px rgba(0,0,0,0.8);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: "❖ 🐺 ❖ 🐙 ❖ 🐺 ❖ 🐙 ❖";
+            display: block;
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            letter-spacing: 4px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 5px var(--neon-pink);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 0px var(--vamp-red), -2px -2px 0px var(--deep-purple);
+        }
+
+        p.subtitle {
+            color: var(--neon-pink);
+            margin-bottom: 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: lowercase;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 12px;
+            background-color: var(--bg-dark);
+            border: 1px solid var(--text-muted);
+            margin-bottom: 35px;
+            padding: 2px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--neon-pink);
+            box-shadow: 0 0 8px var(--neon-pink);
+            transition: width 0.3s ease;
+        }
+
+        .question-text {
+            font-size: 1.15rem;
+            margin-bottom: 25px;
+            line-height: 1.5;
+            color: var(--text-main);
+            text-align: left;
+            border-left: 4px solid var(--deep-purple);
+            padding-left: 15px;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .option-btn {
+            background-color: #181322;
+            border: 1px solid var(--border-glow);
+            color: var(--text-main);
+            padding: 16px 20px;
+            border-radius: 2px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            transition: all 0.2s ease;
+        }
+
+        .option-btn:hover {
+            border-color: var(--neon-pink);
+            background-color: var(--bg-dark);
+            color: #ffffff;
+            box-shadow: 0 0 8px rgba(255, 42, 133, 0.4);
+        }
+
+        .start-btn, .restart-btn {
+            background-color: transparent;
+            color: var(--neon-pink);
+            border: 2px solid var(--neon-pink);
+            padding: 14px 36px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 20px;
+            box-shadow: 3px 3px 0 var(--deep-purple);
+        }
+
+        .start-btn:hover, .restart-btn:hover {
+            color: #ffffff;
+            background-color: var(--neon-pink);
+            box-shadow: 0 0 15px var(--neon-pink);
+            transform: translate(-1px, -1px);
+        }
+
+        .result-screen h2 {
+            font-size: 1.8rem;
+            color: #ffffff;
+            text-transform: uppercase;
+            margin: 20px 0 15px 0;
+            text-shadow: 0 0 8px var(--neon-pink);
+        }
+
+        .result-image-container {
+            width: 240px;
+            height: 240px;
+            margin: 0 auto 25px auto;
+            border: 2px dashed var(--neon-pink);
+            background-color: #050408;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .result-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .result-description {
+            color: var(--text-main);
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            text-align: left;
+            background-color: rgba(11, 9, 15, 0.8);
+            padding: 20px;
+            border: 1px dashed var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- START SCREEN -->
+        <div id="start-screen" class="start-screen">
+            <h1>Which Rustic Are You?</h1>
+            <p class="subtitle">The Birthday Evaluation</p>
+            <div style="margin-bottom: 30px; color: var(--text-muted); line-height: 1.6; font-size: 0.95rem;">
+                welcome to the matrix, looky looky. answer these 20 questions to discover your exact archetype. no using your brain allowed.
+            </div>
+            <button class="start-btn" onclick="quiz.start()">Begin Evaluation</button>
+        </div>
+
+        <!-- QUIZ SCREEN -->
+        <div id="quiz-screen" class="quiz-screen hidden">
+            <div class="progress-container">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+            <div id="question-text" class="question-text"></div>
+            <div id="options-list" class="options-list"></div>
+        </div>
+
+        <!-- RESULT SCREEN -->
+        <div id="result-screen" class="result-screen hidden">
+            <p class="subtitle" style="margin-bottom: 5px; color: var(--text-muted);">Your Top Behavioral Archetype:</p>
+            <h2 id="result-title"></h2>
+            <div class="result-image-container">
+                <img id="result-img" class="result-image" src="" alt="Rustic Alignment">
+            </div>
+            <div id="result-desc" class="result-description"></div>
+            <button class="restart-btn" onclick="quiz.restart()">Test Again</button>
+        </div>
+    </div>
+
+    <script>
+        const scores = {
+            sleepy: 0, foodie: 0, chaotic: 0, emo: 0, gamer: 0,
+            savage: 0, clown: 0, boss: 0, pragmatic: 0, pervy: 0
+        };
+
+        const endings = {
+            sleepy: { title: "The Sleepy Rustic", desc: "You run strictly on minimum sleep and consecutive five-minute naps. You claim to be wide awake while snoring in voice chat.", img: "./images/sleepy.png" },
+            foodie: { title: "The Chef Rustic", desc: "A total enthusiast of carbonara, burrata cheese, and brownie bowls. Your inner midnight gremlin spreads cream cheese, jam, and mustard over Dutch cheese at 2:00 AM.", img: "./images/foodie.png" },
+            chaotic: { title: "The Spam Menace Rustic", desc: "You don't wait for text replies. You coordinate with group chats to spam someone across Snapchat, Instagram, TikTok, and Discord instantly until they notice you.", img: "./images/chaotic.png" },
+            emo: { title: "The Emo Night Rustic", desc: "You're such an emo, your historic 2008 playlists tell an alternative rock story. You are the first to ugly-sing Paramore at a club.", img: "./images/emo.png" },
+            gamer: { title: "The Distracted Third-Imposter Rustic", desc: "You absolutely hate playing social deduction games with strict parameters or proof requirements. You blindly vote best friends off purely because of a 'vibe' and have fun causing panic.", img: "./images/gamer.png" },
+            savage: { title: "The Untamed Savage Rustic", desc: "You possess a raccoon-holding-dual-chainsaws energy. You don't flinch at browning on fruit, you don't care about rules, and you hit back whenever challenged.", img: "./images/savage.png" },
+            clown: { title: "The Joker Rustic", desc: "You seek validation by drawing a fake mustache on your face with eyeliner, riding a skateboard, and completely cracking up at your own awful jokes.", img: "./images/clown.png" },
+            boss: { title: "The Rustic Spymaster", desc: "You play games completely distracted but secretly run the underlying logistics. You arrange server pranks, command lobby changes, and drop soundboards.", img: "./images/boss.png" },
+            pragmatic: { title: "The AWAKE Rustic", desc: "You handle major crises with deep structural analysis, calculate metrics, and refuse to hold stagnant, old opinions. You choose optimized optimism.", img: "./images/pragmatic.png" },
+            pervy: { title: "The Tentacle Fighter Rustic", desc: "You claim to be an innocent angel, but your algorithm feed is heavily dominated by werewolf romance novels, explicit jokes, and funny tentacle talk.", img: "./images/pervy.png" }
+        };
+
+        const questions = [
+            { text: "You wake up at 5:40 AM feeling absolutely starving. What is your immediate move?", options: [
+                { text: "Settle for cheese on a simple cracker because you only slept 1.5 hours.", traits: ["sleepy"] },
+                { text: "Spread cream cheese, strawberry jam, and a dot of mustard over Dutch cheese.", traits: ["foodie"] },
+                { text: "Spam the group chat until someone wakes up to talk to you.", traits: ["chaotic"] },
+                { text: "Open up a supernatural smut novel about an Alpha werewolf.", traits: ["pervy"] }
+            ]},
+            { text: "The group chat starts getting a little loose and full of double entendres. What do you say?", options: [
+                { text: "Match the energy flawlessly because you're a single, free butterfly.", traits: ["clown"] },
+                { text: "Hit on your wife, twin, her wife, anyone really, even the rat.", traits: ["pervy"] },
+                { text: "Ignore it completely because you possess a superpower to zone out your surroundings.", traits: ["sleepy"] },
+                { text: "Shout 'Bork Bitch!' and change the subject to how much you love sausages on toes.", traits: ["clown"] }
+            ]},
+            { text: "You notice a small, dark browning spot on an apple you're about to eat. What's the play?", options: [
+                { text: "Bite straight through the brown spot like an absolute savage warrior.", traits: ["savage"] },
+                { text: "Carefully look at it, overthink it, and analyze if the brown spot is a metaphor for aging.", traits: ["pragmatic"] },
+                { text: "The entire apple is dead to me. Throw it away and pout.", traits: ["chaotic"] },
+                { text: "Keep it on your table while making an AI music alternative sad song about it.", traits: ["emo"] }
+            ]},
+            { text: "How do you organize your laptop?", options: [
+                { text: "Discord and games on the taskbar", traits: ["pragmatic"] },
+                { text: "An absolute mountain of 385 active tabs that I refuse to close.", traits: ["chaotic"] },
+                { text: "Strict dark mode layout with a background photo of a werewolf licking it's lips.", traits: ["pervy"] },
+                { text: "Too tired to organize anything.", traits: ["sleepy"] }
+            ]},
+            { text: "A massive argument breaks out in a gaming session. What is your role?", options: [
+                { text: "Maintain intense unblinking eye contact with your screen and silently judge them.", traits: ["pragmatic"] },
+                { text: "Tell everyone to grow up, stop being childish, and point them to the crying channel.", traits: ["emo"] },
+                { text: "Panic slightly, overthink the vibe, and check your private notes app to ensure you're safe.", traits: ["gamer"] },
+                { text: "Completely ignore the tension, make an unhinged joke about someone's accent, and go make a burrito.", traits: ["clown"] }
+            ]},
+            { text: "You are planning a fun prank on a friend's house in a game. What is your plan?", options: [
+                { text: "Fill their room completely to the brim with chickens named 'bitches and pussies'.", traits: ["chaotic", "boss"] },
+                { text: "Build a massive auto-sorter system that completely moves all their items into random chests.", traits: ["boss"] },
+                { text: "Craft an incredibly complex riddle puzzle that leads them to a hidden sex dungeon filled with tentacles.", traits: ["pervy"] },
+                { text: "Do absolutely nothing. Just sit on the edge of the roof in the corner and judge them.", traits: ["gamer"] }
+            ]},
+            { text: "You receive a high heating bill in your place. What is your reaction?", options: [
+                { text: "Experience severe immediate trauma from a €1700 crisis bill and resolve to keep it at 17°C forever.", traits: ["sleepy"] },
+                { text: "Call customer support immediately, turn into a total monster, and bullshit your way into a free upgrade.", traits: ["pragmatic"] },
+                { text: "Act completely innocent, let your building residents split the cost, and blame the neighbors.", traits: ["clown"] },
+                { text: "Ignore it completely because your oven and aura heat the room to 21°C anyway.", traits: ["foodie"] }
+            ]},
+            { text: "What is your authentic connection to alternative rock and emo culture?", options: [
+                { text: "I was full core emo in 2008—the perfect hair, the checkered pants, the whole 3-year tragic relationship.", traits: ["emo"] },
+                { text: "I was soft core emo. Give me Paramore, rock versions of Disney songs, and a jean Ken vest.", traits: ["emo", "savage"] },
+                { text: "I didn't cut myself but still look stary-eyed to femboys.", traits: ["pervy"] },
+                { text: "I actively feed my high school angsty notes into GPT to generate haunting pop violin tracks with AI.", traits: ["gamer"] }
+            ]},
+            { text: "In a casual game of Among Us, how do you cast your votes?", options: [
+                { text: "Vote completely on unexplainable vibes, then get mad when people ask you to justify it with proof.", traits: ["gamer"] },
+                { text: "Target Ducky repeatedly for the absolute shits of it because it puts them in a spot.", traits: ["chaotic"] },
+                { text: "Get quiet, mute your mic, and laugh after running directly past a body.", traits: ["gamer"] },
+                { text: "Track their spatial movements on the map and determine if they are camping the rooms like a creep.", traits: ["pragmatic"] }
+            ]},
+            { text: "You are setting up a private account profile. What is your approach to security?", options: [
+                { text: "Keep your complete full government name exposed on Steam because you are bad at privacy.", traits: ["clown"] },
+                { text: "Delete all your photos and change your name instantly because a random internet crazy stalked yo ass.", traits: ["chaotic"] },
+                { text: "Lock down your profiles entirely and swap your aesthetic to a fox or a chainsaw-wielding raccoon.", traits: ["savage"] },
+                { text: "I don't use apps enough to care, thank God my fingerprint scanner bypasses my password memory.", traits: ["sleepy"] }
+            ]},
+            { text: "What is your definition of an absolute peak, relaxed weekend afternoon?", options: [
+                { text: "Go on a cold walk to the theaters, watch a movie, then rot on top of your sheets.", traits: ["emo"] },
+                { text: "Spend several hours meal-prepping and preparing my whole busy social schedule for the upcoming week.", traits: ["pragmatic"] },
+                { text: "Successfully complete a 5-minute call before falling asleep on someone twice in a row.", traits: ["sleepy"] },
+                { text: "Make some crazy images of your foot with different kinds of foods on it for a laugh.", traits: ["clown"] }
+            ]},
+            { text: "Emma plays a loud soundboard horn in voice chat. What do you do?", options: [
+                { text: "Jump-scare immediately then scream BORK BITCH.", traits: ["clown"] },
+                { text: "Get horny, mute your input, and communicate entirely through text innuendos.", traits: ["pervy"] },
+                { text: "Carry on cleaning your living room completely naked in the dark.", traits: ["clown", "sleepy"] },
+                { text: "Pretend you didn't notice it because you were too busy tracking your own thoughts.", traits: ["boss"] }
+            ]},
+            { text: "You are tasked with handling a close family member or a Secret Santa gift round.", options: [
+                { text: "The Ren Gift: Walk through a mall, buy a real-life axe or panda helmet, and personalize nothing.", traits: ["emo"] },
+                { text: "Get hyper-fidgety, buy way too many items, fumble your secret status, and accidentally snitch on yourself.", traits: ["chaotic"] },
+                { text: "Draft a strict spreadsheet checklist because emotions should not dictate consumer purchases.", traits: ["pragmatic"] },
+                { text: "Order an abstract marble dick sculpture and claim it's high-end abstract art.", traits: ["pervy"] }
+            ]},
+            { text: "You open your algorithm feed and notice it is heavily influenced by your exact hidden interests. What is dominating the feed?", options: [
+                { text: "Extremely detailed, high-production values of giant squid and tentacle sea monsters.", traits: ["pervy"] },
+                { text: "Hundreds of chapters of supernatural romance novels containing highly explicit werewolf packs.", traits: ["pervy"] },
+                { text: "Big burly hairy men in small denim skirts", traits: ["clown"] },
+                { text: "Purely culinary walkthroughs of gourmet burrata cheese presentation boards.", traits: ["foodie"] }
+            ]},
+            { text: "You are customizing a sticker for the server. What element is absolutely crucial?", options: [
+                { text: "A thick, high-contrast white border profile to ensure optimal dark mode visibility.", traits: ["pragmatic"] },
+                { text: "An incredibly bloody, creepy, and sinister anime ghost look that is somehow still completely cute.", traits: ["savage"] },
+                { text: "A simple, annoyed expression that perfectly captures an unhinged, sarcastic soul.", traits: ["emo"] },
+                { text: "Cute dog barking. Enough said.", traits: ["boss"] }
+            ]},
+            { text: "Your friends are out at a restaurant and your favorite items are on the menu. What are you ordering?", options: [
+                { text: "A heavy, decadent plate of homemade carbonara pasta with extra creamy textures.", traits: ["foodie"] },
+                { text: "A beautiful fresh ball of burrata cheese paired with local greens and olive oil.", traits: ["foodie", "pragmatic"] },
+                { text: "A giant box containing exactly 50 cookie brownie bowls propped up with vanilla and pistachio scoops.", traits: ["foodie"] },
+                { text: "I don't care about food, I just want a hot cheese croissant from the market.", traits: ["savage"] }
+            ]},
+            { text: "You find yourself trapped in-game. How do you handle your escape?", options: [
+                { text: "Quietly wait for someone to log in and let you out ", traits: ["sleepy"] },
+                { text: "Be polite, respect their property, and refuse to break any blocks to escape.", traits: ["pragmatic"] },
+                { text: "Aggressively punch them the second you are released.", traits: ["savage"] },
+                { text: "Steal their shit.", traits: ["boss"] }
+            ]},
+            { text: "What type of animal imagery do you currently find most appealing for personal branding?", options: [
+                { text: "A black cat wearing a heart-shaped choker or posing as a macabre goddess.", traits: ["pervy"] },
+                { text: "A shaggy black raccoon looking cute but with dark aesthetic.", traits: ["pragmatic", "savage"] },
+                { text: "A fluffy, beautiful puppy displaying an excited, clumsy waddle layout.", traits: ["clown"] },
+                { text: "I am actively abandoning my historical penguin addiction to pursue a dark fox look.", traits: ["emo"] }
+            ]},
+            { text: "You open your notifications and notice Emma has left you a message. What's the response pattern?", options: [
+                { text: "Engage in full 'marriage' roleplay and tease her back about head scratches.", traits: ["single"] },
+                { text: "Propose a cleaning date or a late-night music call because you feel comfy.", traits: ["sleepy"] },
+                { text: "Send a series of unhinged memes to see if you can break her brain.", traits: ["clown"] },
+                { text: "Spam her history with 100 consecutive pings for the sheer chaos.", traits: ["chaotic"] }
+            ]},
+            { text: "Your friends are compiling a list rating everyone's dirty-minded levels. Where do you land?", options: [
+                { text: "At the absolute pinnacle of the ranking, though you maintain a sweet, soft voice to throw off suspicion.", traits: ["pervy", "boss"] },
+                { text: "I am an innocent angel who only reads light romantic fiction. The algorithms are lying.", traits: ["sleepy"] },
+                { text: "Ranked highly because I make unhinged, crazy comments using a very soft, sweet voice.", traits: ["emo"] },
+                { text: "I completely pass out during the rating round and miss the entire text discussion.", traits: ["sleepy"] }
+            ]}
+        ];
+
+        const quiz = {
+            currentQuestion: 0,
+            userScores: { ...scores },
+            totalAnswersCount: 0,
+
+            start: function() {
+                document.getElementById("start-screen").classList.add("hidden");
+                document.getElementById("quiz-screen").classList.remove("hidden");
+                this.showQuestion();
+            },
+
+            showQuestion: function() {
+                const q = questions[this.currentQuestion];
+                document.getElementById("question-text").innerText = `${this.currentQuestion + 1}. ${q.text}`;
+                
+                const optionsContainer = document.getElementById("options-list");
+                optionsContainer.innerHTML = "";
+                
+                q.options.forEach(option => {
+                    const btn = document.createElement("button");
+                    btn.className = "option-btn";
+                    btn.innerText = option.text;
+                    btn.onclick = () => this.handleAnswer(option.traits);
+                    optionsContainer.appendChild(btn);
+                });
+
+                const progress = (this.currentQuestion / questions.length) * 100;
+                document.getElementById("progress-bar").style.width = `${progress}%`;
+            },
+
+            handleAnswer: function(traits) {
+                traits.forEach(trait => {
+                    if (this.userScores[trait] !== undefined) {
+                        this.userScores[trait]++;
+                        this.totalAnswersCount++; 
+                    }
+                });
+
+                this.currentQuestion++;
+                if (this.currentQuestion < questions.length) {
+                    this.showQuestion();
+                } else {
+                    this.showResult();
+                }
+            },
+
+            showResult: function() {
+                document.getElementById("quiz-screen").classList.add("hidden");
+                document.getElementById("result-screen").classList.remove("hidden");
+
+                let highestTrait = "sleepy";
+                let maxScore = -1;
+
+                for (const trait in this.userScores) {
+                    if (this.userScores[trait] > maxScore) {
+                        maxScore = this.userScores[trait];
+                        highestTrait = trait;
+                    }
+                }
+
+                const percentage = this.totalAnswersCount > 0 
+                    ? Math.round((this.userScores[highestTrait] / questions.length) * 100) 
+                    : 0;
+
+                const result = endings[highestTrait];
+                document.getElementById("result-title").innerText = `${result.title} (${percentage}% Match)`;
+                document.getElementById("result-desc").innerText = result.desc;
+                document.getElementById("result-img").src = result.img;
+                document.getElementById("result-img").onerror = function() {
+                    this.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><rect width='100%' height='100%' fill='%2312141c'/><text x='50%' y='55%' font-size='40' text-anchor='middle' fill='%23f2a3c7'>✨</text></svg>";
+                };
+            },
+
+            restart: function() {
+                this.currentQuestion = 0;
+                this.totalAnswersCount = 0;
+                this.userScores = { ...scores };
+                document.getElementById("result-screen").classList.add("hidden");
+                document.getElementById("start-screen").classList.remove("hidden");
+            }
+        };
+    </script>
+</body>
+</html>
