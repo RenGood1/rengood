@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Letters to the Bride & Groom | D & E</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Baskervville:ital@0;1&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&family=Caveat:wght@600&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Dancing+Script:wght@600&family=EB+Garamond:ital,wght@0,400;1,400&family=Great+Vibes&family=Libre+Baskerville:ital,wght@0,400;1,400&family=Montserrat:wght@300;400;600;700&family=Parisienne&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Tangerine:wght@700&display=swap" rel="stylesheet">
+  
+  <!-- html2canvas & EmailJS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+  <style>
+    :root {
+      --gold-foil: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+      --gold-solid: #c6a052;
+      --teal-primary: #1d7074;
+      --bg-cream: #faf8f5;
+      --dark-text: #2c3531;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-cream);
+      background-image: url('./img/bg-flowers3.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      
+      font-family: 'Cormorant Garamond', serif;
+      color: var(--dark-text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 12px;
+      min-height: 100vh;
+    }
+
+    header {
+      text-align: center;
+      max-width: 450px;
+      margin-bottom: 15px;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      background: var(--gold-foil);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 5px;
+      
+      /* LEGIBILITY STROKE */
+      -webkit-text-stroke: 0.8px #8b6b23;
+      filter: drop-shadow(0px 2px 10px rgba(0, 0, 0, 0.25)) drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.9));
+    }
+
+    p.intro {
+      font-size: 0.95rem;
+      color: #333;
+      font-style: italic;
+      text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9);
+      font-weight: 600;
+    }
+
+    /* FOLDED CARD CANVAS (10 cm x 14 cm ratio) */
+    .folded-note-card {
+      width: 100%;
+      max-width: 420px;
+      aspect-ratio: 10 / 14; /* 10cm x 14cm proportion */
+      background-color: #ffffff;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      
+      box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    /* --- HIGH-RES IMAGE BORDER OVERLAY --- */
+    .border-overlay-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* --- PURE CSS BORDER OVERLAY STYLES --- */
+    .border-overlay-css {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      bottom: 10px;
+      pointer-events: none;
+      z-index: 2;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+      display: none; /* Active only when CSS border is selected */
+    }
+
+    .border-overlay-css.double-gold { display: block; border: 4px double var(--gold-solid); }
+    .border-overlay-css.teal-gold-frame { display: block; border: 3px solid var(--teal-primary); outline: 1px solid var(--gold-solid); outline-offset: -5px; }
+    .border-overlay-css.minimal-gold { display: block; border: 1px solid var(--gold-solid); }
+    .border-overlay-css.dashed-gold { display: block; border: 2px dashed var(--gold-solid); }
+    .border-overlay-css.dotted-gold { display: block; border: 3px dotted var(--gold-solid); }
+    .border-overlay-css.double-teal { display: block; border: 4px double var(--teal-primary); }
+    .border-overlay-css.corner-accents { display: block; border: 1px solid rgba(198, 160, 82, 0.4); box-shadow: inset 0 0 0 3px rgba(198, 160, 82, 0.15); }
+
+    /* TOP HALF SECTION (7 cm) - FOR NAME / SIGNATURE */
+    .card-section-top {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 22px 25px 10px 25px;
+      position: relative;
+      z-index: 3;
+    }
+
+    /* CENTER FOLD INDICATOR LINE */
+    .fold-line {
+      width: 85%;
+      height: 1px;
+      border-bottom: 1px dashed rgba(198, 160, 82, 0.6);
+      margin: 0 auto;
+      position: relative;
+      z-index: 4;
+      text-align: center;
+      transition: opacity 0.2s ease;
+    }
+
+    .fold-line::after {
+      content: "✂ fold line";
+      position: absolute;
+      top: -7px;
+      right: 10px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.6rem;
+      color: rgba(198, 160, 82, 0.7);
+      background: rgba(255, 255, 255, 0.85);
+      padding: 0 4px;
+    }
+
+    /* Hide fold line when capturing snapshot */
+    .hide-for-export {
+      opacity: 0 !important;
+      border: none !important;
+    }
+
+    /* BOTTOM HALF SECTION (7 cm) - FOR NOTE MESSAGE */
+    .card-section-bottom {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center; /* Vertical alignment */
+      padding: 15px 30px 22px 30px;
+      position: relative;
+      z-index: 3;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Transparent inputs with anti-clipping rules */
+    .card-input {
+      border: 1px dashed transparent;
+      background: transparent;
+      transition: border-color 0.2s ease, background-color 0.2s ease;
+      width: 100%;
+      text-align: center;
+    }
+
+    .card-input:focus {
+      outline: none;
+      border-color: var(--teal-primary);
+      background: rgba(255, 255, 255, 0.75);
+      border-radius: 4px;
+    }
+
+    input.name-input {
+      font-size: 1.45rem;
+      font-family: 'Great Vibes', cursive;
+      color: var(--teal-primary);
+      font-weight: 600;
+      line-height: 1.8;       
+      padding: 10px 15px;      
+      overflow: visible;
+    }
+
+    textarea.note-textarea {
+      width: 100%;
+      max-height: 100%;
+      resize: none;
+      font-size: 1.25rem;
+      line-height: 1.8;        
+      padding: 10px 15px;
+      font-family: 'Great Vibes', cursive;
+      color: var(--teal-primary);
+      text-align: center;
+      overflow: hidden;        
+      
+      field-sizing: content; 
+      margin: auto 0;        
+    }
+
+    .gold-foil-ink {
+      background: var(--gold-foil) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+    }
+
+    .toolbar-container {
+      width: 100%;
+      max-width: 420px;
+      margin-top: 15px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(5px);
+      padding: 12px 15px;
+      border-radius: 6px;
+      border: 1px solid #e0d8c3;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toolbar-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      min-width: 130px;
+    }
+
+    label {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--teal-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    select.styled-select {
+      font-family: 'Montserrat', sans-serif;
+      padding: 8px;
+      border: 1px solid #cccccc;
+      border-radius: 4px;
+      background: white;
+      width: 100%;
+      font-size: 16px; /* Prevents iOS auto-zoom */
+    }
+
+    optgroup {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      color: var(--teal-primary);
+      background: #f4efea;
+      font-style: normal;
+    }
+
+    option {
+      background: #ffffff;
+      color: #2c3531;
+      padding: 4px 8px;
+    }
+
+    .send-btn {
+      width: 100%;
+      background: var(--gold-foil);
+      color: #2c2105;
+      border: none;
+      padding: 14px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.2s ease;
+    }
+
+    .send-btn:active {
+      transform: scale(0.99);
+    }
+
+    .send-btn:hover {
+      box-shadow: 0 4px 12px rgba(179, 135, 40, 0.35);
+    }
+
+    .status-msg {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    @media (max-width: 480px) {
+      h1 { font-size: 1.6rem; }
+      p.intro { font-size: 0.85rem; }
+      textarea.note-textarea { font-size: 1.15rem; }
+      input.name-input { font-size: 1.35rem; }
+      select.styled-select { font-size: 14px; padding: 6px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Letters To the Bride & Groom</h1>
+    <p class="intro">Leave your heartfelt message or advice for Diane & Elvis below!</p>
+  </header>
+
+  <!-- FOLDED CARD CANVAS (10cm x 14cm divided in half) -->
+  <div id="singleNoteCard" class="folded-note-card">
+    
+    <!-- HIGH-RES IMAGE BORDER OVERLAY (Default: Golden Arch) -->
+    <img id="borderOverlayImg" class="border-overlay-img" src="./img/golden-heart-border.png" alt="Card Border" />
+
+    <!-- PURE CSS BORDER OVERLAY (Fallback for pure CSS options) -->
+    <div id="borderOverlayCss" class="border-overlay-css"></div>
+
+    <!-- TOP SECTION: NAME / SIGNATURE (7 cm) -->
+    <div class="card-section-top">
+      <input type="text" id="nameInput" class="card-input name-input" placeholder="- Your Name(s) -" required>
+    </div>
+
+    <!-- DELICATE CENTER FOLD LINE -->
+    <div id="foldLine" class="fold-line"></div>
+
+    <!-- BOTTOM SECTION: NOTE MESSAGE (7 cm) -->
+    <div class="card-section-bottom">
+      <textarea id="noteTextarea" class="card-input note-textarea" placeholder="Click here to write your note in the bottom section..." required></textarea>
+    </div>
+
+  </div>
+
+  <!-- Styling & Action Toolbar Below the Card -->
+  <div class="toolbar-container">
+    
+    <div class="toolbar-row">
+      <!-- Border Choice Dropdown categorized into Pure CSS vs Custom PNG options -->
+      <div class="toolbar-group">
+        <label for="borderSelect">Border:</label>
+        <select id="borderSelect" class="styled-select">
+          
+          <optgroup label="── Image Borders ──">
+            <option value="png:./img/golden-heart-border.png">Golden Heart Border</option>
+            <option value="png:./img/neon-golden-line-border.png">Neon Gold Border</option>
+            <option value="png:./img/golden-arch-border.png" selected>Golden Arch Border</option>
+            <option value="png:./img/warm-flower-diagonal-border.png">Warm Flower Border</option>
+            <option value="png:./img/thin-teal-border.png">Thin Teal Border</option>
+          </optgroup>
+
+          <optgroup label="── Line Borders ──">
+            <option value="css:double-gold">Dainty Double Gold</option>
+            <option value="css:teal-gold-frame">Teal & Gold Inset</option>
+            <option value="css:minimal-gold">Minimal Gold Line</option>
+            <option value="css:dashed-gold">Classic Dashed Gold</option>
+            <option value="css:dotted-gold">Dotted Gold Frame</option>
+            <option value="css:double-teal">Double Teal Line</option>
+            <option value="css:corner-accents">Subtle Inset Glow</option>
+          </optgroup>
+
+        </select>
+      </div>
+
+      <!-- Ink Color Preset Dropdown -->
+      <div class="toolbar-group">
+        <label for="inkSelect">Ink:</label>
+        <select id="inkSelect" class="styled-select">
+          <option value="#1d7074" selected>Deep Teal</option>
+          <option value="gold-foil">Gold Foil (Shimmer)</option>
+          <option value="#c6a052">Gold Solid</option>
+          <option value="#8b0000">Burgundy Red</option>
+          <option value="#2c3531">Classic Black</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="toolbar-row">
+      <!-- Font Family Selection Option -->
+      <div class="toolbar-group">
+        <label for="fontSelect">Font:</label>
+        <select id="fontSelect" class="styled-select">
+          
+          <optgroup label="── Elegant Invitation Scripts ──">
+            <option value="'Great Vibes', cursive" style="font-family: 'Great Vibes', cursive; font-size: 1.25rem;">Diane & Elvis Calligraphy (Great Vibes)</option>
+            <option value="'Alex Brush', cursive" style="font-family: 'Alex Brush', cursive; font-size: 1.25rem;">Fine Monoline Script (Alex Brush)</option>
+            <option value="'Parisienne', cursive" style="font-family: 'Parisienne', cursive; font-size: 1.15rem;">Vintage Romance (Parisienne)</option>
+            <option value="'Tangerine', cursive" style="font-family: 'Tangerine', cursive; font-size: 1.4rem;">Slender Flourish (Tangerine)</option>
+          </optgroup>
+
+          <optgroup label="── Invitation Italics (Soft & Romantic) ──">
+            <option value="'Baskervville', serif" style="font-family: 'Baskervville', serif; font-style: italic; font-size: 1.05rem;">Invitation Body Italic (Baskervville)</option>
+            <option value="'Bodoni Moda', serif" style="font-family: 'Bodoni Moda', serif; font-style: italic; font-size: 1.05rem;">High-Fashion Italic (Bodoni Moda)</option>
+            <option value="'Cormorant Garamond', serif" style="font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.1rem;">Classic Soft Italic (Cormorant)</option>
+            <option value="'Playfair Display', serif" style="font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.05rem;">Editorial Italic (Playfair)</option>
+          </optgroup>
+
+          <optgroup label="── Classic & Modern Serifs ──">
+            <option value="'EB Garamond', serif" style="font-family: 'EB Garamond', serif; font-size: 1.05rem;">Traditional Garamond (EB Garamond)</option>
+            <option value="'Libre Baskerville', serif" style="font-family: 'Libre Baskerville', serif; font-size: 1.0rem;">Refined Book Serif (Libre Baskerville)</option>
+            <option value="'Cinzel', serif" style="font-family: 'Cinzel', serif; font-size: 0.95rem;">Roman Wedding Caps (Cinzel)</option>
+          </optgroup>
+
+          <optgroup label="── Casual Handwriting & Clean ──">
+            <option value="'Caveat', cursive" style="font-family: 'Caveat', cursive; font-size: 1.15rem;">Warm Personal Handwriting (Caveat)</option>
+            <option value="'Dancing Script', cursive" style="font-family: 'Dancing Script', cursive; font-size: 1.1rem;">Playful Script (Dancing Script)</option>
+            <option value="'Montserrat', sans-serif" style="font-family: 'Montserrat', sans-serif; font-size: 0.95rem;">Modern Clean Sans (Montserrat)</option>
+          </optgroup>
+
+        </select>
+      </div>
+    </div>
+
+    <button type="button" id="sendBtn" class="send-btn">Send Note</button>
+  </div>
+
+  <div id="statusMsg" class="status-msg"></div>
+
+  <script>
+    // --- CONFIGURATION ---
+    const EMAILJS_PUBLIC_KEY = "93Ny5KMvWIiZk9lLu";
+    const EMAILJS_SERVICE_ID = "service_yczelyo";
+    const EMAILJS_TEMPLATE_ID = "template_09mbb5w";
+    const RECEIVER_EMAIL = "dianeelvisnotes@hotmail.com";
+
+    const CLOUDINARY_CLOUD_NAME = "djy2m2o6w";
+    const CLOUDINARY_PRESET = "wedding_notes"; 
+
+    // Initialize EmailJS SDK
+    (function() {
+        emailjs.init(EMAILJS_PUBLIC_KEY);
+    })();
+
+    const noteCard = document.getElementById('singleNoteCard');
+    const borderOverlayImg = document.getElementById('borderOverlayImg');
+    const borderOverlayCss = document.getElementById('borderOverlayCss');
+    const noteTextarea = document.getElementById('noteTextarea');
+    const nameInput = document.getElementById('nameInput');
+    const fontSelect = document.getElementById('fontSelect');
+    const borderSelect = document.getElementById('borderSelect');
+    const inkSelect = document.getElementById('inkSelect');
+    const foldLine = document.getElementById('foldLine');
+    const sendBtn = document.getElementById('sendBtn');
+    const statusMsg = document.getElementById('statusMsg');
+
+    borderSelect.addEventListener('change', (e) => {
+      const val = e.target.value;
+      if (val.startsWith('png:')) {
+        borderOverlayCss.className = 'border-overlay-css';
+        borderOverlayImg.src = val.replace('png:', '');
+        borderOverlayImg.style.display = 'block';
+      } else if (val.startsWith('css:')) {
+        borderOverlayImg.style.display = 'none';
+        borderOverlayCss.className = 'border-overlay-css ' + val.replace('css:', '');
+      }
+    });
+
+    // Font selection event
+    fontSelect.addEventListener('change', (e) => {
+      noteTextarea.style.fontFamily = e.target.value;
+      nameInput.style.fontFamily = e.target.value;
+    });
+
+    // Ink preset selection event
+    inkSelect.addEventListener('change', (e) => {
+      const selectedVal = e.target.value;
+      
+      if (selectedVal === 'gold-foil') {
+        noteTextarea.classList.add('gold-foil-ink');
+        nameInput.classList.add('gold-foil-ink');
+        noteTextarea.style.color = '';
+        nameInput.style.color = '';
+      } else {
+        noteTextarea.classList.remove('gold-foil-ink');
+        nameInput.classList.remove('gold-foil-ink');
+        noteTextarea.style.color = selectedVal;
+        nameInput.style.color = selectedVal;
+      }
+    });
+
+    function adjustTextareaHeight() {
+      noteTextarea.style.height = 'auto';
+      noteTextarea.style.height = Math.min(noteTextarea.scrollHeight, noteTextarea.parentElement.clientHeight) + 'px';
+    }
+    noteTextarea.addEventListener('input', adjustTextareaHeight);
+
+    async function uploadToCloudinary(base64Data, senderName) {
+      const formData = new FormData();
+      formData.append("file", base64Data);
+      formData.append("upload_preset", CLOUDINARY_PRESET);
+
+      const cleanName = senderName.trim().replace(/[^a-zA-Z0-9]/g, '_');
+      const customFileName = `Card_from_${cleanName}_${Date.now()}`;
+      formData.append("public_id", customFileName);
+
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await response.json();
+      if (data.secure_url) {
+        return data.secure_url;
+      } else {
+        throw new Error("Cloudinary error: " + (data.error?.message || "Upload failed"));
+      }
+    }
+
+    // Send logic
+    sendBtn.addEventListener('click', async () => {
+      if (!noteTextarea.value.trim() || !nameInput.value.trim()) {
+        statusMsg.style.color = '#a83232';
+        statusMsg.textContent = 'Please write a message and enter your name before sending!';
+        return;
+      }
+
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Generating High-Res Card...';
+      statusMsg.textContent = '';
+
+      // 1. Temporarily hide fold line
+      foldLine.classList.add('hide-for-export');
+
+      // 2. CREATE STATIC DIV REPLACEMENTS WITH ANTI-CLIPPING VERTICAL BUFFER
+      const nameVal = nameInput.value;
+      const noteVal = noteTextarea.value;
+
+      const nameStyle = window.getComputedStyle(nameInput);
+      const noteStyle = window.getComputedStyle(noteTextarea);
+
+      const tempNameDiv = document.createElement('div');
+      tempNameDiv.className = nameInput.className;
+      tempNameDiv.innerText = nameVal;
+      tempNameDiv.style.fontFamily = nameStyle.fontFamily;
+      tempNameDiv.style.color = nameStyle.color;
+      tempNameDiv.style.fontSize = nameStyle.fontSize;
+      tempNameDiv.style.fontWeight = nameStyle.fontWeight;
+      tempNameDiv.style.fontStyle = nameStyle.fontStyle;
+      tempNameDiv.style.lineHeight = '2.0';               /* High line-height to prevent clipping script loops */
+      tempNameDiv.style.padding = '16px 20px';            /* Extra vertical space inside bounding box */
+      tempNameDiv.style.overflow = 'visible';             /* Allows flourishes outside bounding box */
+      tempNameDiv.style.textAlign = 'center';
+      tempNameDiv.style.width = '100%';
+      tempNameDiv.style.wordBreak = 'break-word';
+      tempNameDiv.style.whiteSpace = 'pre-wrap';
+      tempNameDiv.style.display = 'flex';
+      tempNameDiv.style.alignItems = 'center';
+      tempNameDiv.style.justifyContent = 'center';
+
+      const tempNoteDiv = document.createElement('div');
+      tempNoteDiv.className = noteTextarea.className;
+      tempNoteDiv.innerText = noteVal;
+      tempNoteDiv.style.fontFamily = noteStyle.fontFamily;
+      tempNoteDiv.style.color = noteStyle.color;
+      tempNoteDiv.style.fontSize = noteStyle.fontSize;
+      tempNoteDiv.style.fontWeight = noteStyle.fontWeight;
+      tempNoteDiv.style.fontStyle = noteStyle.fontStyle;
+      tempNoteDiv.style.lineHeight = '2.0';               /* High line-height for script flourishes */
+      tempNoteDiv.style.padding = '16px 20px';            /* Extra vertical space inside bounding box */
+      tempNoteDiv.style.overflow = 'visible';             /* Allows flourishes outside bounding box */
+      tempNoteDiv.style.textAlign = 'center';
+      tempNoteDiv.style.width = '100%';
+      tempNoteDiv.style.wordBreak = 'break-word';
+      tempNoteDiv.style.whiteSpace = 'pre-wrap';
+      tempNoteDiv.style.display = 'flex';
+      tempNoteDiv.style.alignItems = 'center';
+      tempNoteDiv.style.justifyContent = 'center';
+
+      // Hide real inputs, insert static text divs
+      nameInput.style.display = 'none';
+      noteTextarea.style.display = 'none';
+      nameInput.parentNode.appendChild(tempNameDiv);
+      noteTextarea.parentNode.appendChild(tempNoteDiv);
+
+      try {
+        // 3. Render High Quality 300 DPI canvas
+        const canvas = await html2canvas(noteCard, { scale: 3.0, useCORS: true });
+        const highResBase64 = canvas.toDataURL('image/png');
+
+        // 4. RESTORE ORIGINAL DOM STATE IMMEDIATELY
+        tempNameDiv.remove();
+        tempNoteDiv.remove();
+        nameInput.style.display = 'block';
+        noteTextarea.style.display = 'block';
+        foldLine.classList.remove('hide-for-export');
+
+        sendBtn.textContent = 'Uploading Card...';
+
+        // Upload to Cloudinary
+        const imageUrl = await uploadToCloudinary(highResBase64, nameVal);
+
+        sendBtn.textContent = 'Sending Email...';
+
+        // Send via EmailJS
+        const templateParams = {
+          to_email: RECEIVER_EMAIL,
+          from_name: nameVal,
+          message: noteVal,
+          image_url: imageUrl
+        };
+
+        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+
+        statusMsg.style.color = '#1d7074';
+        statusMsg.textContent = '✨ Thank you! Your note has been sent to Diane & Elvis.';
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send Note';
+
+        nameInput.value = '';
+        noteTextarea.value = '';
+        adjustTextareaHeight();
+
+      } catch (err) {
+        // Cleanup on error
+        tempNameDiv.remove();
+        tempNoteDiv.remove();
+        nameInput.style.display = 'block';
+        noteTextarea.style.display = 'block';
+        foldLine.classList.remove('hide-for-export');
+
+        statusMsg.style.color = '#a83232';
+        statusMsg.textContent = 'Error processing card. Please check console.';
+        console.error('Error details:', err);
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send Note';
+      }
+    });
+  </script>
+</body>
+</html>
