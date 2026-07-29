@@ -129,26 +129,31 @@
     .border-overlay-css.double-teal { display: block; border: 4px double var(--teal-primary); }
     .border-overlay-css.corner-accents { display: block; border: 1px solid rgba(198, 160, 82, 0.4); box-shadow: inset 0 0 0 3px rgba(198, 160, 82, 0.15); }
 
-    /* TOP HALF SECTION (7 cm) - FOR NAME / SIGNATURE */
-    .card-section-top {
-      flex: 1;
+    /* ABSOLUTELY FIXED TOP & BOTTOM SECTIONS (STOPS FOLD LINE MOVEMENT) */
+    .card-section-top, .card-section-bottom {
+      height: 50%;
+      width: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 22px 25px 10px 25px;
+      padding: 20px 30px;
       position: relative;
       z-index: 3;
+      overflow: hidden;
     }
 
-    /* CENTER FOLD INDICATOR LINE */
+    /* CENTER FOLD INDICATOR LINE - FIXED ABSOLUTE POSITION AT 50% */
     .fold-line {
+      position: absolute;
+      top: 50%;
+      left: 7.5%;
       width: 85%;
       height: 1px;
       border-bottom: 1px dashed rgba(198, 160, 82, 0.6);
-      margin: 0 auto;
-      position: relative;
       z-index: 4;
       text-align: center;
+      transform: translateY(-50%);
+      pointer-events: none;
       transition: opacity 0.2s ease;
     }
 
@@ -170,26 +175,25 @@
       border: none !important;
     }
 
-    /* BOTTOM HALF SECTION (7 cm) - FOR NOTE MESSAGE */
-    .card-section-bottom {
-      flex: 1;
+    /* Flex wrapper for message & signature flow inside sections */
+    .section-flow-container {
       display: flex;
+      flex-direction: column;
+      align-items: center;
       justify-content: center;
-      align-items: center; /* Vertical alignment */
-      padding: 15px 30px 22px 30px;
-      position: relative;
-      z-index: 3;
       width: 100%;
-      height: 100%;
+      max-height: 100%;
     }
 
-    /* Transparent inputs with anti-clipping rules */
+    /* Transparent inputs/textareas with anti-clipping rules */
     .card-input {
       border: 1px dashed transparent;
       background: transparent;
       transition: border-color 0.2s ease, background-color 0.2s ease;
       width: 100%;
-      text-align: center;
+      resize: none;
+      overflow: hidden;
+      field-sizing: content;
     }
 
     .card-input:focus {
@@ -199,30 +203,49 @@
       border-radius: 4px;
     }
 
-    input.name-input {
+    /* Dedicated Name/Signature Styling */
+    textarea.name-input-top {
       font-size: 1.45rem;
       font-family: 'Great Vibes', cursive;
       color: var(--teal-primary);
       font-weight: 600;
-      line-height: 1.8;       
-      padding: 10px 15px;      
-      overflow: visible;
+      line-height: 1.6;      
+      padding: 4px 10px;      
+      text-align: center;
+      word-break: break-word;
+      white-space: pre-wrap;
+      order: 1;
     }
 
+    textarea.name-input-bottom {
+      font-size: 1.25rem;
+      font-family: 'Great Vibes', cursive;
+      color: var(--teal-primary);
+      font-weight: 600;
+      line-height: 1.6;
+      padding: 4px 10px;
+      text-align: right;
+      align-self: flex-end;
+      width: 90%;
+      margin-top: 4px;
+      word-break: break-word;
+      white-space: pre-wrap;
+      order: 2; /* Ensures signature renders below note text */
+    }
+
+    /* Note Textarea Body Styling */
     textarea.note-textarea {
       width: 100%;
       max-height: 100%;
-      resize: none;
-      font-size: 1.25rem;
-      line-height: 1.8;        
-      padding: 10px 15px;
+      font-size: 1.2rem;
+      line-height: 1.6;        
+      padding: 4px 10px;
       font-family: 'Great Vibes', cursive;
       color: var(--teal-primary);
       text-align: center;
-      overflow: hidden;        
-      
-      field-sizing: content; 
-      margin: auto 0;        
+      word-break: break-word;
+      white-space: pre-wrap;
+      order: 1; /* Note stays above bottom signature */
     }
 
     .gold-foil-ink {
@@ -248,10 +271,11 @@
 
     .toolbar-row {
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       justify-content: space-between;
       align-items: center;
       gap: 10px;
+      width: 100%;
     }
 
     .toolbar-group {
@@ -259,7 +283,7 @@
       align-items: center;
       gap: 6px;
       flex: 1;
-      min-width: 130px;
+      min-width: 0;
     }
 
     label {
@@ -272,7 +296,7 @@
       white-space: nowrap;
     }
 
-    select.styled-select {
+    select.styled-select, input.styled-file-input {
       font-family: 'Montserrat', sans-serif;
       padding: 8px;
       border: 1px solid #cccccc;
@@ -280,6 +304,11 @@
       background: white;
       width: 100%;
       font-size: 16px; /* Prevents iOS auto-zoom */
+    }
+
+    input.styled-file-input {
+      padding: 5px;
+      font-size: 0.8rem;
     }
 
     optgroup {
@@ -330,8 +359,9 @@
     @media (max-width: 480px) {
       h1 { font-size: 1.6rem; }
       p.intro { font-size: 0.85rem; }
-      textarea.note-textarea { font-size: 1.15rem; }
-      input.name-input { font-size: 1.35rem; }
+      textarea.note-textarea { font-size: 1.1rem; }
+      textarea.name-input-top { font-size: 1.3rem; }
+      textarea.name-input-bottom { font-size: 1.1rem; }
       select.styled-select { font-size: 14px; padding: 6px; }
     }
   </style>
@@ -340,50 +370,61 @@
 
   <header>
     <h1>Letters To the Bride & Groom</h1>
-    <p class="intro">Leave your heartfelt message or advice for Diane & Elvis below!</p>
+    <p class="intro">Hi everyone!<br>
+<br>
+Please help us celebrate our wonderful couple as they begin this exciting new chapter together.<br>
+<br>
+We'd love to surprise them with a keepsake book filled with your heartfelt messages, well wishes, favorite memories, and words of advice. Your note will become a cherished reminder of the love and support surrounding them on their wedding day.</p>
   </header>
 
   <!-- FOLDED CARD CANVAS (10cm x 14cm divided in half) -->
   <div id="singleNoteCard" class="folded-note-card">
     
-    <!-- HIGH-RES IMAGE BORDER OVERLAY (Default: Golden Arch) -->
-    <img id="borderOverlayImg" class="border-overlay-img" src="./img/golden-heart-border.png" alt="Card Border" />
+    <!-- HIGH-RES IMAGE BORDER OVERLAY -->
+    <img id="borderOverlayImg" class="border-overlay-img" src="./img/golden-arch-border.png" alt="Card Border" style="display: none;" />
 
-    <!-- PURE CSS BORDER OVERLAY (Fallback for pure CSS options) -->
-    <div id="borderOverlayCss" class="border-overlay-css"></div>
+    <!-- PURE CSS BORDER OVERLAY (Default: Dainty Double Gold) -->
+    <div id="borderOverlayCss" class="border-overlay-css double-gold"></div>
 
-    <!-- TOP SECTION: NAME / SIGNATURE (7 cm) -->
+    <!-- TOP SECTION (7 cm) -->
     <div class="card-section-top">
-      <input type="text" id="nameInput" class="card-input name-input" placeholder="- Your Name(s) -" required>
+      <div class="section-flow-container">
+        <textarea id="noteTextareaTop" class="card-input note-textarea" placeholder="Click to write note" rows="1"></textarea>
+        <textarea id="nameInputTop" class="card-input name-input-top" placeholder="- Your Name(s) -" rows="1" style="display: none;"></textarea>
+      </div>
     </div>
 
-    <!-- DELICATE CENTER FOLD LINE -->
+    <!-- DELICATE CENTER FOLD LINE (STATIONARY) -->
     <div id="foldLine" class="fold-line"></div>
 
-    <!-- BOTTOM SECTION: NOTE MESSAGE (7 cm) -->
+    <!-- BOTTOM SECTION (7 cm) -->
     <div class="card-section-bottom">
-      <textarea id="noteTextarea" class="card-input note-textarea" placeholder="Click here to write your note in the bottom section..." required></textarea>
+      <div class="section-flow-container">
+        <textarea id="noteTextareaBottom" class="card-input note-textarea" placeholder="Click here to write your note" rows="1" required></textarea>
+        <textarea id="nameInputBottom" class="card-input name-input-bottom" placeholder="- Signature" rows="1" required></textarea>
+      </div>
     </div>
 
   </div>
 
   <div class="toolbar-container">
     
+    <!-- Row 1: Border full line -->
     <div class="toolbar-row">
       <div class="toolbar-group">
         <label for="borderSelect">Border:</label>
         <select id="borderSelect" class="styled-select">
           
           <optgroup label="── Image Borders ──">
+            <option value="png:./img/golden-arch-border.png">Golden Arch Border</option>
             <option value="png:./img/golden-heart-border.png">Golden Heart Border</option>
             <option value="png:./img/neon-golden-line-border.png">Neon Gold Border</option>
-            <option value="png:./img/golden-arch-border.png" selected>Golden Arch Border</option>
             <option value="png:./img/warm-flower-diagonal-border.png">Warm Flower Border</option>
             <option value="png:./img/thin-teal-border.png">Thin Teal Border</option>
           </optgroup>
 
           <optgroup label="── Line Borders ──">
-            <option value="css:double-gold">Dainty Double Gold</option>
+            <option value="css:double-gold" selected>Dainty Double Gold</option>
             <option value="css:teal-gold-frame">Teal & Gold Inset</option>
             <option value="css:minimal-gold">Minimal Gold Line</option>
             <option value="css:dashed-gold">Classic Dashed Gold</option>
@@ -394,20 +435,9 @@
 
         </select>
       </div>
-
-      <!-- Ink Color Preset Dropdown -->
-      <div class="toolbar-group">
-        <label for="inkSelect">Ink:</label>
-        <select id="inkSelect" class="styled-select">
-          <option value="#1d7074" selected>Deep Teal</option>
-          <option value="gold-foil">Gold Foil (Shimmer)</option>
-          <option value="#c6a052">Gold Solid</option>
-          <option value="#8b0000">Burgundy Red</option>
-          <option value="#2c3531">Classic Black</option>
-        </select>
-      </div>
     </div>
 
+    <!-- Row 2: Font & Ink side by side -->
     <div class="toolbar-row">
       <div class="toolbar-group">
         <label for="fontSelect">Font:</label>
@@ -441,6 +471,43 @@
 
         </select>
       </div>
+
+      <div class="toolbar-group">
+        <label for="inkSelect">Ink:</label>
+        <select id="inkSelect" class="styled-select">
+          <option value="#1d7074" selected>Deep Teal</option>
+          <option value="#8b0000">Burgundy Red</option>
+          <option value="#2c3531">Classic Black</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Row 3: Text Area & Signature side by side -->
+    <div class="toolbar-row">
+      <div class="toolbar-group">
+        <label for="textSectionSelect">Text Area:</label>
+        <select id="textSectionSelect" class="styled-select">
+          <option value="bottom">Bottom</option>
+          <option value="top">Top</option>
+          <option value="both" selected>Both</option>
+        </select>
+      </div>
+
+      <div class="toolbar-group">
+        <label for="namePositionSelect">Signature:</label>
+        <select id="namePositionSelect" class="styled-select">
+          <option value="top">Top</option>
+          <option value="bottom" selected>Bottom</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Row 4: Multiple Photo Upload Field -->
+    <div class="toolbar-row">
+      <div class="toolbar-group">
+        <label for="photoUpload">Upload Memories:</label>
+        <input type="file" id="photoUpload" accept="image/*" multiple class="styled-file-input">
+      </div>
     </div>
 
     <button type="button" id="sendBtn" class="send-btn">Send Note</button>
@@ -466,14 +533,55 @@
     const noteCard = document.getElementById('singleNoteCard');
     const borderOverlayImg = document.getElementById('borderOverlayImg');
     const borderOverlayCss = document.getElementById('borderOverlayCss');
-    const noteTextarea = document.getElementById('noteTextarea');
-    const nameInput = document.getElementById('nameInput');
+    
+    const noteTextareaTop = document.getElementById('noteTextareaTop');
+    const noteTextareaBottom = document.getElementById('noteTextareaBottom');
+    const nameInputTop = document.getElementById('nameInputTop');
+    const nameInputBottom = document.getElementById('nameInputBottom');
+    
     const fontSelect = document.getElementById('fontSelect');
     const borderSelect = document.getElementById('borderSelect');
     const inkSelect = document.getElementById('inkSelect');
+    const textSectionSelect = document.getElementById('textSectionSelect');
+    const namePositionSelect = document.getElementById('namePositionSelect');
+    const photoUpload = document.getElementById('photoUpload');
     const foldLine = document.getElementById('foldLine');
     const sendBtn = document.getElementById('sendBtn');
     const statusMsg = document.getElementById('statusMsg');
+
+    // Auto-height adjustment
+    function autoResizeTextarea(el) {
+      if (el.style.display === 'none') return;
+      el.style.height = 'auto';
+      el.style.height = el.scrollHeight + 'px';
+    }
+
+    [noteTextareaTop, noteTextareaBottom, nameInputTop, nameInputBottom].forEach(el => {
+      el.addEventListener('input', () => autoResizeTextarea(el));
+    });
+
+    function updateLayoutVisibility() {
+      const secMode = textSectionSelect.value;
+      const namePos = namePositionSelect.value;
+
+      noteTextareaTop.style.display = (secMode === 'top' || secMode === 'both') ? 'block' : 'none';
+      noteTextareaBottom.style.display = (secMode === 'bottom' || secMode === 'both') ? 'block' : 'none';
+
+      if (namePos === 'top') {
+        nameInputTop.style.display = 'block';
+        nameInputBottom.style.display = 'none';
+        nameInputTop.value = nameInputBottom.value || nameInputTop.value;
+      } else {
+        nameInputTop.style.display = 'none';
+        nameInputBottom.style.display = 'block';
+        nameInputBottom.value = nameInputTop.value || nameInputBottom.value;
+      }
+
+      [noteTextareaTop, noteTextareaBottom, nameInputTop, nameInputBottom].forEach(autoResizeTextarea);
+    }
+
+    textSectionSelect.addEventListener('change', updateLayoutVisibility);
+    namePositionSelect.addEventListener('change', updateLayoutVisibility);
 
     borderSelect.addEventListener('change', (e) => {
       const val = e.target.value;
@@ -489,33 +597,31 @@
 
     // Font selection event
     fontSelect.addEventListener('change', (e) => {
-      noteTextarea.style.fontFamily = e.target.value;
-      nameInput.style.fontFamily = e.target.value;
+      const chosenFont = e.target.value;
+      [noteTextareaTop, noteTextareaBottom, nameInputTop, nameInputBottom].forEach(el => {
+        el.style.fontFamily = chosenFont;
+      });
     });
 
     // Ink preset selection event
     inkSelect.addEventListener('change', (e) => {
       const selectedVal = e.target.value;
-      
+      const allInputs = [noteTextareaTop, noteTextareaBottom, nameInputTop, nameInputBottom];
+
       if (selectedVal === 'gold-foil') {
-        noteTextarea.classList.add('gold-foil-ink');
-        nameInput.classList.add('gold-foil-ink');
-        noteTextarea.style.color = '';
-        nameInput.style.color = '';
+        allInputs.forEach(el => {
+          el.classList.add('gold-foil-ink');
+          el.style.color = '';
+        });
       } else {
-        noteTextarea.classList.remove('gold-foil-ink');
-        nameInput.classList.remove('gold-foil-ink');
-        noteTextarea.style.color = selectedVal;
-        nameInput.style.color = selectedVal;
+        allInputs.forEach(el => {
+          el.classList.remove('gold-foil-ink');
+          el.style.color = selectedVal;
+        });
       }
     });
 
-    function adjustTextareaHeight() {
-      noteTextarea.style.height = 'auto';
-      noteTextarea.style.height = Math.min(noteTextarea.scrollHeight, noteTextarea.parentElement.clientHeight) + 'px';
-    }
-    noteTextarea.addEventListener('input', adjustTextareaHeight);
-
+    // Upload generated Base64 canvas to Cloudinary
     async function uploadToCloudinary(base64Data, senderName) {
       const formData = new FormData();
       formData.append("file", base64Data);
@@ -538,84 +644,136 @@
       }
     }
 
+    // Upload multiple raw user photo files to Cloudinary concurrently
+    async function uploadMultipleFilesToCloudinary(fileList, senderName) {
+      const cleanName = senderName.trim().replace(/[^a-zA-Z0-9]/g, '_');
+      const uploadPromises = Array.from(fileList).map(async (file, index) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", CLOUDINARY_PRESET);
+        formData.append("public_id", `GuestPhoto_${index + 1}_from_${cleanName}_${Date.now()}`);
+
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await response.json();
+        if (data.secure_url) {
+          // Wrap in a clean anchor tag with overflow breaking for mobile emails
+          return `<a href="${data.secure_url}" target="_blank" style="color: #1d7074; word-break: break-all; text-decoration: underline;">Guest Photo ${index + 1} (${data.secure_url})</a>`;
+        } else {
+          throw new Error("Cloudinary Photo Upload Failed: " + (data.error?.message || "Error"));
+        }
+      });
+
+      const urls = await Promise.all(uploadPromises);
+      return urls.join("<br><br>");
+    }
+
     // Send logic
     sendBtn.addEventListener('click', async () => {
-      if (!noteTextarea.value.trim() || !nameInput.value.trim()) {
+      const activeNameInput = (namePositionSelect.value === 'top') ? nameInputTop : nameInputBottom;
+      const nameVal = activeNameInput.value.trim();
+      
+      const topNoteVal = noteTextareaTop.style.display !== 'none' ? noteTextareaTop.value.trim() : '';
+      const bottomNoteVal = noteTextareaBottom.style.display !== 'none' ? noteTextareaBottom.value.trim() : '';
+      const combinedNoteVal = [topNoteVal, bottomNoteVal].filter(Boolean).join('\n---\n');
+
+      if (!combinedNoteVal || !nameVal) {
         statusMsg.style.color = '#a83232';
         statusMsg.textContent = 'Please write a message and enter your name before sending!';
         return;
       }
 
       sendBtn.disabled = true;
-      sendBtn.textContent = 'Generating High-Res Card...';
       statusMsg.textContent = '';
 
-      foldLine.classList.add('hide-for-export');
-
-      const nameVal = nameInput.value;
-      const noteVal = noteTextarea.value;
-
-      const nameStyle = window.getComputedStyle(nameInput);
-      const noteStyle = window.getComputedStyle(noteTextarea);
-
-      const tempNameDiv = document.createElement('div');
-      tempNameDiv.className = nameInput.className;
-      tempNameDiv.innerText = nameVal;
-      tempNameDiv.style.fontFamily = nameStyle.fontFamily;
-      tempNameDiv.style.color = nameStyle.color;
-      tempNameDiv.style.fontSize = nameStyle.fontSize;
-      tempNameDiv.style.fontWeight = nameStyle.fontWeight;
-      tempNameDiv.style.fontStyle = nameStyle.fontStyle;
-      tempNameDiv.style.lineHeight = '2.0';               
-      tempNameDiv.style.padding = '16px 20px';            
-      tempNameDiv.style.overflow = 'visible';             
-      tempNameDiv.style.textAlign = 'center';
-      tempNameDiv.style.width = '100%';
-      tempNameDiv.style.wordBreak = 'break-word';
-      tempNameDiv.style.whiteSpace = 'pre-wrap';
-      tempNameDiv.style.display = 'flex';
-      tempNameDiv.style.alignItems = 'center';
-      tempNameDiv.style.justifyContent = 'center';
-
-      const tempNoteDiv = document.createElement('div');
-      tempNoteDiv.className = noteTextarea.className;
-      tempNoteDiv.innerText = noteVal;
-      tempNoteDiv.style.fontFamily = noteStyle.fontFamily;
-      tempNoteDiv.style.color = noteStyle.color;
-      tempNoteDiv.style.fontSize = noteStyle.fontSize;
-      tempNoteDiv.style.fontWeight = noteStyle.fontWeight;
-      tempNoteDiv.style.fontStyle = noteStyle.fontStyle;
-      tempNoteDiv.style.lineHeight = '2.0';               
-      tempNoteDiv.style.padding = '16px 20px';            
-      tempNoteDiv.style.overflow = 'visible';            
-      tempNoteDiv.style.textAlign = 'center';
-      tempNoteDiv.style.width = '100%';
-      tempNoteDiv.style.wordBreak = 'break-word';
-      tempNoteDiv.style.whiteSpace = 'pre-wrap';
-      tempNoteDiv.style.display = 'flex';
-      tempNoteDiv.style.alignItems = 'center';
-      tempNoteDiv.style.justifyContent = 'center';
-
-      // Hide real inputs, insert static text divs
-      nameInput.style.display = 'none';
-      noteTextarea.style.display = 'none';
-      nameInput.parentNode.appendChild(tempNameDiv);
-      noteTextarea.parentNode.appendChild(tempNoteDiv);
+      let guestPhotoUrls = "";
 
       try {
-        // 3. Render High Quality 300 DPI canvas
+        // Upload attached guest photos if selected
+        if (photoUpload.files && photoUpload.files.length > 0) {
+          const fileCount = photoUpload.files.length;
+          sendBtn.textContent = `Uploading ${fileCount} Photo${fileCount > 1 ? 's' : ''}...`;
+          guestPhotoUrls = await uploadMultipleFilesToCloudinary(photoUpload.files, nameVal);
+        }
+
+        sendBtn.textContent = 'Generating High-Res Card...';
+        foldLine.classList.add('hide-for-export');
+
+        const createTempDiv = (inputEl, isName = false) => {
+          if (inputEl.style.display === 'none') return null;
+          const style = window.getComputedStyle(inputEl);
+          const tempDiv = document.createElement('div');
+          tempDiv.className = inputEl.className;
+          tempDiv.innerText = inputEl.value;
+          tempDiv.style.fontFamily = style.fontFamily;
+          tempDiv.style.color = style.color;
+          tempDiv.style.fontSize = style.fontSize;
+          tempDiv.style.fontWeight = style.fontWeight;
+          tempDiv.style.fontStyle = style.fontStyle;
+          tempDiv.style.lineHeight = '1.8'; 
+          tempDiv.style.padding = style.padding; 
+          tempDiv.style.overflow = 'visible'; 
+          tempDiv.style.wordBreak = 'break-word';
+          tempDiv.style.whiteSpace = 'pre-wrap';
+          tempDiv.style.textAlign = style.textAlign;
+          
+          const namePos = namePositionSelect.value;
+          const isTopSection = inputEl.id.includes('Top');
+
+          if (isName) {
+            if (namePos === 'bottom') {
+              tempDiv.style.alignSelf = 'flex-end';
+              tempDiv.style.width = '90%';
+              tempDiv.style.order = '2'; // Force signature below note text
+            } else {
+              tempDiv.style.width = '100%';
+              tempDiv.style.order = '1'; // Force signature above note text in top section
+            }
+          } else {
+            tempDiv.style.width = '100%';
+            // If signature is set to top and we are in the top section, signature is 1 and note is 2
+            tempDiv.style.order = (namePos === 'top' && isTopSection) ? '2' : '1';
+          }
+
+          return tempDiv;
+        };
+
+        const activeInputs = [
+          { el: nameInputTop, isName: true },
+          { el: nameInputBottom, isName: true },
+          { el: noteTextareaTop, isName: false },
+          { el: noteTextareaBottom, isName: false }
+        ];
+
+        const replacements = [];
+
+        activeInputs.forEach(item => {
+          const tempDiv = createTempDiv(item.el, item.isName);
+          if (tempDiv) {
+            item.el.style.display = 'none';
+            item.el.parentNode.appendChild(tempDiv);
+            replacements.push({ el: item.el, div: tempDiv });
+          }
+        });
+
+        // Render High Quality 300 DPI canvas
         const canvas = await html2canvas(noteCard, { scale: 3.0, useCORS: true });
         const highResBase64 = canvas.toDataURL('image/png');
 
-        tempNameDiv.remove();
-        tempNoteDiv.remove();
-        nameInput.style.display = 'block';
-        noteTextarea.style.display = 'block';
+        // Cleanup static replacement divs
+        replacements.forEach(r => {
+          r.div.remove();
+        });
+        
+        updateLayoutVisibility();
         foldLine.classList.remove('hide-for-export');
 
         sendBtn.textContent = 'Uploading Card...';
 
-        // Upload to Cloudinary
+        // Upload generated card to Cloudinary
         const imageUrl = await uploadToCloudinary(highResBase64, nameVal);
 
         sendBtn.textContent = 'Sending Email...';
@@ -624,8 +782,9 @@
         const templateParams = {
           to_email: RECEIVER_EMAIL,
           from_name: nameVal,
-          message: noteVal,
-          image_url: imageUrl
+          message: combinedNoteVal,
+          image_url: imageUrl,
+          guest_photo_url: guestPhotoUrls
         };
 
         await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
@@ -635,25 +794,27 @@
         sendBtn.disabled = false;
         sendBtn.textContent = 'Send Note';
 
-        nameInput.value = '';
-        noteTextarea.value = '';
-        adjustTextareaHeight();
+        nameInputTop.value = '';
+        nameInputBottom.value = '';
+        noteTextareaTop.value = '';
+        noteTextareaBottom.value = '';
+        photoUpload.value = '';
+        updateLayoutVisibility();
 
       } catch (err) {
-        // Cleanup on error
-        tempNameDiv.remove();
-        tempNoteDiv.remove();
-        nameInput.style.display = 'block';
-        noteTextarea.style.display = 'block';
+        updateLayoutVisibility();
         foldLine.classList.remove('hide-for-export');
 
         statusMsg.style.color = '#a83232';
-        statusMsg.textContent = 'Error processing, please try again or contact Dary.';
+        statusMsg.textContent = 'Error, please try again or contact Dary.';
         console.error('Error details:', err);
         sendBtn.disabled = false;
         sendBtn.textContent = 'Send Note';
       }
     });
+
+    // Initial view set
+    updateLayoutVisibility();
   </script>
 </body>
 </html>
