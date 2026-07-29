@@ -366,11 +366,9 @@
 
   </div>
 
-  <!-- Styling & Action Toolbar Below the Card -->
   <div class="toolbar-container">
     
     <div class="toolbar-row">
-      <!-- Border Choice Dropdown categorized into Pure CSS vs Custom PNG options -->
       <div class="toolbar-group">
         <label for="borderSelect">Border:</label>
         <select id="borderSelect" class="styled-select">
@@ -410,7 +408,6 @@
     </div>
 
     <div class="toolbar-row">
-      <!-- Font Family Selection Option -->
       <div class="toolbar-group">
         <label for="fontSelect">Font:</label>
         <select id="fontSelect" class="styled-select">
@@ -552,10 +549,8 @@
       sendBtn.textContent = 'Generating High-Res Card...';
       statusMsg.textContent = '';
 
-      // 1. Temporarily hide fold line
       foldLine.classList.add('hide-for-export');
 
-      // 2. CREATE STATIC DIV REPLACEMENTS WITH ANTI-CLIPPING VERTICAL BUFFER
       const nameVal = nameInput.value;
       const noteVal = noteTextarea.value;
 
@@ -570,9 +565,9 @@
       tempNameDiv.style.fontSize = nameStyle.fontSize;
       tempNameDiv.style.fontWeight = nameStyle.fontWeight;
       tempNameDiv.style.fontStyle = nameStyle.fontStyle;
-      tempNameDiv.style.lineHeight = '2.0';               /* High line-height to prevent clipping script loops */
-      tempNameDiv.style.padding = '16px 20px';            /* Extra vertical space inside bounding box */
-      tempNameDiv.style.overflow = 'visible';             /* Allows flourishes outside bounding box */
+      tempNameDiv.style.lineHeight = '2.0';               
+      tempNameDiv.style.padding = '16px 20px';            
+      tempNameDiv.style.overflow = 'visible';             
       tempNameDiv.style.textAlign = 'center';
       tempNameDiv.style.width = '100%';
       tempNameDiv.style.wordBreak = 'break-word';
@@ -589,9 +584,9 @@
       tempNoteDiv.style.fontSize = noteStyle.fontSize;
       tempNoteDiv.style.fontWeight = noteStyle.fontWeight;
       tempNoteDiv.style.fontStyle = noteStyle.fontStyle;
-      tempNoteDiv.style.lineHeight = '2.0';               /* High line-height for script flourishes */
-      tempNoteDiv.style.padding = '16px 20px';            /* Extra vertical space inside bounding box */
-      tempNoteDiv.style.overflow = 'visible';             /* Allows flourishes outside bounding box */
+      tempNoteDiv.style.lineHeight = '2.0';               
+      tempNoteDiv.style.padding = '16px 20px';            
+      tempNoteDiv.style.overflow = 'visible';            
       tempNoteDiv.style.textAlign = 'center';
       tempNoteDiv.style.width = '100%';
       tempNoteDiv.style.wordBreak = 'break-word';
@@ -611,7 +606,6 @@
         const canvas = await html2canvas(noteCard, { scale: 3.0, useCORS: true });
         const highResBase64 = canvas.toDataURL('image/png');
 
-        // 4. RESTORE ORIGINAL DOM STATE IMMEDIATELY
         tempNameDiv.remove();
         tempNoteDiv.remove();
         nameInput.style.display = 'block';
@@ -636,7 +630,7 @@
         await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
 
         statusMsg.style.color = '#1d7074';
-        statusMsg.textContent = '✨ Thank you! Your note has been sent to Diane & Elvis.';
+        statusMsg.textContent = 'Thank you! Your note has been sent.';
         sendBtn.disabled = false;
         sendBtn.textContent = 'Send Note';
 
@@ -653,7 +647,7 @@
         foldLine.classList.remove('hide-for-export');
 
         statusMsg.style.color = '#a83232';
-        statusMsg.textContent = 'Error processing card. Please check console.';
+        statusMsg.textContent = 'Error processing, please try again or contact Dary.';
         console.error('Error details:', err);
         sendBtn.disabled = false;
         sendBtn.textContent = 'Send Note';
