@@ -129,14 +129,27 @@
     .border-overlay-css.double-teal { display: block; border: 4px double var(--teal-primary); }
     .border-overlay-css.corner-accents { display: block; border: 1px solid rgba(198, 160, 82, 0.4); box-shadow: inset 0 0 0 3px rgba(198, 160, 82, 0.15); }
 
-    /* ABSOLUTELY FIXED TOP & BOTTOM SECTIONS (STOPS FOLD LINE MOVEMENT) */
-    .card-section-top, .card-section-bottom {
+    /* ABSOLUTELY FIXED TOP & BOTTOM SECTIONS */
+    .card-section-top {
       height: 50%;
       width: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
       padding: 20px 30px;
+      position: relative;
+      z-index: 3;
+      overflow: hidden;
+    }
+
+    /* Bottom section starts near top fold line to act as text continuation */
+    .card-section-bottom {
+      height: 50%;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 15px 30px 20px 30px;
       position: relative;
       z-index: 3;
       overflow: hidden;
@@ -180,7 +193,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       width: 100%;
       max-height: 100%;
     }
@@ -354,6 +367,19 @@
       text-align: center;
       font-size: 0.95rem;
       font-weight: 600;
+    }
+
+    @media (min-width: 481px) {
+      header { max-width: 580px; margin-bottom: 20px; }
+      .folded-note-card { max-width: 580px; }
+      .toolbar-container { max-width: 580px; }
+
+      h1 { font-size: 2.6rem; letter-spacing: 2px; }
+      p.intro { font-size: 1.35rem; line-height: 1.3; }
+
+      textarea.note-textarea { font-size: 1.4rem; }
+      textarea.name-input-top { font-size: 1.75rem; }
+      textarea.name-input-bottom { font-size: 1.45rem; }
     }
 
     @media (max-width: 480px) {
