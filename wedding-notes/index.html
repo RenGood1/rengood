@@ -134,8 +134,8 @@
       width: 100%;
       display: flex;
       justify-content: center;
-      align-items: center;
-      padding: 20px 40px; /* Increased horizontal padding to keep text inside borders */
+      align-items: flex-start; /* Align to top to control offset precisely */
+      padding: 45px 40px 15px 40px; /* Pushes text down below top border arch */
       position: relative;
       z-index: 3;
       overflow: hidden;
@@ -147,7 +147,7 @@
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      padding: 10px 40px 15px 40px; /* Increased horizontal padding */
+      padding: 10px 40px 15px 40px;
       position: relative;
       z-index: 3;
       overflow: visible;
@@ -190,7 +190,7 @@
       align-items: center;
       justify-content: flex-start;
       width: 100%;
-      max-width: 90%; /* Keeps text area slightly narrower than the section container */
+      max-width: 90%;
       height: 100%;
       overflow: visible;
     }
@@ -394,6 +394,8 @@
       header { max-width: 580px; margin-bottom: 20px; }
       .folded-note-card { max-width: 580px; }
       .toolbar-container, .status-msg { max-width: 580px; }
+
+      .card-section-top { padding: 55px 40px 15px 40px; } /* Scales proportionally on desktop */
 
       h1 { font-size: 2.6rem; letter-spacing: 2px; }
       p.intro { font-size: 1.35rem; line-height: 1.3; }
