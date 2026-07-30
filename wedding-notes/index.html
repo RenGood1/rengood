@@ -135,7 +135,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 20px 25px;
+      padding: 20px 40px; /* Increased horizontal padding to keep text inside borders */
       position: relative;
       z-index: 3;
       overflow: hidden;
@@ -147,7 +147,7 @@
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      padding: 10px 25px 15px 25px;
+      padding: 10px 40px 15px 40px; /* Increased horizontal padding */
       position: relative;
       z-index: 3;
       overflow: visible;
@@ -190,6 +190,7 @@
       align-items: center;
       justify-content: flex-start;
       width: 100%;
+      max-width: 90%; /* Keeps text area slightly narrower than the section container */
       height: 100%;
       overflow: visible;
     }
