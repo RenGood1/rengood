@@ -129,7 +129,6 @@
     .border-overlay-css.double-teal { display: block; border: 4px double var(--teal-primary); }
     .border-overlay-css.corner-accents { display: block; border: 1px solid rgba(198, 160, 82, 0.4); box-shadow: inset 0 0 0 3px rgba(198, 160, 82, 0.15); }
 
-    /* ABSOLUTELY FIXED TOP & BOTTOM SECTIONS */
     .card-section-top {
       height: 50%;
       width: 100%;
@@ -142,7 +141,6 @@
       overflow: hidden;
     }
 
-    /* Bottom section starts near top fold line to act as text continuation */
     .card-section-bottom {
       height: 50%;
       width: 100%;
@@ -155,7 +153,6 @@
       overflow: hidden;
     }
 
-    /* CENTER FOLD INDICATOR LINE - FIXED ABSOLUTE POSITION AT 50% */
     .fold-line {
       position: absolute;
       top: 50%;
@@ -182,13 +179,11 @@
       padding: 0 4px;
     }
 
-    /* Hide fold line when capturing snapshot */
     .hide-for-export {
       opacity: 0 !important;
       border: none !important;
     }
 
-    /* Flex wrapper for message & signature flow inside sections */
     .section-flow-container {
       display: flex;
       flex-direction: column;
@@ -198,7 +193,6 @@
       max-height: 100%;
     }
 
-    /* Transparent inputs/textareas with anti-clipping rules */
     .card-input {
       border: 1px dashed transparent;
       background: transparent;
@@ -216,7 +210,6 @@
       border-radius: 4px;
     }
 
-    /* Dedicated Name/Signature Styling */
     textarea.name-input-top {
       font-size: 1.45rem;
       font-family: 'Great Vibes', cursive;
@@ -246,7 +239,6 @@
       order: 2; /* Ensures signature renders below note text */
     }
 
-    /* Note Textarea Body Styling */
     textarea.note-textarea {
       width: 100%;
       max-height: 100%;
@@ -338,8 +330,15 @@
       padding: 4px 8px;
     }
 
-    .send-btn {
+    /* ACTION BUTTON GROUP CONTAINERS */
+    .action-btn-group {
+      display: flex;
+      gap: 10px;
       width: 100%;
+    }
+
+    .send-btn {
+      flex: 2;
       background: var(--gold-foil);
       color: #2c2105;
       border: none;
@@ -354,12 +353,34 @@
       transition: transform 0.1s ease, box-shadow 0.2s ease;
     }
 
-    .send-btn:active {
+    .download-btn {
+      flex: 1;
+      background: #ffffff;
+      color: var(--teal-primary);
+      border: 1.5px solid var(--teal-primary);
+      padding: 14px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: transform 0.1s ease, background 0.2s ease, color 0.2s ease;
+    }
+
+    .send-btn:active, .download-btn:active {
       transform: scale(0.99);
     }
 
     .send-btn:hover {
       box-shadow: 0 4px 12px rgba(179, 135, 40, 0.35);
+    }
+
+    .download-btn:hover {
+      background: var(--teal-primary);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(29, 112, 116, 0.25);
     }
 
     .status-msg {
@@ -409,7 +430,6 @@ We'd love to surprise them with a keepsake book filled with your heartfelt messa
     <!-- HIGH-RES IMAGE BORDER OVERLAY -->
     <img id="borderOverlayImg" class="border-overlay-img" src="./img/golden-arch-border.png" alt="Card Border" style="display: none;" />
 
-    <!-- PURE CSS BORDER OVERLAY (Default: Dainty Double Gold) -->
     <div id="borderOverlayCss" class="border-overlay-css double-gold"></div>
 
     <!-- TOP SECTION (7 cm) -->
@@ -420,7 +440,6 @@ We'd love to surprise them with a keepsake book filled with your heartfelt messa
       </div>
     </div>
 
-    <!-- DELICATE CENTER FOLD LINE (STATIONARY) -->
     <div id="foldLine" class="fold-line"></div>
 
     <!-- BOTTOM SECTION (7 cm) -->
@@ -435,7 +454,6 @@ We'd love to surprise them with a keepsake book filled with your heartfelt messa
 
   <div class="toolbar-container">
     
-    <!-- Row 1: Border full line -->
     <div class="toolbar-row">
       <div class="toolbar-group">
         <label for="borderSelect">Border:</label>
@@ -463,7 +481,6 @@ We'd love to surprise them with a keepsake book filled with your heartfelt messa
       </div>
     </div>
 
-    <!-- Row 2: Font & Ink side by side -->
     <div class="toolbar-row">
       <div class="toolbar-group">
         <label for="fontSelect">Font:</label>
@@ -508,7 +525,6 @@ We'd love to surprise them with a keepsake book filled with your heartfelt messa
       </div>
     </div>
 
-    <!-- Row 3: Text Area & Signature side by side -->
     <div class="toolbar-row">
       <div class="toolbar-group">
         <label for="textSectionSelect">Text Area:</label>
@@ -528,7 +544,6 @@ We'd love to surprise them with a keepsake book filled with your heartfelt messa
       </div>
     </div>
 
-    <!-- Row 4: Multiple Photo Upload Field -->
     <div class="toolbar-row">
       <div class="toolbar-group">
         <label for="photoUpload">Upload Memories:</label>
@@ -536,7 +551,10 @@ We'd love to surprise them with a keepsake book filled with your heartfelt messa
       </div>
     </div>
 
-    <button type="button" id="sendBtn" class="send-btn">Send Note</button>
+    <div class="action-btn-group">
+      <button type="button" id="sendBtn" class="send-btn">Send Note</button>
+      <button type="button" id="downloadBtn" class="download-btn">Download</button>
+    </div>
   </div>
 
   <div id="statusMsg" class="status-msg"></div>
@@ -573,9 +591,9 @@ We'd love to surprise them with a keepsake book filled with your heartfelt messa
     const photoUpload = document.getElementById('photoUpload');
     const foldLine = document.getElementById('foldLine');
     const sendBtn = document.getElementById('sendBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
     const statusMsg = document.getElementById('statusMsg');
 
-    // Auto-height adjustment
     function autoResizeTextarea(el) {
       if (el.style.display === 'none') return;
       el.style.height = 'auto';
@@ -647,6 +665,96 @@ We'd love to surprise them with a keepsake book filled with your heartfelt messa
       }
     });
 
+    // Helper: Creates temp Div for clean html2canvas rendering
+    const createTempDiv = (inputEl, isName = false) => {
+      if (inputEl.style.display === 'none') return null;
+      const style = window.getComputedStyle(inputEl);
+      const tempDiv = document.createElement('div');
+      tempDiv.className = inputEl.className;
+      tempDiv.innerText = inputEl.value;
+      tempDiv.style.fontFamily = style.fontFamily;
+      tempDiv.style.color = style.color;
+      tempDiv.style.fontSize = style.fontSize;
+      tempDiv.style.fontWeight = style.fontWeight;
+      tempDiv.style.fontStyle = style.fontStyle;
+      tempDiv.style.lineHeight = '1.8'; 
+      tempDiv.style.padding = style.padding; 
+      tempDiv.style.overflow = 'visible'; 
+      tempDiv.style.wordBreak = 'break-word';
+      tempDiv.style.whiteSpace = 'pre-wrap';
+      tempDiv.style.textAlign = style.textAlign;
+      
+      const namePos = namePositionSelect.value;
+      const isTopSection = inputEl.id.includes('Top');
+
+      if (isName) {
+        if (namePos === 'bottom') {
+          tempDiv.style.alignSelf = 'flex-end';
+          tempDiv.style.width = '90%';
+          tempDiv.style.order = '2'; 
+        } else {
+          tempDiv.style.width = '100%';
+          tempDiv.style.order = '1'; 
+        }
+      } else {
+        tempDiv.style.width = '100%';
+        tempDiv.style.order = (namePos === 'top' && isTopSection) ? '2' : '1';
+      }
+
+      return tempDiv;
+    };
+
+    // Download Card Snapshot to local device
+    downloadBtn.addEventListener('click', async () => {
+      downloadBtn.disabled = true;
+      downloadBtn.textContent = 'Generating...';
+      foldLine.classList.add('hide-for-export');
+
+      const activeInputs = [
+        { el: nameInputTop, isName: true },
+        { el: nameInputBottom, isName: true },
+        { el: noteTextareaTop, isName: false },
+        { el: noteTextareaBottom, isName: false }
+      ];
+
+      const replacements = [];
+
+      activeInputs.forEach(item => {
+        const tempDiv = createTempDiv(item.el, item.isName);
+        if (tempDiv) {
+          item.el.style.display = 'none';
+          item.el.parentNode.appendChild(tempDiv);
+          replacements.push({ el: item.el, div: tempDiv });
+        }
+      });
+
+      try {
+        const canvas = await html2canvas(noteCard, { scale: 3.0, useCORS: true });
+        const imageURI = canvas.toDataURL('image/png');
+
+        const activeNameInput = (namePositionSelect.value === 'top') ? nameInputTop : nameInputBottom;
+        const cleanName = activeNameInput.value.trim().replace(/[^a-zA-Z0-9]/g, '_') || 'Guest';
+
+        const downloadLink = document.createElement('a');
+        downloadLink.href = imageURI;
+        downloadLink.download = `Wedding_Note_Card_from_${cleanName}.png`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+
+      } catch (err) {
+        console.error('Download error:', err);
+        statusMsg.style.color = '#a83232';
+        statusMsg.textContent = 'Could not download card image. Please try again.';
+      } finally {
+        replacements.forEach(r => r.div.remove());
+        updateLayoutVisibility();
+        foldLine.classList.remove('hide-for-export');
+        downloadBtn.disabled = false;
+        downloadBtn.textContent = 'Download';
+      }
+    });
+
     // Upload generated Base64 canvas to Cloudinary
     async function uploadToCloudinary(base64Data, senderName) {
       const formData = new FormData();
@@ -686,7 +794,6 @@ We'd love to surprise them with a keepsake book filled with your heartfelt messa
 
         const data = await response.json();
         if (data.secure_url) {
-          // Wrap in a clean anchor tag with overflow breaking for mobile emails
           return `<a href="${data.secure_url}" target="_blank" style="color: #1d7074; word-break: break-all; text-decoration: underline;">Guest Photo ${index + 1} (${data.secure_url})</a>`;
         } else {
           throw new Error("Cloudinary Photo Upload Failed: " + (data.error?.message || "Error"));
@@ -713,6 +820,7 @@ We'd love to surprise them with a keepsake book filled with your heartfelt messa
       }
 
       sendBtn.disabled = true;
+      downloadBtn.disabled = true;
       statusMsg.textContent = '';
 
       let guestPhotoUrls = "";
@@ -727,45 +835,6 @@ We'd love to surprise them with a keepsake book filled with your heartfelt messa
 
         sendBtn.textContent = 'Generating High-Res Card...';
         foldLine.classList.add('hide-for-export');
-
-        const createTempDiv = (inputEl, isName = false) => {
-          if (inputEl.style.display === 'none') return null;
-          const style = window.getComputedStyle(inputEl);
-          const tempDiv = document.createElement('div');
-          tempDiv.className = inputEl.className;
-          tempDiv.innerText = inputEl.value;
-          tempDiv.style.fontFamily = style.fontFamily;
-          tempDiv.style.color = style.color;
-          tempDiv.style.fontSize = style.fontSize;
-          tempDiv.style.fontWeight = style.fontWeight;
-          tempDiv.style.fontStyle = style.fontStyle;
-          tempDiv.style.lineHeight = '1.8'; 
-          tempDiv.style.padding = style.padding; 
-          tempDiv.style.overflow = 'visible'; 
-          tempDiv.style.wordBreak = 'break-word';
-          tempDiv.style.whiteSpace = 'pre-wrap';
-          tempDiv.style.textAlign = style.textAlign;
-          
-          const namePos = namePositionSelect.value;
-          const isTopSection = inputEl.id.includes('Top');
-
-          if (isName) {
-            if (namePos === 'bottom') {
-              tempDiv.style.alignSelf = 'flex-end';
-              tempDiv.style.width = '90%';
-              tempDiv.style.order = '2'; // Force signature below note text
-            } else {
-              tempDiv.style.width = '100%';
-              tempDiv.style.order = '1'; // Force signature above note text in top section
-            }
-          } else {
-            tempDiv.style.width = '100%';
-            // If signature is set to top and we are in the top section, signature is 1 and note is 2
-            tempDiv.style.order = (namePos === 'top' && isTopSection) ? '2' : '1';
-          }
-
-          return tempDiv;
-        };
 
         const activeInputs = [
           { el: nameInputTop, isName: true },
@@ -789,7 +858,6 @@ We'd love to surprise them with a keepsake book filled with your heartfelt messa
         const canvas = await html2canvas(noteCard, { scale: 3.0, useCORS: true });
         const highResBase64 = canvas.toDataURL('image/png');
 
-        // Cleanup static replacement divs
         replacements.forEach(r => {
           r.div.remove();
         });
@@ -818,6 +886,7 @@ We'd love to surprise them with a keepsake book filled with your heartfelt messa
         statusMsg.style.color = '#1d7074';
         statusMsg.textContent = 'Thank you! Your note has been sent.';
         sendBtn.disabled = false;
+        downloadBtn.disabled = false;
         sendBtn.textContent = 'Send Note';
 
         nameInputTop.value = '';
@@ -835,6 +904,7 @@ We'd love to surprise them with a keepsake book filled with your heartfelt messa
         statusMsg.textContent = 'Error, please try again or contact Dary.';
         console.error('Error details:', err);
         sendBtn.disabled = false;
+        downloadBtn.disabled = false;
         sendBtn.textContent = 'Send Note';
       }
     });
