@@ -135,7 +135,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 20px 30px;
+      padding: 20px 25px;
       position: relative;
       z-index: 3;
       overflow: hidden;
@@ -147,10 +147,10 @@
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      padding: 15px 30px 20px 30px;
+      padding: 10px 25px 15px 25px;
       position: relative;
       z-index: 3;
-      overflow: hidden;
+      overflow: visible;
     }
 
     .fold-line {
@@ -190,7 +190,8 @@
       align-items: center;
       justify-content: flex-start;
       width: 100%;
-      max-height: 100%;
+      height: 100%;
+      overflow: visible;
     }
 
     .card-input {
@@ -215,8 +216,8 @@
       font-family: 'Great Vibes', cursive;
       color: var(--teal-primary);
       font-weight: 600;
-      line-height: 1.6;      
-      padding: 4px 10px;      
+      line-height: 1.4;      
+      padding: 2px 8px;      
       text-align: center;
       word-break: break-word;
       white-space: pre-wrap;
@@ -228,29 +229,28 @@
       font-family: 'Great Vibes', cursive;
       color: var(--teal-primary);
       font-weight: 600;
-      line-height: 1.6;
-      padding: 4px 10px;
+      line-height: 1.3;
+      padding: 2px 8px;
       text-align: right;
       align-self: flex-end;
-      width: 90%;
+      width: 100%;
       margin-top: 4px;
       word-break: break-word;
       white-space: pre-wrap;
-      order: 2; /* Ensures signature renders below note text */
+      order: 2;
     }
 
     textarea.note-textarea {
       width: 100%;
-      max-height: 100%;
       font-size: 1.2rem;
-      line-height: 1.6;        
-      padding: 4px 10px;
+      line-height: 1.4;        
+      padding: 2px 8px;
       font-family: 'Great Vibes', cursive;
       color: var(--teal-primary);
       text-align: center;
       word-break: break-word;
       white-space: pre-wrap;
-      order: 1; /* Note stays above bottom signature */
+      order: 1;
     }
 
     .gold-foil-ink {
@@ -330,15 +330,8 @@
       padding: 4px 8px;
     }
 
-    /* ACTION BUTTON GROUP CONTAINERS */
-    .action-btn-group {
-      display: flex;
-      gap: 10px;
-      width: 100%;
-    }
-
     .send-btn {
-      flex: 2;
+      width: 100%;
       background: var(--gold-foil);
       color: #2c2105;
       border: none;
@@ -353,23 +346,7 @@
       transition: transform 0.1s ease, box-shadow 0.2s ease;
     }
 
-    .download-btn {
-      flex: 1;
-      background: #ffffff;
-      color: var(--teal-primary);
-      border: 1.5px solid var(--teal-primary);
-      padding: 14px;
-      font-family: 'Montserrat', sans-serif;
-      font-size: 0.9rem;
-      font-weight: 600;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: transform 0.1s ease, background 0.2s ease, color 0.2s ease;
-    }
-
-    .send-btn:active, .download-btn:active {
+    .send-btn:active {
       transform: scale(0.99);
     }
 
@@ -377,30 +354,53 @@
       box-shadow: 0 4px 12px rgba(179, 135, 40, 0.35);
     }
 
-    .download-btn:hover {
-      background: var(--teal-primary);
-      color: #ffffff;
-      box-shadow: 0 4px 12px rgba(29, 112, 116, 0.25);
+    /* INLINE SUCCESS STATUS BANNER ANIMATION */
+    .status-msg {
+      margin-top: 15px;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border-radius: 6px;
+      padding: 0;
+      opacity: 0;
+      transform: translateY(10px) scale(0.98);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    .status-msg {
-      margin-top: 12px;
-      text-align: center;
-      font-size: 0.95rem;
-      font-weight: 600;
+    .status-msg.show-success {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      background: rgba(29, 112, 116, 0.12);
+      border: 1.5px solid var(--teal-primary);
+      color: var(--teal-primary);
+      padding: 14px 18px;
+      box-shadow: 0 4px 15px rgba(29, 112, 116, 0.15);
+    }
+
+    .status-msg.show-error {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      background: rgba(168, 50, 50, 0.1);
+      border: 1.5px solid #a83232;
+      color: #a83232;
+      padding: 12px 18px;
     }
 
     @media (min-width: 481px) {
       header { max-width: 580px; margin-bottom: 20px; }
       .folded-note-card { max-width: 580px; }
-      .toolbar-container { max-width: 580px; }
+      .toolbar-container, .status-msg { max-width: 580px; }
 
       h1 { font-size: 2.6rem; letter-spacing: 2px; }
       p.intro { font-size: 1.35rem; line-height: 1.3; }
 
-      textarea.note-textarea { font-size: 1.4rem; }
-      textarea.name-input-top { font-size: 1.75rem; }
-      textarea.name-input-bottom { font-size: 1.45rem; }
+      textarea.note-textarea { font-size: 1.35rem; }
+      textarea.name-input-top { font-size: 1.65rem; }
+      textarea.name-input-bottom { font-size: 1.35rem; }
+      .status-msg { font-size: 1.25rem; }
     }
 
     @media (max-width: 480px) {
@@ -551,10 +551,7 @@ We'd love to surprise them with a keepsake book filled with your heartfelt messa
       </div>
     </div>
 
-    <div class="action-btn-group">
-      <button type="button" id="sendBtn" class="send-btn">Send Note</button>
-      <button type="button" id="downloadBtn" class="download-btn">Download</button>
-    </div>
+    <button type="button" id="sendBtn" class="send-btn">Send Note</button>
   </div>
 
   <div id="statusMsg" class="status-msg"></div>
@@ -591,7 +588,6 @@ We'd love to surprise them with a keepsake book filled with your heartfelt messa
     const photoUpload = document.getElementById('photoUpload');
     const foldLine = document.getElementById('foldLine');
     const sendBtn = document.getElementById('sendBtn');
-    const downloadBtn = document.getElementById('downloadBtn');
     const statusMsg = document.getElementById('statusMsg');
 
     function autoResizeTextarea(el) {
@@ -674,10 +670,16 @@ We'd love to surprise them with a keepsake book filled with your heartfelt messa
       tempDiv.innerText = inputEl.value;
       tempDiv.style.fontFamily = style.fontFamily;
       tempDiv.style.color = style.color;
-      tempDiv.style.fontSize = style.fontSize;
+
+      let baseFontSize = parseFloat(style.fontSize);
+      if (isName && inputEl.value.length > 25) {
+        baseFontSize = baseFontSize * 0.85;
+      }
+      tempDiv.style.fontSize = baseFontSize + 'px';
+      
       tempDiv.style.fontWeight = style.fontWeight;
       tempDiv.style.fontStyle = style.fontStyle;
-      tempDiv.style.lineHeight = '1.8'; 
+      tempDiv.style.lineHeight = '1.3'; 
       tempDiv.style.padding = style.padding; 
       tempDiv.style.overflow = 'visible'; 
       tempDiv.style.wordBreak = 'break-word';
@@ -690,8 +692,9 @@ We'd love to surprise them with a keepsake book filled with your heartfelt messa
       if (isName) {
         if (namePos === 'bottom') {
           tempDiv.style.alignSelf = 'flex-end';
-          tempDiv.style.width = '90%';
+          tempDiv.style.width = '100%';
           tempDiv.style.order = '2'; 
+          tempDiv.style.marginTop = '4px'; 
         } else {
           tempDiv.style.width = '100%';
           tempDiv.style.order = '1'; 
@@ -703,57 +706,6 @@ We'd love to surprise them with a keepsake book filled with your heartfelt messa
 
       return tempDiv;
     };
-
-    // Download Card Snapshot to local device
-    downloadBtn.addEventListener('click', async () => {
-      downloadBtn.disabled = true;
-      downloadBtn.textContent = 'Generating...';
-      foldLine.classList.add('hide-for-export');
-
-      const activeInputs = [
-        { el: nameInputTop, isName: true },
-        { el: nameInputBottom, isName: true },
-        { el: noteTextareaTop, isName: false },
-        { el: noteTextareaBottom, isName: false }
-      ];
-
-      const replacements = [];
-
-      activeInputs.forEach(item => {
-        const tempDiv = createTempDiv(item.el, item.isName);
-        if (tempDiv) {
-          item.el.style.display = 'none';
-          item.el.parentNode.appendChild(tempDiv);
-          replacements.push({ el: item.el, div: tempDiv });
-        }
-      });
-
-      try {
-        const canvas = await html2canvas(noteCard, { scale: 3.0, useCORS: true });
-        const imageURI = canvas.toDataURL('image/png');
-
-        const activeNameInput = (namePositionSelect.value === 'top') ? nameInputTop : nameInputBottom;
-        const cleanName = activeNameInput.value.trim().replace(/[^a-zA-Z0-9]/g, '_') || 'Guest';
-
-        const downloadLink = document.createElement('a');
-        downloadLink.href = imageURI;
-        downloadLink.download = `Wedding_Note_Card_from_${cleanName}.png`;
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-
-      } catch (err) {
-        console.error('Download error:', err);
-        statusMsg.style.color = '#a83232';
-        statusMsg.textContent = 'Could not download card image. Please try again.';
-      } finally {
-        replacements.forEach(r => r.div.remove());
-        updateLayoutVisibility();
-        foldLine.classList.remove('hide-for-export');
-        downloadBtn.disabled = false;
-        downloadBtn.textContent = 'Download';
-      }
-    });
 
     // Upload generated Base64 canvas to Cloudinary
     async function uploadToCloudinary(base64Data, senderName) {
@@ -813,20 +765,20 @@ We'd love to surprise them with a keepsake book filled with your heartfelt messa
       const bottomNoteVal = noteTextareaBottom.style.display !== 'none' ? noteTextareaBottom.value.trim() : '';
       const combinedNoteVal = [topNoteVal, bottomNoteVal].filter(Boolean).join('\n---\n');
 
+      statusMsg.className = 'status-msg';
+      statusMsg.innerHTML = '';
+
       if (!combinedNoteVal || !nameVal) {
-        statusMsg.style.color = '#a83232';
+        statusMsg.classList.add('show-error');
         statusMsg.textContent = 'Please write a message and enter your name before sending!';
         return;
       }
 
       sendBtn.disabled = true;
-      downloadBtn.disabled = true;
-      statusMsg.textContent = '';
 
       let guestPhotoUrls = "";
 
       try {
-        // Upload attached guest photos if selected
         if (photoUpload.files && photoUpload.files.length > 0) {
           const fileCount = photoUpload.files.length;
           sendBtn.textContent = `Uploading ${fileCount} Photo${fileCount > 1 ? 's' : ''}...`;
@@ -854,7 +806,6 @@ We'd love to surprise them with a keepsake book filled with your heartfelt messa
           }
         });
 
-        // Render High Quality 300 DPI canvas
         const canvas = await html2canvas(noteCard, { scale: 3.0, useCORS: true });
         const highResBase64 = canvas.toDataURL('image/png');
 
@@ -867,12 +818,10 @@ We'd love to surprise them with a keepsake book filled with your heartfelt messa
 
         sendBtn.textContent = 'Uploading Card...';
 
-        // Upload generated card to Cloudinary
         const imageUrl = await uploadToCloudinary(highResBase64, nameVal);
 
         sendBtn.textContent = 'Sending Email...';
 
-        // Send via EmailJS
         const templateParams = {
           to_email: RECEIVER_EMAIL,
           from_name: nameVal,
@@ -883,28 +832,22 @@ We'd love to surprise them with a keepsake book filled with your heartfelt messa
 
         await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
 
-        statusMsg.style.color = '#1d7074';
-        statusMsg.textContent = 'Thank you! Your note has been sent.';
+        // Success state - animated banner, keeps user input intact
+        statusMsg.classList.add('show-success');
+        statusMsg.innerHTML = '✨ Note Sent! Thank you for sharing your message.';
+        
         sendBtn.disabled = false;
-        downloadBtn.disabled = false;
         sendBtn.textContent = 'Send Note';
-
-        nameInputTop.value = '';
-        nameInputBottom.value = '';
-        noteTextareaTop.value = '';
-        noteTextareaBottom.value = '';
-        photoUpload.value = '';
-        updateLayoutVisibility();
 
       } catch (err) {
         updateLayoutVisibility();
         foldLine.classList.remove('hide-for-export');
 
-        statusMsg.style.color = '#a83232';
-        statusMsg.textContent = 'Error, please try again or contact Dary.';
+        statusMsg.classList.add('show-error');
+        statusMsg.textContent = 'Error sending note. Please try again or contact Dary.';
         console.error('Error details:', err);
+        
         sendBtn.disabled = false;
-        downloadBtn.disabled = false;
         sendBtn.textContent = 'Send Note';
       }
     });
