@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dub Master Pro - Dropdown & Local Clips</title>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --accent-purple: #8b5cf6;
+      --accent-pink: #ec4899;
+      --accent-cyan: #06b6d4;
+      --accent-green: #10b981;
+      --accent-red: #ef4444;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    header { text-align: center; margin-bottom: 20px; }
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple), var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+    }
+    header p { color: var(--text-muted); font-size: 0.95rem; }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .clip-selector {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    select {
+      flex: 2;
+      min-width: 220px;
+      background: #0f172a;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .nav-btn {
+      flex: 1;
+      min-width: 140px;
+      background: var(--accent-pink);
+      color: #fff;
+      font-weight: 700;
+      padding: 12px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: none;
+      font-size: 0.95rem;
+      transition: background 0.2s;
+    }
+    .nav-btn:hover:not(:disabled) { background: #db2777; }
+
+    .file-upload-btn {
+      background: var(--accent-purple);
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .file-upload-btn:hover { background: #7c3aed; }
+    input[type="file"] { display: none; }
+
+    .line-cue {
+      background: rgba(6, 182, 212, 0.1);
+      border: 1px solid var(--accent-cyan);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+      margin-bottom: 16px;
+      font-style: italic;
+      color: var(--accent-cyan);
+    }
+
+    .stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    video#gameVideo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .status-badge {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 10;
+    }
+
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--text-muted); }
+    .status-dot.recording { background: var(--accent-red); animation: pulse 1s infinite; }
+    .status-dot.playing { background: var(--accent-green); }
+
+    @keyframes pulse {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.2); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .mode-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .mode-toggle input { accent-color: var(--accent-cyan); cursor: pointer; }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+    }
+
+    button {
+      padding: 12px 16px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: #fff;
+      transition: background 0.2s;
+    }
+
+    button:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(80%); }
+
+    .btn-watch { background: var(--accent-purple); }
+    .btn-watch:hover:not(:disabled) { background: #7c3aed; }
+
+    .btn-record { background: var(--accent-red); }
+    .btn-record:hover:not(:disabled) { background: #dc2626; }
+
+    .btn-play { background: var(--accent-green); }
+    .btn-play:hover:not(:disabled) { background: #059669; }
+
+    .btn-download { background: var(--accent-cyan); }
+    .btn-download:hover:not(:disabled) { background: #0891b2; }
+
+    canvas { display: none; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🎬 Dub Master Pro</h1>
+    <p>Select clips from the dropdown or click random — buffered auto-ducking included!</p>
+  </header>
+
+  <div class="container">
+    <div class="clip-selector">
+      <select id="clipSelect">
+        <option value="" disabled selected>Loading available clips...</option>
+      </select>
+
+      <button id="randomBtn" class="nav-btn">🎲 Random Clip</button>
+
+      <label class="file-upload-btn">
+        📁 Upload Custom
+        <input type="file" id="customFileInput" accept="video/mp4,video/webm" multiple>
+      </label>
+    </div>
+
+    <div class="line-cue" id="lineCue">
+      Loading clips from folder manifest...
+    </div>
+
+    <div class="stage">
+      <video id="gameVideo" playsinline preload="auto"></video>
+      <div class="status-badge">
+        <div id="statusDot" class="status-dot"></div>
+        <span id="statusText">Ready</span>
+      </div>
+    </div>
+
+    <div class="mode-toggle">
+      <label>
+        <input type="checkbox" id="autoDuckToggle" checked>
+        <strong>Smart Auto-Ducking:</strong> Complete mute while speaking (+0.5s buffer)
+      </label>
+    </div>
+
+    <audio id="userAudio"></audio>
+    <canvas id="exportCanvas" width="640" height="360"></canvas>
+
+    <div class="controls-grid">
+      <button id="watchBtn" class="btn-watch">
+        <span>👀</span> 1. Watch Clip (100% Vol)
+      </button>
+      <button id="recordBtn" class="btn-record">
+        <span>🎤</span> 2. Start Dubbing (15% Vol)
+      </button>
+      <button id="playBtn" class="btn-play" disabled>
+        <span>▶</span> 3. Play Dubbed Video
+      </button>
+      <button id="downloadBtn" class="btn-download" disabled>
+        <span>💾</span> Export MP4
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let allClips = []; // Combines both folderClips and custom uploaded clips
+    let currentClip = null;
+
+    let micStream = null;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let recordedAudioBlob = null;
+    let recordedAudioUrl = null;
+    let isRecording = false;
+    let duckingAnimFrame = null;
+
+    let audioCtx = null;
+    let audioSource = null;
+    let analyser = null;
+
+    // DOM Elements
+    const videoEl = document.getElementById("gameVideo");
+    const audioEl = document.getElementById("userAudio");
+    const clipSelect = document.getElementById("clipSelect");
+    const randomBtn = document.getElementById("randomBtn");
+    const customFileInput = document.getElementById("customFileInput");
+    const lineCue = document.getElementById("lineCue");
+    const statusDot = document.getElementById("statusDot");
+    const statusText = document.getElementById("statusText");
+    const autoDuckToggle = document.getElementById("autoDuckToggle");
+
+    const watchBtn = document.getElementById("watchBtn");
+    const recordBtn = document.getElementById("recordBtn");
+    const playBtn = document.getElementById("playBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
+
+    function updateStatus(text, dotClass) {
+      statusText.innerText = text;
+      statusDot.className = "status-dot " + dotClass;
+    }
+
+    // Refresh the dropdown options based on the allClips array
+    function updateDropdown() {
+      clipSelect.innerHTML = "";
+
+      if (allClips.length === 0) {
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.innerText = "No clips available";
+        clipSelect.appendChild(opt);
+        return;
+      }
+
+      allClips.forEach((clip, index) => {
+        const opt = document.createElement("option");
+        opt.value = index;
+        opt.innerText = clip.isCustom ? `📁 ${clip.title}` : `🎬 ${clip.title}`;
+        if (currentClip && currentClip.url === clip.url) {
+          opt.selected = true;
+        }
+        clipSelect.appendChild(opt);
+      });
+    }
+
+    async function loadFolderManifest() {
+      try {
+        const response = await fetch('./clips.json');
+        if (!response.ok) throw new Error("clips.json missing");
+        
+        const folderClips = await response.json();
+        
+        if (folderClips.length > 0) {
+          allClips = [...folderClips];
+          updateDropdown();
+          loadSource(allClips[0]);
+        } else {
+          lineCue.innerText = "No clips found in clips.json. Add MP4/WebM files to /clips folder!";
+        }
+      } catch (err) {
+        console.warn("Could not load clips.json:", err);
+        lineCue.innerText = "Could not find clips.json. Run PowerShell script or upload files!";
+        updateDropdown();
+      }
+    }
+
+    function loadSource(clip) {
+      currentClip = clip;
+      videoEl.pause();
+      videoEl.src = clip.url;
+      videoEl.load();
+      videoEl.currentTime = 0;
+      videoEl.volume = 1.0;
+
+      lineCue.innerText = `Clip: "${clip.title}" — Dub this scene!`;
+      playBtn.disabled = true;
+      downloadBtn.disabled = true;
+      recordedAudioUrl = null;
+      recordedAudioBlob = null;
+      updateStatus("Ready", "");
+      updateDropdown();
+    }
+
+    function getRandomClip() {
+      if (allClips.length === 0) return;
+
+      let selected;
+      do {
+        selected = allClips[Math.floor(Math.random() * allClips.length)];
+      } while (selected === currentClip && allClips.length > 1);
+
+      loadSource(selected);
+    }
+
+    // Dropdown change listener
+    clipSelect.addEventListener("change", (e) => {
+      const selectedIndex = parseInt(e.target.value, 10);
+      if (!isNaN(selectedIndex) && allClips[selectedIndex]) {
+        loadSource(allClips[selectedIndex]);
+      }
+    });
+
+    randomBtn.addEventListener("click", getRandomClip);
+
+    function playFullClip(volume) {
+      videoEl.currentTime = 0;
+      videoEl.volume = volume;
+      videoEl.play();
+    }
+
+    videoEl.addEventListener("ended", () => {
+      if (isRecording && mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+      }
+      if (duckingAnimFrame) cancelAnimationFrame(duckingAnimFrame);
+      updateStatus("Ready", "");
+    });
+
+    // Custom multi-file upload listener
+    customFileInput.addEventListener("change", (e) => {
+      const files = Array.from(e.target.files);
+      if (!files.length) return;
+
+      const newCustoms = files.map(file => ({
+        title: file.name,
+        url: URL.createObjectURL(file),
+        isCustom: true
+      }));
+
+      allClips = [...allClips, ...newCustoms];
+      loadSource(newCustoms[0]);
+    });
+
+    // 1. Watch Clip (100% Volume)
+    watchBtn.addEventListener("click", () => {
+      if (duckingAnimFrame) cancelAnimationFrame(duckingAnimFrame);
+      audioEl.pause();
+      playFullClip(1.0);
+      updateStatus("Watching Original Clip", "playing");
+    });
+
+    // 2. Record Dubbing
+    recordBtn.addEventListener("click", async () => {
+      if (!isRecording) {
+        try {
+          micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(micStream);
+          audioChunks = [];
+
+          mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) audioChunks.push(e.data);
+          };
+
+          mediaRecorder.onstop = () => {
+            recordedAudioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            recordedAudioUrl = URL.createObjectURL(recordedAudioBlob);
+            audioEl.src = recordedAudioUrl;
+
+            playBtn.disabled = false;
+            downloadBtn.disabled = false;
+            recordBtn.innerHTML = '<span>🎤</span> 2. Start Dubbing (15% Vol)';
+            isRecording = false;
+            updateStatus("Dub Recorded!", "");
+
+            micStream.getTracks().forEach(track => track.stop());
+          };
+
+          playFullClip(0.15);
+          mediaRecorder.start();
+          isRecording = true;
+
+          recordBtn.innerHTML = '<span>⏹</span> Stop Recording';
+          updateStatus("Recording Dub...", "recording");
+
+        } catch (err) {
+          alert("Microphone access is required: " + err.message);
+        }
+      } else {
+        if (mediaRecorder && mediaRecorder.state === "recording") {
+          mediaRecorder.stop();
+          videoEl.pause();
+        }
+      }
+    });
+
+    // 3. Playback with Buffered Complete Auto-Ducking
+    playBtn.addEventListener("click", async () => {
+      if (!recordedAudioUrl) return;
+      if (duckingAnimFrame) cancelAnimationFrame(duckingAnimFrame);
+
+      audioEl.currentTime = 0;
+
+      if (autoDuckToggle.checked) {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          audioSource = audioCtx.createMediaElementSource(audioEl);
+          analyser = audioCtx.createAnalyser();
+          analyser.fftSize = 256;
+          audioSource.connect(analyser);
+          analyser.connect(audioCtx.destination);
+        }
+
+        if (audioCtx.state === 'suspended') {
+          await audioCtx.resume();
+        }
+
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        let lastSpeechTime = 0;
+        const BUFFER_MS = 500; // 0.5s padding before/after speech
+
+        function checkVoiceActivity() {
+          if (!videoEl.paused && !videoEl.ended) {
+            analyser.getByteFrequencyData(dataArray);
+
+            let sum = 0;
+            for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+            const averageVolume = sum / dataArray.length;
+
+            const now = performance.now();
+
+            if (averageVolume > 2) {
+              lastSpeechTime = now;
+            }
+
+            // Keep video muted (0.00 volume) while speaking AND for 0.5s after speech stops
+            if (now - lastSpeechTime < BUFFER_MS) {
+              videoEl.volume = 0.00;
+            } else {
+              videoEl.volume = 1.00;
+            }
+
+            duckingAnimFrame = requestAnimationFrame(checkVoiceActivity);
+          } else {
+            videoEl.volume = 0.00;
+          }
+        }
+
+        playFullClip(1.0);
+        audioEl.play();
+        checkVoiceActivity();
+      } else {
+        playFullClip(0.00);
+        audioEl.play();
+      }
+
+      updateStatus("Playing Dubbed Video", "playing");
+    });
+
+    // 4. Download Export with Synchronized Auto-Ducked Gain Node
+    downloadBtn.addEventListener("click", async () => {
+      if (!recordedAudioBlob || !currentClip) return;
+
+      updateStatus("Exporting MP4 File...", "recording");
+      downloadBtn.disabled = true;
+
+      const exportCanvas = document.createElement("canvas");
+      exportCanvas.width = 640;
+      exportCanvas.height = 360;
+      const exportCtx = exportCanvas.getContext("2d");
+
+      const exportAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      const userAudioBuffer = await exportAudioCtx.decodeAudioData(await recordedAudioBlob.arrayBuffer());
+      const userAudioSource = exportAudioCtx.createBufferSource();
+      userAudioSource.buffer = userAudioBuffer;
+
+      const videoFetch = await fetch(currentClip.url);
+      const videoAudioBuffer = await exportAudioCtx.decodeAudioData(await videoFetch.arrayBuffer());
+      const videoAudioSource = exportAudioCtx.createBufferSource();
+      videoAudioSource.buffer = videoAudioBuffer;
+
+      const videoGainNode = exportAudioCtx.createGain();
+      videoGainNode.gain.value = 1.0;
+
+      const rawMicData = userAudioBuffer.getChannelData(0);
+      const sampleRate = userAudioBuffer.sampleRate;
+      const chunkSize = Math.floor(sampleRate * 0.02);
+      const bufferSamples = Math.floor(sampleRate * 0.5);
+
+      let speechFrames = new Array(rawMicData.length).fill(false);
+
+      for (let i = 0; i < rawMicData.length; i += chunkSize) {
+        let sum = 0;
+        for (let j = i; j < Math.min(i + chunkSize, rawMicData.length); j++) {
+          sum += Math.abs(rawMicData[j]);
+        }
+        let avg = sum / chunkSize;
+
+        if (avg > 0.01) {
+          let start = Math.max(0, i - bufferSamples);
+          let end = Math.min(rawMicData.length, i + chunkSize + bufferSamples);
+          for (let k = start; k < end; k++) {
+            speechFrames[k] = true;
+          }
+        }
+      }
+
+      let isMuted = false;
+      for (let i = 0; i < speechFrames.length; i += chunkSize) {
+        let time = i / sampleRate;
+        if (speechFrames[i] && !isMuted) {
+          videoGainNode.gain.setTargetAtTime(0.00, exportAudioCtx.currentTime + time, 0.05);
+          isMuted = true;
+        } else if (!speechFrames[i] && isMuted) {
+          videoGainNode.gain.setTargetAtTime(1.00, exportAudioCtx.currentTime + time, 0.05);
+          isMuted = false;
+        }
+      }
+
+      const dest = exportAudioCtx.createMediaStreamDestination();
+
+      userAudioSource.connect(dest);
+      videoAudioSource.connect(videoGainNode);
+      videoGainNode.connect(dest);
+
+      const canvasStream = exportCanvas.captureStream(30);
+      const combinedStream = new MediaStream([
+        ...canvasStream.getVideoTracks(),
+        ...dest.stream.getAudioTracks()
+      ]);
+
+      const exportRecorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm' });
+      const exportChunks = [];
+
+      exportRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) exportChunks.push(e.data);
+      };
+
+      exportRecorder.onstop = () => {
+        const mergedBlob = new Blob(exportChunks, { type: 'video/mp4' });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(mergedBlob);
+        a.download = `dubbed-video-${Date.now()}.mp4`;
+        a.click();
+
+        downloadBtn.disabled = false;
+        updateStatus("Export Complete!", "");
+      };
+
+      playFullClip(0);
+      
+      exportRecorder.start();
+      userAudioSource.start(0);
+      videoAudioSource.start(0);
+
+      function drawExportFrame() {
+        if (!videoEl.paused && !videoEl.ended) {
+          exportCtx.drawImage(videoEl, 0, 0, exportCanvas.width, exportCanvas.height);
+          requestAnimationFrame(drawExportFrame);
+        } else {
+          exportRecorder.stop();
+        }
+      }
+      drawExportFrame();
+    });
+
+    // Start App
+    loadFolderManifest();
+  </script>
+</body>
+</html>
