@@ -92,8 +92,6 @@
 </div>
 
 <script>
-    const API_KEY = "__GEMINI_API_KEY__";
-    
     const questions = [
         // "What are some bands, artists, or specific songs that you currently have on heavy rotation?",
         // "What is a book, story, or piece of writing that genuinely stuck with you or changed how you see things?",
@@ -107,7 +105,7 @@
         // "What is a piece of advice or a life lesson you wish you realized five years ago?",
         // "What is a website or online corner you find yourself visiting out of sheer habit when you're bored?",
         // "How do you take your coffee, tea, or default morning drink?",
-        // "What is a trend or popular thing right now that you just completely don't understand the hype for?",
+        "What is a trend or popular thing right now that you just completely don't understand the hype for?",
         "What's the best item you've bought for yourself in the last year?",
         "If you had to DJ a soundtrack for a road trip with zero destination, what's the vibe?"
     ];
@@ -159,12 +157,11 @@
         1. Age Guess: Just the estimated age bracket.
         2. The Vibe Check: Two sentences max explaining why, like a normal person talking.`;
 
-   try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`, {
+        try {
+            const response = await fetch(`https://age-guesser-proxy.bananaminha.workers.dev`, {
                 method: 'POST',
                 headers: { 
-                    'Content-Type': 'application/json',
-                    'x-goog-api-key': API_KEY 
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     contents: [{ parts: [{ text: prompt }] }]
