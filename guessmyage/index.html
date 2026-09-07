@@ -18,216 +18,40 @@
             position: relative;
         }
 
-        /* Gigantic Aquarium Triangles (~20% viewport width each) */
         .shape {
             position: absolute;
             z-index: -1;
             opacity: 0.85;
         }
         
-        .t-1 {
-            width: 0; height: 0;
-            border-left: 12vw solid transparent; 
-            border-right: 12vw solid transparent; 
-            border-bottom: 22vw solid #00f0ff;
-            top: 10%; left: 5%;
-            filter: drop-shadow(6px 6px 0px #111);
-            animation: swimFish1 12s ease-in-out infinite alternate;
-        }
-        .t-2 {
-            width: 0; height: 0;
-            border-left: 15vw solid transparent; 
-            border-right: 15vw solid transparent; 
-            border-bottom: 26vw solid #ff007f;
-            bottom: 5%; right: 8%;
-            filter: drop-shadow(6px 6px 0px #111);
-            animation: swimFish2 15s ease-in-out infinite alternate;
-        }
-        .t-3 {
-            width: 0; height: 0;
-            border-left: 10vw solid transparent; 
-            border-right: 10vw solid transparent; 
-            border-bottom: 18vw solid #7928ca;
-            top: 40%; left: 30%;
-            filter: drop-shadow(6px 6px 0px #111);
-            animation: swimFish3 10s ease-in-out infinite alternate;
-        }
-        .t-4 {
-            width: 0; height: 0;
-            border-left: 14vw solid transparent; 
-            border-right: 14vw solid transparent; 
-            border-bottom: 24vw solid #ff6600;
-            top: 20%; right: 20%;
-            filter: drop-shadow(6px 6px 0px #111);
-            animation: swimFish4 14s ease-in-out infinite alternate;
-        }
-        /* 3 Added Triangles in Different Colors */
-        .t-5 {
-            width: 0; height: 0;
-            border-left: 13vw solid transparent; 
-            border-right: 13vw solid transparent; 
-            border-bottom: 23vw solid #00ff66;
-            bottom: 15%; left: 15%;
-            filter: drop-shadow(6px 6px 0px #111);
-            animation: swimFish1 13s ease-in-out infinite alternate-reverse;
-        }
-        .t-6 {
-            width: 0; height: 0;
-            border-left: 11vw solid transparent; 
-            border-right: 11vw solid transparent; 
-            border-bottom: 20vw solid #ffff00;
-            top: 5%; left: 50%;
-            filter: drop-shadow(6px 6px 0px #111);
-            animation: swimFish3 11s ease-in-out infinite alternate-reverse;
-        }
-        .t-7 {
-            width: 0; height: 0;
-            border-left: 16vw solid transparent; 
-            border-right: 16vw solid transparent; 
-            border-bottom: 28vw solid #ff0055;
-            bottom: 30%; right: 5%;
-            filter: drop-shadow(6px 6px 0px #111);
-            animation: swimFish2 16s ease-in-out infinite alternate-reverse;
-        }
+        .t-1 { width: 0; height: 0; border-left: 12vw solid transparent; border-right: 12vw solid transparent; border-bottom: 22vw solid #00f0ff; top: 10%; left: 5%; filter: drop-shadow(6px 6px 0px #111); animation: swimFish1 12s ease-in-out infinite alternate; }
+        .t-2 { width: 0; height: 0; border-left: 15vw solid transparent; border-right: 15vw solid transparent; border-bottom: 26vw solid #ff007f; bottom: 5%; right: 8%; filter: drop-shadow(6px 6px 0px #111); animation: swimFish2 15s ease-in-out infinite alternate; }
+        .t-3 { width: 0; height: 0; border-left: 10vw solid transparent; border-right: 10vw solid transparent; border-bottom: 18vw solid #7928ca; top: 40%; left: 30%; filter: drop-shadow(6px 6px 0px #111); animation: swimFish3 10s ease-in-out infinite alternate; }
+        .t-4 { width: 0; height: 0; border-left: 14vw solid transparent; border-right: 14vw solid transparent; border-bottom: 24vw solid #ff6600; top: 20%; right: 20%; filter: drop-shadow(6px 6px 0px #111); animation: swimFish4 14s ease-in-out infinite alternate; }
+        .t-5 { width: 0; height: 0; border-left: 13vw solid transparent; border-right: 13vw solid transparent; border-bottom: 23vw solid #00ff66; bottom: 15%; left: 15%; filter: drop-shadow(6px 6px 0px #111); animation: swimFish1 13s ease-in-out infinite alternate-reverse; }
+        .t-6 { width: 0; height: 0; border-left: 11vw solid transparent; border-right: 11vw solid transparent; border-bottom: 20vw solid #ffff00; top: 5%; left: 50%; filter: drop-shadow(6px 6px 0px #111); animation: swimFish3 11s ease-in-out infinite alternate-reverse; }
+        .t-7 { width: 0; height: 0; border-left: 16vw solid transparent; border-right: 16vw solid transparent; border-bottom: 28vw solid #ff0055; bottom: 30%; right: 5%; filter: drop-shadow(6px 6px 0px #111); animation: swimFish2 16s ease-in-out infinite alternate-reverse; }
 
-        /* Aquarium Swimming Keyframes (Roaming the whole page) */
-        @keyframes swimFish1 {
-            0% { transform: translate(0vw, 0vh) rotate(-15deg); }
-            33% { transform: translate(35vw, 25vh) rotate(25deg); }
-            66% { transform: translate(-20vw, 40vh) rotate(-45deg); }
-            100% { transform: translate(15vw, -20vh) rotate(10deg); }
-        }
-        @keyframes swimFish2 {
-            0% { transform: translate(0vw, 0vh) rotate(20deg); }
-            33% { transform: translate(-40vw, -30vh) rotate(-35deg); }
-            66% { transform: translate(-25vw, 25vh) rotate(15deg); }
-            100% { transform: translate(30vw, -35vh) rotate(-10deg); }
-        }
-        @keyframes swimFish3 {
-            0% { transform: translate(0vw, 0vh) rotate(5deg); }
-            33% { transform: translate(-30vw, 30vh) rotate(45deg); }
-            66% { transform: translate(25vw, -25vh) rotate(-20deg); }
-            100% { transform: translate(-15vw, -35vh) rotate(30deg); }
-        }
-        @keyframes swimFish4 {
-            0% { transform: translate(0vw, 0vh) rotate(-25deg); }
-            33% { transform: translate(-35vw, 20vh) rotate(15deg); }
-            66% { transform: translate(20vw, 35vh) rotate(-30deg); }
-            100% { transform: translate(-25vw, -25vh) rotate(20deg); }
-        }
+        @keyframes swimFish1 { 0% { transform: translate(0vw, 0vh) rotate(-15deg); } 33% { transform: translate(35vw, 25vh) rotate(25deg); } 66% { transform: translate(-20vw, 40vh) rotate(-45deg); } 100% { transform: translate(15vw, -20vh) rotate(10deg); } }
+        @keyframes swimFish2 { 0% { transform: translate(0vw, 0vh) rotate(20deg); } 33% { transform: translate(-40vw, -30vh) rotate(-35deg); } 66% { transform: translate(-25vw, 25vh) rotate(15deg); } 100% { transform: translate(30vw, -35vh) rotate(-10deg); } }
+        @keyframes swimFish3 { 0% { transform: translate(0vw, 0vh) rotate(5deg); } 33% { transform: translate(-30vw, 30vh) rotate(45deg); } 66% { transform: translate(25vw, -25vh) rotate(-20deg); } 100% { transform: translate(-15vw, -35vh) rotate(30deg); } }
+        @keyframes swimFish4 { 0% { transform: translate(0vw, 0vh) rotate(-25deg); } 33% { transform: translate(-35vw, 20vh) rotate(15deg); } 66% { transform: translate(20vw, 35vh) rotate(-30deg); } 100% { transform: translate(-25vw, -25vh) rotate(20deg); } }
 
-        .game-card { 
-            background: #fff; 
-            padding: 35px; 
-            border-radius: 20px; 
-            box-shadow: 8px 8px 0px #111; 
-            border: 5px solid #111;
-            width: 100%; 
-            max-width: 520px; 
-            box-sizing: border-box; 
-            position: relative;
-            transform: rotate(-1deg);
-            z-index: 2;
-        }
-
-        .cartoon-header {
-            font-size: 45px;
-            text-align: center;
-            margin-bottom: -5px;
-            filter: drop-shadow(3px 3px 0px #00f0ff);
-        }
-
-        h2 { 
-            margin-top: 10px; 
-            color: #ff007f; 
-            text-align: center; 
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 26px;
-            text-shadow: 2px 2px 0px #111;
-        }
-
-        p { 
-            line-height: 1.4; 
-            color: #222; 
-            font-weight: bold;
-            font-size: 18px;
-            text-align: center;
-        }
-
-        textarea, button { 
-            width: 100%; 
-            padding: 14px; 
-            margin-top: 15px; 
-            border-radius: 12px; 
-            border: 4px solid #111; 
-            background: #f0f0f0; 
-            color: #111; 
-            font-size: 16px; 
-            font-family: inherit;
-            box-sizing: border-box; 
-            outline: none; 
-            box-shadow: 4px 4px 0px #111;
-        }
-
-        textarea { 
-            resize: vertical; 
-            height: 100px; 
-            background: #fff;
-        }
-        
-        textarea:focus {
-            background: #e6fffa;
-        }
-
-        button { 
-            background: #00f0ff; 
-            color: #111; 
-            font-weight: 900; 
-            cursor: pointer; 
-            text-transform: uppercase;
-            transition: transform 0.1s, box-shadow 0.1s;
-        }
-
-        button:hover { 
-            background: #ff007f; 
-            color: #fff;
-            transform: translate(-2px, -2px);
-            box-shadow: 6px 6px 0px #111;
-        }
-
-        button:active {
-            transform: translate(2px, 2px);
-            box-shadow: 2px 2px 0px #111;
-        }
-
+        .game-card { background: #fff; padding: 35px; border-radius: 20px; box-shadow: 8px 8px 0px #111; border: 5px solid #111; width: 100%; max-width: 520px; box-sizing: border-box; position: relative; transform: rotate(-1deg); z-index: 2; }
+        .cartoon-header { font-size: 45px; text-align: center; margin-bottom: -5px; filter: drop-shadow(3px 3px 0px #00f0ff); }
+        h2 { margin-top: 10px; color: #ff007f; text-align: center; text-transform: uppercase; letter-spacing: 1px; font-size: 26px; text-shadow: 2px 2px 0px #111; }
+        p { line-height: 1.4; color: #222; font-weight: bold; font-size: 18px; text-align: center; }
+        textarea, button { width: 100%; padding: 14px; margin-top: 15px; border-radius: 12px; border: 4px solid #111; background: #f0f0f0; color: #111; font-size: 16px; font-family: inherit; box-sizing: border-box; outline: none; box-shadow: 4px 4px 0px #111; }
+        textarea { resize: vertical; height: 100px; background: #fff; }
+        textarea:focus { background: #e6fffa; }
+        button { background: #00f0ff; color: #111; font-weight: 900; cursor: pointer; text-transform: uppercase; transition: transform 0.1s, box-shadow 0.1s; }
+        button:hover { background: #ff007f; color: #fff; transform: translate(-2px, -2px); box-shadow: 6px 6px 0px #111; }
+        button:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px #111; }
         .hidden { display: none; }
-        
-        .progress { 
-            font-size: 15px; 
-            color: #ff6600; 
-            margin-bottom: 10px; 
-            text-align: center; 
-            font-weight: 900;
-            text-transform: uppercase;
-        }
-        
-        /* Wacky Spinner */
+        .progress { font-size: 15px; color: #ff6600; margin-bottom: 10px; text-align: center; font-weight: 900; text-transform: uppercase; }
         .loader-container { text-align: center; padding: 30px 0; }
-        .spinner { 
-            width: 60px; 
-            height: 60px; 
-            background: #ff007f;
-            border: 4px solid #111; 
-            border-radius: 50%; 
-            animation: bounceSpin 0.8s ease-in-out infinite alternate; 
-            margin: 0 auto 20px auto; 
-            box-shadow: 4px 4px 0px #111;
-        }
-        @keyframes bounceSpin { 
-            0% { transform: scale(0.8) rotate(0deg); background: #ff007f; } 
-            100% { transform: scale(1.2) rotate(180deg); background: #00f0ff; } 
-        }
+        .spinner { width: 60px; height: 60px; background: #ff007f; border: 4px solid #111; border-radius: 50%; animation: bounceSpin 0.8s ease-in-out infinite alternate; margin: 0 auto 20px auto; box-shadow: 4px 4px 0px #111; }
+        @keyframes bounceSpin { 0% { transform: scale(0.8) rotate(0deg); background: #ff007f; } 100% { transform: scale(1.2) rotate(180deg); background: #00f0ff; } }
         #loadingTip { color: #111; font-style: italic; }
     </style>
 </head>
@@ -242,7 +66,7 @@
     <div class="shape t-7"></div>
 
 <div class="game-card">
-    <div class="cartoon-header">👴📺</div>
+    <div class="cartoon-header">👴👵</div>
     
     <div id="game-screen">
         <div class="progress" id="progressText">Question 1 of 15</div>
@@ -300,9 +124,7 @@
     ];
     let tipInterval;
 
-    window.onload = () => {
-        loadQuestion();
-    };
+    window.onload = () => { loadQuestion(); };
 
     function loadQuestion() {
         document.getElementById("progressText").textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
@@ -313,19 +135,10 @@
 
     function nextQuestion() {
         const answer = document.getElementById("userAnswer").value.trim();
-        if (!answer) {
-            alert("Whoa there, type something first!");
-            return;
-        }
-
+        if (!answer) { alert("Whoa there, type something first!"); return; }
         userAnswers.push(questions[currentQuestionIndex] + " -> Answer: " + answer);
         currentQuestionIndex++;
-
-        if (currentQuestionIndex < questions.length) {
-            loadQuestion();
-        } else {
-            showResults();
-        }
+        if (currentQuestionIndex < questions.length) { loadQuestion(); } else { showResults(); }
     }
 
     async function showResults() {
@@ -347,16 +160,11 @@
         2. The Vibe Check: Two sentences max explaining why, like a normal person talking.`;
 
         try {
-            // Updated endpoint and header configuration for AQ. tokens
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent`, {
+            // Standard query parameter key format using the v1beta endpoint
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`, {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'x-goog-api-key': API_KEY 
-                },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }]
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
 
             const data = await response.json();
@@ -371,7 +179,6 @@
                 document.getElementById("aiResultText").innerHTML = `<p style="color:red;">API Error: ${data.error.message || JSON.stringify(data.error)}</p>`;
             } else {
                 document.getElementById("aiResultText").innerHTML = `<p style="color:red;">ERROR: Ren fucked up, tell him to fix it.</p>`;
-                console.log("Full API Response:", data);
             }
         } catch (error) {
             clearInterval(tipInterval);
