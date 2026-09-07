@@ -366,7 +366,7 @@
             } else if (data.error) {
                 document.getElementById("aiResultText").innerHTML = `<p style="color:red;">API Error: ${data.error.message || JSON.stringify(data.error)}</p>`;
             } else {
-                document.getElementById("aiResultText").innerHTML = `<p style="color:red;">Unexpected response structure. Check console.</p>`;
+                document.getElementById("aiResultText").innerHTML = `<p style="color:red;">ERROR: Ren fucked up, tell him to fix it.</p>`;
                 console.log("Full API Response:", data);
             }
         } catch (error) {
