@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full Zodiac Reading</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        midnight: '#050608',
+                        cardBg: '#0f111a',
+                        cardBorder: '#1c2030',
+                        accentGold: '#d4af37'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #050608;
+            color: #e2e8f0;
+        }
+        .nebula-glass {
+            background: rgba(15, 17, 26, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(212, 175, 55, 0.12);
+        }
+        input, select {
+            color-scheme: dark;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #050608;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1c2030;
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-start px-4 py-8 md:py-12 selection:bg-amber-500/30 selection:text-amber-200">
+
+    <main class="w-full max-w-4xl mx-auto space-y-6">
+        
+        <header class="text-center space-y-1.5 mb-2">
+            <div class="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 mb-1 shadow-lg shadow-amber-500/5">
+                <i class="fa-solid fa-moon text-sm"></i>
+            </div>
+            <h1 class="text-2xl font-bold tracking-tight text-white">Full Zodiac Reading</h1>
+            <p class="text-xs text-slate-400 font-light">Explore your characteristics & compare your frens</p>
+        </header>
+
+        <section class="nebula-glass rounded-3xl p-5 md:p-6 shadow-2xl space-y-5">
+            
+            <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Profile Slots</span>
+                <div class="flex items-center space-x-1.5" id="profile-tabs">
+                    <!-- Dynamic slots rendered via JS -->
+                </div>
+            </div>
+
+            <!-- Profile Input Container -->
+            <div id="profile-inputs-container" class="space-y-4">
+                <!-- Populated dynamically via JS -->
+            </div>
+
+            <div id="notice-box" class="hidden p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs text-center">
+                Please enter a valid birth year.
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <button type="button" id="run-calc-btn" class="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-semibold text-xs tracking-wide shadow-lg shadow-amber-500/15 active:scale-[0.98] transition-all">
+                    Analyze Profiles
+                </button>
+                <button type="button" id="clear-btn" class="w-full py-3 rounded-2xl bg-slate-900/80 border border-slate-800 text-slate-300 hover:text-white font-medium text-xs tracking-wide transition-all">
+                    Reset All
+                </button>
+            </div>
+        </section>
+
+        <section id="output-section" class="hidden space-y-6">
+            
+            <!-- Inter-Profile Connection Hub (If multiple active profiles) -->
+            <div id="matrix-section" class="hidden nebula-glass rounded-3xl p-5 md:p-6 shadow-xl border border-amber-500/20 space-y-4">
+                <div class="flex items-center space-x-2.5 border-b border-slate-800/80 pb-3">
+                    <div class="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-xs">
+                        <i class="fa-solid fa-people-arrows"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-white">Inter-Profile Synergy Matrix</h3>
+                        <p class="text-[11px] text-slate-400 font-light">How your active profiles connect and align with one another</p>
+                    </div>
+                </div>
+                <div id="matrix-grid" class="grid grid-cols-1 gap-3">
+                    <!-- Dynamic synergy cards inserted here -->
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between px-1 pt-2">
+                <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Full Zodiac Reading</h2>
+                <span id="active-count-label" class="text-xs text-amber-400/90 font-medium">1 profile analyzed</span>
+            </div>
+            
+            <!-- Dynamic Grid for Output Cards -->
+            <div id="results-grid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <!-- Cards injected here -->
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Data models and application state setup
+        let profilesData = [
+            { id: 0, active: true, name: "Name", month: 1, day: 1, year: 1995 },
+            { id: 1, active: false, name: "Profile 2", month: 6, day: 15, year: 1993 },
+            { id: 2, active: false, name: "Profile 3", month: 9, day: 22, year: 1990 },
+            { id: 3, active: false, name: "Profile 4", month: 11, day: 8, year: 1988 }
+        ];
+        let currentEditingSlot = 0;
+
+        const profileTabsContainer = document.getElementById('profile-tabs');
+        const profileInputsContainer = document.getElementById('profile-inputs-container');
+        const calcButton = document.getElementById('run-calc-btn');
+        const clearButton = document.getElementById('clear-btn');
+        const noticeBox = document.getElementById('notice-box');
+        const outputSection = document.getElementById('output-section');
+        const matrixSection = document.getElementById('matrix-section');
+        const matrixGrid = document.getElementById('matrix-grid');
+        const resultsGrid = document.getElementById('results-grid');
+        const activeCountLabel = document.getElementById('active-count-label');
+
+        const westernZodiacRepo = [
+            { name: "Capricorn", startMonth: 12, startDay: 22, endMonth: 1, endDay: 19, element: "Earth", icon: "fa-mountain", desc: "Capricorns are renowned for their unwavering tenacity, sharp intelligence, and practical approach to life. Governed by Saturn, you possess an inner drive that pushes you to scale the highest mountains of achievement. While others might look for shortcuts, you understand that true success requires discipline, patience, and meticulous planning. You are intensely loyal to your inner circle and hold yourself to exceptionally high standards, making you a pillar of strength for those around you.", strengths: ["Disciplined", "Ambitious", "Patient", "Reliable"], weaknesses: ["Pessimistic", "Stubborn", "Reserved", "Workaholic"], darkSide: "At your absolute worst, you are cold, calculating careerists who view human relationships purely as strategic stepping stones. You harbor a chilling cynicism, ruthlessly cutting people out of your life the second they stop being useful to your ascent. Your obsession with status and control makes you emotionally tyrannical behind closed doors.", friend: ["Taurus", "Virgo"], partner: ["Scorpio", "Taurus"] },
+            { name: "Aquarius", startMonth: 1, startDay: 20, endMonth: 2, endDay: 18, element: "Air", icon: "fa-wind", desc: "Aquarians are visionary thinkers and humanitarians who march to the beat of their own drum. Ruled by Uranus, you possess an avant-garde mind that is always looking toward the future, eager to revolutionize how society operates. You cherish intellectual freedom above all else and are deeply drawn to unconventional ideas, progressive causes, and diverse perspectives. Though you can sometimes appear emotionally detached on the surface, you harbor a deep, quiet compassion for humanity.", strengths: ["Original", "Progressive", "Clever", "Humanitarian"], weaknesses: ["Detached", "Unpredictable", "Rebellious", "Stubborn"], darkSide: "In your darkest manifestation, you are condescending pseudo-intellectuals who claim to love 'humanity' as an abstract concept while treating actual flesh-and-blood humans with chilling, sociopathic contempt. You are emotionally vacant contrarians who intentionally push people away just to study their pain like lab rats.", friend: ["Gemini", "Libra"], partner: ["Sagittarius", "Gemini"] },
+            { name: "Pisces", startMonth: 2, startDay: 19, endMonth: 3, endDay: 20, element: "Water", icon: "fa-water", desc: "Pisces are imaginative dreamers endowed with profound emotional depth and spiritual intuition. Governed by Neptune, you absorb the emotional currents of the world around you like a sponge, making you exceptionally empathetic, artistic, and compassionate. You live fluidly between reality and the realms of imagination, often finding solace in music, poetry, visual arts, or quiet introspection. Your gentle, forgiving nature makes you a comforting sanctuary for those seeking solace.", strengths: ["Compassionate", "Artistic", "Intuitive", "Empathetic"], weaknesses: ["Escapist", "Overly Sensitive", "Vulnerable", "Indecisive"], darkSide: "When trapped in your abyss, you transform into master emotional manipulators and perpetual victims. Instead of facing reality, you drown your sorrows in toxic escapism, weaponizing your fragility to guilt-trip everyone around you. You indulge in a self-pitying martyrdom complex, silently keeping score of every slight.", friend: ["Cancer", "Scorpio"], partner: ["Virgo", "Taurus"] },
+            { name: "Aries", startMonth: 3, startDay: 21, endMonth: 4, endDay: 19, element: "Fire", icon: "fa-fire", desc: "Aries are fearless pioneers filled with dynamic energy, passion, and an unstoppable competitive spirit. Ruled by Mars, you dive headfirst into new adventures and challenges, preferring direct action over endless hesitation. You are a natural-born leader who inspires others through your sheer enthusiasm and audacious courage. While your temper can flare up quickly, your anger dissipates just as fast, leaving behind a warm, generous heart that never holds a grudge.", strengths: ["Courageous", "Determined", "Confident", "Passionate"], weaknesses: ["Impulsive", "Impatient", "Aggressive", "Hot-headed"], darkSide: "At your worst, you are raging, infantile narcissists who throw explosive temper tantrums whenever the universe doesn't immediately revolve around you. You steamroll everyone in your path with violent impatience, completely blind to the destruction and collateral damage you leave in your wake.", friend: ["Leo", "Sagittarius"], partner: ["Libra", "Leo"] },
+            { name: "Taurus", startMonth: 4, startDay: 20, endMonth: 5, endDay: 20, element: "Earth", icon: "fa-seedling", desc: "Taurus individuals are the epitome of stability, grounded wisdom, and sensual appreciation for life's finest comforts. Governed by Venus, you possess an inner fortitude that allows you to weather any storm with grace and resilience. You value security, loyalty, and peace above all else, creating a sanctuary of warmth and beauty wherever you go. Once you commit your heart or mind to a goal or a person, your steadfast dedication is absolute and unshakeable.", strengths: ["Dependable", "Practical", "Devoted", "Patient"], weaknesses: ["Stubborn", "Possessive", "Resistant to Change", "Uncompromising"], darkSide: "When corrupted, you become terrifyingly lazy, greedy hoarders who view people and possessions as interchangeable trophies. Your infamous stubbornness hardens into absolute calcified malice; you will hold toxic grudges out of pure spite for decades. You are paralyzed by materialism.", friend: ["Virgo", "Capricorn"], partner: ["Scorpio", "Virgo"] },
+            { name: "Gemini", startMonth: 5, startDay: 21, endMonth: 6, endDay: 20, element: "Air", icon: "fa-comments", desc: "Geminis are intellectually vibrant, brilliantly versatile, and endlessly curious social butterflies. Ruled by Mercury, your mind works at lightning speed, constantly craving new information, stimulating conversations, and diverse experiences. You possess a unique gift for communication, effortlessly bridging gaps between different types of people with your wit and charm. Your adaptability allows you to thrive in any environment.", strengths: ["Adaptable", "Outgoing", "Witty", "Intellectual"], weaknesses: ["Inconsistent", "Indecisive", "Nervous", "Easily Bored"], darkSide: "At your most toxic, you are malicious two-faced gossips who weaponize secrets told to you in confidence just to entertain a bored crowd. You have zero loyalty, shifting your entire personality depending on who is in the room. You thrive on sowing chaotic drama behind people's backs.", friend: ["Libra", "Aquarius"], partner: ["Sagittarius", "Aquarius"] },
+            { name: "Cancer", startMonth: 6, startDay: 21, endMonth: 7, endDay: 22, element: "Water", icon: "fa-moon", desc: "Cancers are deeply nurturing, intensely intuitive, and fiercely protective souls anchored by home and family. Governed by the Moon, your emotional landscape is rich, complex, and deeply attuned to the moods of others. You have a profound capacity for emotional healing and create a safe harbor of love and comfort for your loved ones. While you may wear a tough outer shell to protect your tender heart, those who earn your trust discover unmatched loyalty.", strengths: ["Tenacious", "Loyal", "Sympathetic", "Protective"], weaknesses: ["Moody", "Suspicious", "Insecure", "Overly Defensive"], darkSide: "In your dark state, you morph into suffocating, emotional terrorists who use guilt and passive-aggression as weapons of mass destruction. You retreat into your shell playing the ultimate martyr, keeping a meticulous mental ledger of every perceived slight to throw back in people's faces years later.", friend: ["Scorpio", "Pisces"], partner: ["Capricorn", "Taurus"] },
+            { name: "Leo", startMonth: 7, startDay: 23, endMonth: 8, endDay: 22, element: "Fire", icon: "fa-sun", desc: "Leos radiate magnetic warmth, royal charisma, and an inspiring zest for grand artistic expression. Ruled by the Sun itself, you are natural performers who illuminate every room you enter with your natural charm and optimism. You possess a generous, golden heart and will fiercely defend and uplift those you care about. Your pride and desire for recognition are matched only by your willingness to work hard to achieve greatness and leave a lasting legacy.", strengths: ["Creative", "Passionate", "Generous", "Charismatic"], weaknesses: ["Arrogant", "Stubborn", "Self-Centered", "Attention-Seeking"], darkSide: "At your worst, you are insufferable, attention-starved tyrants who throw monstrous tantrums if someone else spends five minutes in the spotlight. Your fragile ego demands endless public worship, and you will ruthlessly sabotage anyone who dares eclipse your radiance.", friend: ["Aries", "Sagittarius"], partner: ["Aquarius", "Aries"] },
+            { name: "Virgo", startMonth: 8, startDay: 23, endMonth: 9, endDay: 22, element: "Earth", icon: "fa-pen-ruler", desc: "Virgos are brilliant analytical minds driven by a deep desire to be of service, improve systems, and perfect their craft. Governed by Mercury, you notice the intricate details that everyone else overlooks, making you an exceptional problem solver and planner. You possess a quiet grace, a sharp wit, and a standard of excellence that elevates everything you touch. Though your humility often keeps you in the background, your reliable contributions form the backbone of your community.", strengths: ["Loyal", "Analytical", "Hardworking", "Kind"], weaknesses: ["Overcritical", "Worrywart", "Perfectionist", "Overthinker"], darkSide: "When corrupted, you become venomous, hyper-judgmental control freaks who pick apart everyone else's flaws with surgical cruelty. You hide your crippling anxiety behind an unbearable facade of moral superiority, treating loved ones like broken appliances needing your constant correction.", friend: ["Taurus", "Capricorn"], partner: ["Pisces", "Taurus"] },
+            { name: "Libra", startMonth: 9, startDay: 23, endMonth: 10, endDay: 22, element: "Air", icon: "fa-scale-balanced", desc: "Libras are natural diplomats devoted to creating harmony, aesthetic beauty, and balanced relationships. Governed by Venus, you possess an exquisite eye for art, elegance, and fairness, always striving to see both sides of any story. You are a delightful, charming companion who values partnership and mutual respect above all else. Your gentle nature and aversion to conflict make you an exceptional mediator who brings peace to chaotic situations.", strengths: ["Cooperative", "Diplomatic", "Gracious", "Fair-minded"], weaknesses: ["Indecisive", "Avoids Conflict", "People-Pleaser", "Dependent"], darkSide: "At your darkest, you are spineless cowards and deceptive manipulators who will sell out your closest friends just to avoid an awkward social conversation. You secretly stir up intense drama behind a sugary smile, terrified of being alone yet incapable of authentic loyalty.", friend: ["Gemini", "Aquarius"], partner: ["Aries", "Gemini"] },
+            { name: "Scorpio", startMonth: 10, startDay: 23, endMonth: 11, endDay: 21, element: "Water", icon: "fa-bolt", desc: "Scorpios are intense, magnetic powerhouses possessed of extraordinary emotional resilience and psychological depth. Governed by Pluto, you experience life with profound passion and refuse to settle for superficial answers or connections. You possess a laser-sharp focus and a piercing intuition that reads beneath the surface of any interaction. Your loyalty runs deeper than an ocean, making you an immensely protective and devoted friend or partner.", strengths: ["Resourceful", "Brave", "Passionate", "Loyal"], weaknesses: ["Distrusting", "Jealous", "Secretive", "Vindictive"], darkSide: "In your absolute worst state, you are paranoid, vindictive sociopaths who treat life like a psychological warfare zone. You catalog people's deepest secrets purely so you have nuclear blackmail material ready for when they inevitably cross you.", friend: ["Cancer", "Pisces"], partner: ["Taurus", "Cancer"] },
+            { name: "Sagittarius", startMonth: 11, startDay: 22, endMonth: 12, endDay: 21, element: "Fire", icon: "fa-compass", desc: "Sagittarians are adventurous philosophical explorers hungry for truth, freedom, and expansive horizons. Ruled by Jupiter, you possess an infectious optimism and a booming laugh that brightens the darkest rooms. You view life as a grand expedition, constantly seeking new cultures, ideas, and spiritual truths. Your radical honesty and independent spirit make you an exhilarating companion who inspires everyone around you to dream bigger.", strengths: ["Optimistic", "Generous", "Idealistic", "Adventurous"], weaknesses: ["Impatient", "Blunt", "Restless", "Tactless"], darkSide: "When corrupted, you become reckless, commitment-phobic narcissists who disguise cruelty and selfishness as 'brutal honesty'. You abandon people the second life gets difficult or boring, treating human connections like disposable hotel rooms.", friend: ["Aries", "Leo"], partner: ["Gemini", "Aries"] }
+        ];
+
+        const chineseAnimalDetails = {
+            "Rat": { icon: "fa-shield-cat", desc: "Rats are exceptionally quick-witted, resourceful, and charming innovators who can sniff out opportunity anywhere. You possess a sharp intellect, remarkable adaptability, and a strategic mind that plans years ahead. Your social charm makes you beloved in groups, while your financial prudence ensures stability. Though you can occasionally be overly cautious or protective of your resources, your ingenuity consistently leads you to triumph over adversity.", strengths: ["Clever", "Adaptable", "Charming", "Resourceful"], weaknesses: ["Timid", "Critical", "Opportunistic", "Restless"], darkSide: "At your worst, you are cutthroat opportunists and ruthless hoarders. You view human beings purely as transactional assets, cozying up to power while plotting behind everyone's back. You are pathologically paranoid about losing your resources.", friend: ["Dragon", "Monkey"], partner: ["Ox", "Dragon"] },
+            "Ox": { icon: "fa-cow", desc: "Oxen are the bedrock of steadfast diligence, quiet strength, and unshakeable honesty. You approach life with a deliberate, hardworking pace, knowing that steady perseverance always outperforms impulsive bursts. Your word is your absolute bond, and your family and colleagues rely heavily on your dependable nature. Though you can be stubborn when your mind is set, your profound patience and integrity earn you universal respect.", strengths: ["Honest", "Industrious", "Reliable", "Patient"], weaknesses: ["Stubborn", "Rigid", "Narrow-minded", "Unbending"], darkSide: "In your dark state, you are rigid, oppressive tyrants who rule your home or workplace with a terrifying, iron-fisted authoritarianism. Your legendary stubbornness hardens into unyielding cruelty; if someone doesn't follow your exact rules, you freeze them out forever.", friend: ["Snake", "Rooster"], partner: ["Rat", "Snake"] },
+            "Tiger": { icon: "fa-cat", desc: "Tigers are courageous, fiercely independent trailblazers endowed with magnetic magnetism and fierce bravery. You leap into challenges with tremendous enthusiasm, refusing to let fear dictate your choices. Your protective instincts make you a fierce defender of the underdog, and your vibrant personality lights up any gathering. Though your rebellious streak can occasionally spark conflict, your noble heart inspires everyone around you.", strengths: ["Courageous", "Enthusiastic", "Charismatic", "Generous"], weaknesses: ["Arrogant", "Impulsive", "Aggressive", "Restless"], darkSide: "When corrupted, you are reckless, arrogant hotheads who act like absolute dictators in your personal relationships. You charge into catastrophic situations out of pure ego, dragging everyone else down with you. You refuse to listen to any advice.", friend: ["Horse", "Dog"], partner: ["Pig", "Horse"] },
+            "Rabbit": { icon: "fa-carrot", desc: "Rabbits are peaceful, elegant, and deeply empathetic diplomats gifted with refined taste and quiet wisdom. You abhor conflict and drama, preferring to cultivate a serene, harmonious environment filled with beauty and gentle company. Your intuition is exceptionally sharp, and your gentle demeanor masks a resilient, quick-thinking intellect. You make an extraordinarily comforting friend and partner who offers unwavering emotional sanctuary.", strengths: ["Quiet", "Compassionate", "Artistic", "Diplomatic"], weaknesses: ["Hesitant", "Cautious", "Melancholic", "Detached"], darkSide: "At your worst, you are cold, cowardly escapists who will silently watch someone else take the fall to protect your own fragile peace and comfort. You are intensely superficial, abandoning loved ones the moment they stop being pleasant.", friend: ["Goat", "Pig"], partner: ["Goat", "Dog"] },
+            "Dragon": { icon: "fa-dragon", desc: "Dragons are powerful, charismatic visionaries gifted with natural leadership, boundless energy, and majestic ambition. You possess an innate sense of destiny and are unafraid to chase colossal goals that others find intimidating. Your enthusiasm is contagious, and your intelligence cuts through complex problems with ease. While your high standards can sometimes demand too much from others, your warmth, magnanimity, and vision make you an awe-inspiring presence.", strengths: ["Ambitious", "Energetic", "Fearless", "Magnanimous"], weaknesses: ["Demanding", "Impatient", "Arrogant", "Dogmatic"], darkSide: "In your dark manifestation, you are tyrannical megalomaniacs high on your own mythos. You demand absolute obedience and worship from everyone around you, flying into volcanic rages whenever someone questions your divine judgment.", friend: ["Rat", "Monkey"], partner: ["Rat", "Rooster"] },
+            "Snake": { icon: "fa-worm", desc: "Snakes are enigmatic intellectuals endowed with deep wisdom, subtle charm, and laser-sharp intuition. You possess a philosophical mind that ponders the mysteries of existence, preferring thoughtful strategy over chaotic rushed action. Your aesthetic taste is impeccable, and you maintain a calm, collected demeanor under the most intense pressure. Though you keep your inner circle small and selective, your loyalty to those few is absolute.", strengths: ["Wise", "Sympathetic", "Aesthetic", "Perceptive"], weaknesses: ["Loner", "Jealous", "Suspicious", "Possessive"], darkSide: "When corrupted, you are cold-blooded, calculating sociopaths who strike from the shadows. You hold grudges for decades, quietly and patiently plotting elaborate, devastating revenge against anyone who wronged you.", friend: ["Ox", "Rooster"], partner: ["Ox", "Rooster"] },
+            "Horse": { icon: "fa-horse", desc: "Horses are free-spirited, high-energy adventurers who gallop through life with unbridled passion and joy. You thrive in social settings, bringing laughter, quick humor, and vibrant warmth wherever you roam. Your independence is non-negotiable, and you require freedom to explore your vast array of interests. Though you can sometimes rush into decisions too quickly, your honesty, loyalty, and lively spirit make you endlessly captivating.", strengths: ["Warm-hearted", "Independent", "Enthusiastic", "Optimistic"], weaknesses: ["Rebellious", "Anxious", "Impatient", "Fickle"], darkSide: "At your worst, you are selfish, commitment-phobic vagrants who leave a trail of broken hearts and abandoned responsibilities behind you. You throw explosive tantrums the second anyone tries to pin you down.", friend: ["Tiger", "Dog"], partner: ["Tiger", "Goat"] },
+            "Goat": { icon: "fa-shield-dog", desc: "Goats are gentle, artistic, and deeply compassionate souls attuned to the subtle harmonies of art and nature. You possess a rich imagination and a nurturing heart that seeks peace, beauty, and emotional security above all else. Your kindness and empathy make you a treasured confidant who listens without judgment. Though you can sometimes worry excessively or shy away from harsh realities, your quiet resilience and creativity run remarkably deep.", strengths: ["Gentle", "Sincere", "Resilient", "Artistic"], weaknesses: ["Indecisive", "Pessimistic", "Timid", "Dependent"], darkSide: "In your dark state, you are manipulative emotional parasites who drain everyone around you dry with chronic pessimism and weaponized helplessness. You refuse to take responsibility for your own life.", friend: ["Rabbit", "Pig"], partner: ["Rabbit", "Horse"] },
+            "Monkey": { icon: "fa-mende", desc: "Monkeys are brilliant, mischievous problem-solvers equipped with lightning-fast wit and endless curiosity. You can master almost any skill with ease and take joy in figuring out how things work behind the scenes. Your lively sense of humor and playful antics keep everyone around you smiling and entertained. Though your restless nature means you dislike monotony, your clever strategies guarantee success in whatever you pursue.", strengths: ["Innovative", "Versatile", "Self-assured", "Clever"], weaknesses: ["Cunning", "Restless", "Arrogant", "Impatient"], darkSide: "When corrupted, you become malicious con artists and vicious pranksters who treat other people's pain as punchlines. You cannot form genuine bonds because you are always plotting a scam or looking for an angle to exploit.", friend: ["Rat", "Dragon"], partner: ["Dragon", "Rat"] },
+            "Rooster": { icon: "fa-feather", desc: "Roosters are deeply observant, hardworking perfectionists characterized by impeccable organization and courage. You approach your duties with punctuality, pride, and total dedication, ensuring everything is executed flawlessly. Your honest feedback is invaluable because you always mean well and wish to see others succeed. Though you can sometimes be outspoken or critical, your dependable nature and talents make you an exceptional anchor.", strengths: ["Independent", "Capable", "Punctual", "Honest"], weaknesses: ["Boastful", "Critical", "Impatient", "Dogmatic"], darkSide: "At your worst, you are vicious, narcissistic snobs who delight in publicly humiliating anyone whose standards don't match your obsessive delusions of perfection.", friend: ["Ox", "Snake"], partner: ["Ox", "Dragon"] },
+            "Dog": { icon: "fa-dog", desc: "Dogs are fiercely loyal, trustworthy protectors driven by a profound sense of justice and morality. You stand steadfastly by your loved ones through every trial, offering unconditional support and safety. Your honesty is legendary, and you cannot tolerate unfairness or deceit in any form. Though you can occasionally wrestle with worry or cynicism, your noble heart and dedication make you one of the most cherished companions in the zodiac.", strengths: ["Honest", "Loyal", "Responsible", "Courageous"], weaknesses: ["Anxious", "Cynical", "Defensive", "Stubborn"], darkSide: "In your dark manifestation, you are paranoid, self-righteous zealots who view the world as a battleground of pure evil. You hold insanely rigid moral codes and will ruthlessly turn on your closest friends over minor disagreements.", friend: ["Tiger", "Rabbit"], partner: ["Tiger", "Rabbit"] },
+            "Pig": { icon: "fa-piggy-bank", desc: "Pigs are warm-hearted, incredibly generous souls who find deep joy in sharing comfort, love, and hospitality. You possess a forgiving, optimistic nature that sees the absolute best in people, making friends wherever you go. Your diligence and sincerity ensure that you accomplish your goals without ever stepping on others. Though your trusting heart can sometimes make you vulnerable, your contentment and kindness create a wonderful life.", strengths: ["Sincere", "Generous", "Diligent", "Compassionate"], weaknesses: ["Naïve", "Gullible", "Self-indulgent", "Stubborn"], darkSide: "When corrupted, you descend into hedonistic, gluttonous sloths who indulge every base impulse with zero self-control. You use your sweet, innocent persona as a manipulative shield.", friend: ["Rabbit", "Goat"], partner: ["Tiger", "Rabbit"] }
+        };
+
+        const chineseAnimalList = ["Rat", "Ox", "Tiger", "Rabbit", "Dragon", "Snake", "Horse", "Goat", "Monkey", "Rooster", "Dog", "Pig"];
+
+        function computePreciseChineseZodiac(yearNumber) {
+            let animalIndex = (yearNumber - 4) % 12;
+            if (animalIndex < 0) animalIndex += 12;
+            const animalLabel = chineseAnimalList[animalIndex];
+
+            const stemNumber = (yearNumber - 4) % 10;
+            let normalizedStem = stemNumber < 0 ? stemNumber + 10 : stemNumber;
+            let elementTitle = "Metal";
+            if (normalizedStem === 0 || normalizedStem === 1) elementTitle = "Wood";
+            else if (normalizedStem === 2 || normalizedStem === 3) elementTitle = "Fire";
+            else if (normalizedStem === 4 || normalizedStem === 5) elementTitle = "Earth";
+            else if (normalizedStem === 6 || normalizedStem === 7) elementTitle = "Metal";
+            else if (normalizedStem === 8 || normalizedStem === 9) elementTitle = "Water";
+
+            const detailsObj = chineseAnimalDetails[animalLabel];
+            return {
+                name: `${elementTitle} ${animalLabel}`,
+                animalOnly: animalLabel,
+                element: `${elementTitle} Element`,
+                icon: detailsObj.icon,
+                desc: detailsObj.desc,
+                strengths: detailsObj.strengths,
+                weaknesses: detailsObj.weaknesses,
+                darkSide: detailsObj.darkSide,
+                friend: detailsObj.friend,
+                partner: detailsObj.partner
+            };
+        }
+
+        function resolveWesternZodiac(mVal, dVal) {
+            for (let entry of westernZodiacRepo) {
+                if (entry.startMonth === entry.endMonth) {
+                    if (mVal === entry.startMonth && dVal >= entry.startDay && dVal <= entry.endDay) return entry;
+                } else {
+                    if ((mVal === entry.startMonth && dVal >= entry.startDay) || (mVal === entry.endMonth && dVal <= entry.endDay)) return entry;
+                }
+            }
+            return westernZodiacRepo[0];
+        }
+
+        function renderProfileTabs() {
+            profileTabsContainer.innerHTML = '';
+            profilesData.forEach((profItem, positionIndex) => {
+                const isSelectedTab = (positionIndex === currentEditingSlot);
+                const tabButtonElement = document.createElement('button');
+                tabButtonElement.type = 'button';
+                
+                let tabClasses = "slot-tab px-3 py-1 rounded-xl text-xs font-medium transition-all flex items-center space-x-1.5 ";
+                if (isSelectedTab) {
+                    tabClasses += "bg-amber-500 text-slate-950 shadow";
+                } else if (profItem.active) {
+                    tabClasses += "bg-slate-800 text-amber-300 border border-amber-500/30";
+                } else {
+                    tabClasses += "bg-slate-900/80 border border-slate-800 text-slate-400 hover:text-white";
+                }
+                tabButtonElement.className = tabClasses;
+
+                tabButtonElement.onclick = (e) => {
+                    if (e.target.classList.contains('slot-toggle') || e.target.closest('.slot-toggle')) {
+                        return;
+                    }
+                    syncDOMToCurrentSlot();
+                    currentEditingSlot = positionIndex;
+                    renderProfileTabs();
+                };
+
+                let innerHtmlLabel = `<span>${profItem.name || `Profile ${positionIndex + 1}`}</span>`;
+                
+                if (positionIndex === 0) {
+                    innerHtmlLabel += `<span class="w-1.5 h-1.5 rounded-full bg-amber-400/80 inline-block ml-1"></span>`;
+                } else {
+                    if (profItem.active) {
+                        innerHtmlLabel += `<button type="button" onclick="handleToggleProfile(${positionIndex}, event)" class="slot-toggle ml-1.5 text-[10px] hover:text-rose-400 transition-colors" title="Remove Profile"><i class="fa-solid fa-xmark"></i></button>`;
+                    } else {
+                        innerHtmlLabel += `<button type="button" onclick="handleToggleProfile(${positionIndex}, event)" class="slot-toggle ml-1 text-[10px] text-amber-400/80 hover:text-amber-300 transition-colors" title="Add Profile"><i class="fa-solid fa-plus"></i></button>`;
+                    }
+                }
+
+                tabButtonElement.innerHTML = innerHtmlLabel;
+                profileTabsContainer.appendChild(tabButtonElement);
+            });
+
+            renderActiveProfileInputs();
+        }
+
+        function handleToggleProfile(targetIndex, browserEvent) {
+            browserEvent.stopPropagation();
+            syncDOMToCurrentSlot();
+            profilesData[targetIndex].active = !profilesData[targetIndex].active;
+            if (profilesData[targetIndex].active) {
+                currentEditingSlot = targetIndex;
+            } else {
+                currentEditingSlot = 0;
+            }
+            renderProfileTabs();
+        }
+
+        function renderActiveProfileInputs() {
+            const currentProfileObj = profilesData[currentEditingSlot];
+            profileInputsContainer.innerHTML = `
+                <div class="space-y-3.5 transition-all">
+                    <div class="flex items-center justify-between">
+                        <input type="text" id="slot-name-input" value="${currentProfileObj.name}" placeholder="Enter Name..." class="bg-transparent text-sm font-semibold text-white focus:outline-none border-b border-transparent focus:border-amber-400/60 pb-0.5 w-48">
+                        <span class="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Slot ${currentEditingSlot + 1} ${currentProfileObj.active ? '(Active)' : '(Inactive)'}</span>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2.5">
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-wider text-slate-400 mb-1">Month</label>
+                            <select id="slot-month" class="w-full rounded-xl bg-slate-900/90 border border-slate-700/60 px-3 py-2.5 text-xs font-medium focus:outline-none focus:border-amber-400">
+                                <option value="1" ${currentProfileObj.month === 1 ? 'selected' : ''}>January</option>
+                                <option value="2" ${currentProfileObj.month === 2 ? 'selected' : ''}>February</option>
+                                <option value="3" ${currentProfileObj.month === 3 ? 'selected' : ''}>March</option>
+                                <option value="4" ${currentProfileObj.month === 4 ? 'selected' : ''}>April</option>
+                                <option value="5" ${currentProfileObj.month === 5 ? 'selected' : ''}>May</option>
+                                <option value="6" ${currentProfileObj.month === 6 ? 'selected' : ''}>June</option>
+                                <option value="7" ${currentProfileObj.month === 7 ? 'selected' : ''}>July</option>
+                                <option value="8" ${currentProfileObj.month === 8 ? 'selected' : ''}>August</option>
+                                <option value="9" ${currentProfileObj.month === 9 ? 'selected' : ''}>September</option>
+                                <option value="10" ${currentProfileObj.month === 10 ? 'selected' : ''}>October</option>
+                                <option value="11" ${currentProfileObj.month === 11 ? 'selected' : ''}>November</option>
+                                <option value="12" ${currentProfileObj.month === 12 ? 'selected' : ''}>December</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-wider text-slate-400 mb-1">Day</label>
+                            <select id="slot-day" class="w-full rounded-xl bg-slate-900/90 border border-slate-700/60 px-3 py-2.5 text-xs font-medium focus:outline-none focus:border-amber-400">
+                                <!-- Days populated dynamically -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-wider text-slate-400 mb-1">Year</label>
+                            <input type="number" id="slot-year" min="1920" max="2100" value="${currentProfileObj.year}" class="w-full rounded-xl bg-slate-900/90 border border-slate-700/60 px-3 py-2.5 text-xs font-medium focus:outline-none focus:border-amber-400">
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            populateDaysDropdown(currentProfileObj.month, currentProfileObj.year, currentProfileObj.day);
+            attachInputEventListeners();
+        }
+
+        function syncDOMToCurrentSlot() {
+            const nameBox = document.getElementById('slot-name-input');
+            const monthBox = document.getElementById('slot-month');
+            const dayBox = document.getElementById('slot-day');
+            const yearBox = document.getElementById('slot-year');
+
+            if (nameBox && monthBox && dayBox && yearBox) {
+                profilesData[currentEditingSlot].name = nameBox.value.trim() || `Profile ${currentEditingSlot + 1}`;
+                profilesData[currentEditingSlot].month = parseInt(monthBox.value);
+                profilesData[currentEditingSlot].day = parseInt(dayBox.value);
+                profilesData[currentEditingSlot].year = parseInt(yearBox.value) || 2000;
+            }
+        }
+
+        function populateDaysDropdown(selectedMonthNum, selectedYearNum, activeDayNum) {
+            const daySelElement = document.getElementById('slot-day');
+            if (!daySelElement) return;
+
+            let maxCount = 31;
+            if ([4, 6, 9, 11].includes(selectedMonthNum)) {
+                maxCount = 30;
+            } else if (selectedMonthNum === 2) {
+                const isLeapYear = (selectedYearNum % 4 === 0 && selectedYearNum % 100 !== 0) || (selectedYearNum % 400 === 0);
+                maxCount = isLeapYear ? 29 : 28;
+            }
+
+            daySelElement.innerHTML = '';
+            for (let d = 1; d <= maxCount; d++) {
+                const optElement = document.createElement('option');
+                optElement.value = d;
+                optElement.textContent = d;
+                if (d === activeDayNum) optElement.selected = true;
+                daySelElement.appendChild(optElement);
+            }
+        }
+
+        function attachInputEventListeners() {
+            const mSelect = document.getElementById('slot-month');
+            const yInput = document.getElementById('slot-year');
+            const dSelect = document.getElementById('slot-day');
+            const nameInput = document.getElementById('slot-name-input');
+
+            if (mSelect && yInput) {
+                mSelect.addEventListener('change', () => {
+                    syncDOMToCurrentSlot();
+                    populateDaysDropdown(parseInt(mSelect.value), parseInt(yInput.value) || 2000, profilesData[currentEditingSlot].day);
+                });
+                yInput.addEventListener('input', () => {
+                    syncDOMToCurrentSlot();
+                    populateDaysDropdown(parseInt(mSelect.value), parseInt(yInput.value) || 2000, profilesData[currentEditingSlot].day);
+                });
+            }
+            if (dSelect) {
+                dSelect.addEventListener('change', syncDOMToCurrentSlot);
+            }
+            if (nameInput) {
+                nameInput.addEventListener('input', () => {
+                    syncDOMToCurrentSlot();
+                    const targetTabBtn = profileTabsContainer.children[currentEditingSlot];
+                    if (targetTabBtn) {
+                        const pData = profilesData[currentEditingSlot];
+                        const rightIcon = currentEditingSlot === 0 ? `<span class="w-1.5 h-1.5 rounded-full bg-amber-400/80 inline-block ml-1"></span>` : `<button type="button" onclick="handleToggleProfile(${currentEditingSlot}, event)" class="slot-toggle ml-1.5 text-[10px] hover:text-rose-400 transition-colors" title="Remove Profile"><i class="fa-solid fa-xmark"></i></button>`;
+                        targetTabBtn.innerHTML = `<span>${pData.name || `Profile ${currentEditingSlot + 1}`}</span>${rightIcon}`;
+                    }
+                });
+            }
+        }
+
+        function toggleShadowView(containerId, indicatorArrowId) {
+            const targetContainer = document.getElementById(containerId);
+            const arrowIcon = document.getElementById(indicatorArrowId);
+            if (targetContainer && arrowIcon) {
+                if (targetContainer.classList.contains('hidden')) {
+                    targetContainer.classList.remove('hidden');
+                    arrowIcon.style.transform = 'rotate(180deg)';
+                } else {
+                    targetContainer.classList.add('hidden');
+                    arrowIcon.style.transform = 'rotate(0deg)';
+                }
+            }
+        }
+
+        calcButton.addEventListener('click', () => {
+            syncDOMToCurrentSlot();
+            noticeBox.classList.add('hidden');
+
+            profilesData[0].active = true;
+
+            const activeProfilesList = profilesData.filter(item => item.active && !isNaN(item.year) && item.year >= 1920 && item.year <= 2100);
+
+            if (activeProfilesList.length === 0) {
+                noticeBox.textContent = "Please enter valid birth dates between 1920 and 2100.";
+                noticeBox.classList.remove('hidden');
+                return;
+            }
+
+            resultsGrid.innerHTML = '';
+            activeCountLabel.textContent = `${activeProfilesList.length} profile${activeProfilesList.length > 1 ? 's' : ''} analyzed`;
+
+            const fullyComputedProfiles = activeProfilesList.map(profileEntry => {
+                return {
+                    ...profileEntry,
+                    western: resolveWesternZodiac(profileEntry.month, profileEntry.day),
+                    chinese: computePreciseChineseZodiac(profileEntry.year)
+                };
+            });
+
+            if (fullyComputedProfiles.length > 1) {
+                matrixGrid.innerHTML = '';
+                for (let i = 0; i < fullyComputedProfiles.length; i++) {
+                    for (let j = i + 1; j < fullyComputedProfiles.length; j++) {
+                        const firstPerson = fullyComputedProfiles[i];
+                        const secondPerson = fullyComputedProfiles[j];
+
+                        const w1 = firstPerson.western;
+                        const w2 = secondPerson.western;
+                        let wSynergyLabel = "Balanced Dynamic";
+                        let wSynergyText = "An interesting pairing of energies that thrives on mutual curiosity and open communication.";
+                        if (w1.friend.includes(w2.name) || w2.friend.includes(w1.name) || w1.partner.includes(w2.name) || w2.partner.includes(w1.name)) {
+                            wSynergyLabel = "High Astrological Harmony";
+                            wSynergyText = `${firstPerson.name}'s ${w1.name} and ${secondPerson.name}'s ${w2.name} share natural elemental alignment, fostering deep trust and immediate affinity.`;
+                        }
+
+                        const c1 = firstPerson.chinese;
+                        const c2 = secondPerson.chinese;
+                        let cSynergyLabel = "Complementary Flow";
+                        let cSynergyText = "Balances contrasting traits nicely with patience and shared goals.";
+                        if (c1.friend.includes(c2.animalOnly) || c2.friend.includes(c1.animalOnly) || c1.partner.includes(c2.animalOnly) || c2.partner.includes(c1.animalOnly)) {
+                            cSynergyLabel = "Trine & Ally Bond";
+                            cSynergyText = `${firstPerson.name}'s ${c1.name} and ${secondPerson.name}'s ${c2.name} form an auspicious Chinese zodiac alliance, offering supreme mutual support and enduring loyalty.`;
+                        }
+
+                        const cardSnippet = `
+                            <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800/80 space-y-2">
+                                <div class="flex items-center justify-between text-xs font-semibold text-white">
+                                    <span class="text-amber-400">${firstPerson.name} <span class="text-slate-500 font-normal">&</span> ${secondPerson.name}</span>
+                                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20">${wSynergyLabel}</span>
+                                </div>
+                                <p class="text-xs text-slate-300/90 font-light leading-relaxed">
+                                    <strong class="text-white font-medium">Western:</strong> ${wSynergyText}
+                                </p>
+                                <p class="text-xs text-slate-300/90 font-light leading-relaxed">
+                                    <strong class="text-white font-medium">Chinese:</strong> ${cSynergyText}
+                                </p>
+                            </div>
+                        `;
+                        matrixGrid.innerHTML += cardSnippet;
+                    }
+                }
+                matrixSection.classList.remove('hidden');
+            } else {
+                matrixSection.classList.add('hidden');
+            }
+
+            fullyComputedProfiles.forEach((profileItem, idxCounter) => {
+                const wSign = profileItem.western;
+                const cSign = profileItem.chinese;
+
+                const profileCardMarkup = `
+                    <div class="nebula-glass rounded-3xl p-5 md:p-6 space-y-4 shadow-xl border border-slate-800/80 flex flex-col justify-between">
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                                <div>
+                                    <span class="text-[10px] uppercase tracking-widest text-amber-400 font-semibold">Profile</span>
+                                    <h3 class="text-base font-bold text-white">${profileItem.name}</h3>
+                                </div>
+                                <span class="text-xs text-slate-400 font-medium">${profileItem.month}/${profileItem.day}/${profileItem.year}</span>
+                            </div>
+
+                            <div class="space-y-2.5 pt-1">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-2.5">
+                                        <div class="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-sm">
+                                            <i class="fa-solid ${wSign.icon}"></i>
+                                        </div>
+                                        <div>
+                                            <span class="text-[9px] uppercase tracking-widest text-slate-400 font-semibold">Western Zodiac</span>
+                                            <h4 class="text-sm font-bold text-white">${wSign.name}</h4>
+                                        </div>
+                                    </div>
+                                    <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-slate-900 border border-slate-800 text-slate-300 font-medium">${wSign.element}</span>
+                                </div>
+                                <p class="text-xs text-slate-300/90 leading-relaxed font-light">${wSign.desc}</p>
+                                
+                                <div class="grid grid-cols-2 gap-2 pt-1">
+                                    <div class="p-2.5 rounded-2xl bg-emerald-950/20 border border-emerald-500/20">
+                                        <span class="block text-[9px] uppercase tracking-wider text-emerald-400 font-semibold mb-1"><i class="fa-solid fa-check mr-0.5"></i> Strengths</span>
+                                        <div class="flex flex-wrap gap-1">${wSign.strengths.map(sItem => `<span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-300 font-medium">${sItem}</span>`).join('')}</div>
+                                    </div>
+                                    <div class="p-2.5 rounded-2xl bg-rose-950/20 border border-rose-500/20">
+                                        <span class="block text-[9px] uppercase tracking-wider text-rose-400 font-semibold mb-1"><i class="fa-solid fa-xmark mr-0.5"></i> Weaknesses</span>
+                                        <div class="flex flex-wrap gap-1">${wSign.weaknesses.map(wItem => `<span class="text-[9px] px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-300 font-medium">${wItem}</span>`).join('')}</div>
+                                    </div>
+                                </div>
+
+                                <div class="pt-1 text-[11px] space-y-1">
+                                    <div class="flex justify-between"><span class="text-slate-400">Best Friend:</span> <span class="font-medium text-white text-right">${wSign.friend.join(', ')}</span></div>
+                                    <div class="flex justify-between"><span class="text-slate-400">Partner Match:</span> <span class="font-medium text-white text-right">${wSign.partner.join(', ')}</span></div>
+                                </div>
+
+                                <div class="pt-1">
+                                    <button type="button" onclick="toggleShadowView('w-shadow-${idxCounter}', 'w-arr-${idxCounter}')" class="w-full flex items-center justify-between text-[11px] text-rose-400/80 hover:text-rose-400 font-medium py-1 transition-colors group">
+                                        <span class="flex items-center space-x-1.5">
+                                            <i class="fa-solid fa-skull text-[9px]"></i>
+                                            <span>See the dark side</span>
+                                        </span>
+                                        <i id="w-arr-${idxCounter}" class="fa-solid fa-chevron-down text-[9px] transition-transform group-hover:translate-y-0.5"></i>
+                                    </button>
+                                    <div id="w-shadow-${idxCounter}" class="hidden mt-2 p-3 rounded-2xl bg-rose-950/30 border border-rose-500/25 text-rose-200/90 text-xs leading-relaxed font-light">${wSign.darkSide}</div>
+                                </div>
+                            </div>
+
+                            <hr class="border-slate-800/80 my-2">
+
+                            <div class="space-y-2.5">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-2.5">
+                                        <div class="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-sm">
+                                            <i class="fa-solid ${cSign.icon}"></i>
+                                        </div>
+                                        <div>
+                                            <span class="text-[9px] uppercase tracking-widest text-slate-400 font-semibold">Chinese Zodiac</span>
+                                            <h4 class="text-sm font-bold text-white">${cSign.name}</h4>
+                                        </div>
+                                    </div>
+                                    <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-slate-900 border border-slate-800 text-slate-300 font-medium">${cSign.element}</span>
+                                </div>
+                                <p class="text-xs text-slate-300/90 leading-relaxed font-light">${cSign.desc}</p>
+                                
+                                <div class="grid grid-cols-2 gap-2 pt-1">
+                                    <div class="p-2.5 rounded-2xl bg-emerald-950/20 border border-emerald-500/20">
+                                        <span class="block text-[9px] uppercase tracking-wider text-emerald-400 font-semibold mb-1"><i class="fa-solid fa-check mr-0.5"></i> Strengths</span>
+                                        <div class="flex flex-wrap gap-1">${cSign.strengths.map(sItem => `<span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-300 font-medium">${sItem}</span>`).join('')}</div>
+                                    </div>
+                                    <div class="p-2.5 rounded-2xl bg-rose-950/20 border border-rose-500/20">
+                                        <span class="block text-[9px] uppercase tracking-wider text-rose-400 font-semibold mb-1"><i class="fa-solid fa-xmark mr-0.5"></i> Weaknesses</span>
+                                        <div class="flex flex-wrap gap-1">${cSign.weaknesses.map(wItem => `<span class="text-[9px] px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-300 font-medium">${wItem}</span>`).join('')}</div>
+                                    </div>
+                                </div>
+
+                                <div class="pt-1 text-[11px] space-y-1">
+                                    <div class="flex justify-between"><span class="text-slate-400">Best Friend:</span> <span class="font-medium text-white text-right">${cSign.friend.join(', ')}</span></div>
+                                    <div class="flex justify-between"><span class="text-slate-400">Partner Match:</span> <span class="font-medium text-white text-right">${cSign.partner.join(', ')}</span></div>
+                                </div>
+
+                                <div class="pt-1">
+                                    <button type="button" onclick="toggleShadowView('c-shadow-${idxCounter}', 'c-arr-${idxCounter}')" class="w-full flex items-center justify-between text-[11px] text-rose-400/80 hover:text-rose-400 font-medium py-1 transition-colors group">
+                                        <span class="flex items-center space-x-1.5">
+                                            <i class="fa-solid fa-skull text-[9px]"></i>
+                                            <span>See the dark side</span>
+                                        </span>
+                                        <i id="c-arr-${idxCounter}" class="fa-solid fa-chevron-down text-[9px] transition-transform group-hover:translate-y-0.5"></i>
+                                    </button>
+                                    <div id="c-shadow-${idxCounter}" class="hidden mt-2 p-3 rounded-2xl bg-rose-950/30 border border-rose-500/25 text-rose-200/90 text-xs leading-relaxed font-light">${cSign.darkSide}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                resultsGrid.innerHTML += profileCardMarkup;
+            });
+
+            outputSection.classList.remove('hidden');
+            outputSection.scrollIntoView({ behavior: 'smooth' });
+        });
+
+        clearButton.addEventListener('click', () => {
+            profilesData = [
+                { id: 0, active: true, name: "Name", month: 1, day: 1, year: 1995 },
+                { id: 1, active: false, name: "Profile 2", month: 6, day: 15, year: 1993 },
+                { id: 2, active: false, name: "Profile 3", month: 9, day: 22, year: 1990 },
+                { id: 3, active: false, name: "Profile 4", month: 11, day: 8, year: 1988 }
+            ];
+            currentEditingSlot = 0;
+            renderProfileTabs();
+            outputSection.classList.add('hidden');
+            noticeBox.classList.add('hidden');
+            matrixSection.classList.add('hidden');
+        });
+
+        renderProfileTabs();
+    </script>
+</body>
+</html>
