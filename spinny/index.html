@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Wheel Spin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    textarea {
+      user-select: text;
+    }
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #0f172a;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    /* Pointer indicator shake effect */
+    .ticker-shake {
+      animation: tickBump 0.08s ease-out;
+      transform-origin: top center;
+    }
+    @keyframes tickBump {
+      0% { transform: rotate(0deg); }
+      50% { transform: rotate(-18deg); }
+      100% { transform: rotate(0deg); }
+    }
+    /* Custom scrollbar for textarea */
+    textarea::-webkit-scrollbar {
+      width: 6px;
+    }
+    textarea::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body class="relative w-full h-full flex items-center justify-center bg-slate-950 text-white">
+
+  <!-- Fullscreen Wheel Canvas -->
+  <canvas id="wheelCanvas" class="absolute inset-0 w-full h-full cursor-pointer"></canvas>
+
+  <!-- Top Pointer Marker -->
+  <div id="pointerWrapper" class="absolute top-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none drop-shadow-xl transition-transform">
+    <svg class="w-10 h-12 text-amber-400 drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]" viewBox="0 0 24 30" fill="currentColor">
+      <path d="M12 30L2 6C1 4 2.5 1 5 1H19C21.5 1 23 4 22 6L12 30Z" stroke="#ffffff" stroke-width="2"/>
+    </svg>
+  </div>
+
+  <!-- Center Spin Button -->
+  <button id="spinBtn" class="absolute z-20 w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-tr from-rose-600 to-amber-500 text-white font-extrabold text-lg sm:text-xl tracking-wider shadow-2xl border-4 border-slate-900 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform duration-150 focus:outline-none">
+    SPIN
+  </button>
+
+  <!-- Toggle Sidebar Panel Button -->
+  <button id="togglePanelBtn" class="absolute bottom-6 left-6 z-30 flex items-center justify-center w-12 h-12 rounded-full bg-slate-800/80 hover:bg-slate-700/90 text-white backdrop-blur-md shadow-lg border border-slate-700 transition-all focus:outline-none" aria-label="Toggle Options">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+    </svg>
+  </button>
+
+  <!-- Options Panel (Drawer / Modal overlay) -->
+  <div id="optionsDrawer" class="absolute inset-y-0 left-0 z-40 w-full sm:w-96 bg-slate-900/95 backdrop-blur-xl border-r border-slate-800 flex flex-col p-6 shadow-2xl transition-transform duration-300 ease-in-out -translate-x-full">
+    <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+      <span class="text-sm font-semibold uppercase tracking-wider text-slate-400">Items (1 per line)</span>
+      <button id="closePanelBtn" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 focus:outline-none transition">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="flex-1 flex flex-col my-4">
+      <textarea id="itemsInput" class="w-full flex-1 p-4 bg-slate-950/70 text-slate-100 border border-slate-800 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none resize-none font-mono text-sm leading-relaxed" placeholder="Type items here, one per line..."></textarea>
+    </div>
+
+    <div class="flex gap-2">
+      <button id="shuffleBtn" class="flex-1 py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm font-medium transition">
+        Shuffle
+      </button>
+      <button id="clearBtn" class="py-2.5 px-4 rounded-xl bg-rose-950/50 hover:bg-rose-900/60 text-rose-300 text-sm font-medium transition">
+        Clear
+      </button>
+    </div>
+  </div>
+
+  <!-- Winner Modal -->
+  <div id="winnerModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="w-full max-w-sm rounded-3xl bg-slate-900 border border-slate-800 p-8 shadow-2xl text-center flex flex-col items-center transform scale-90 transition-transform duration-300" id="winnerModalContent">
+      <div class="w-16 h-16 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center mb-4">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+        </svg>
+      </div>
+      <h2 class="text-sm font-bold tracking-widest text-slate-400 uppercase mb-2">Selected Result</h2>
+      <div id="winnerText" class="text-2xl sm:text-3xl font-extrabold text-white break-words max-w-full my-4">--</div>
+      <div class="flex gap-3 w-full mt-2">
+        <button id="closeModalBtn" class="flex-1 py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold transition">
+          Done
+        </button>
+        <button id="spinAgainBtn" class="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white font-semibold transition">
+          Spin Again
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Audio synthesis context for click & victory sounds
+    let audioCtx = null;
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playTickSound() {
+      try {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(650 + Math.random() * 150, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.04);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.04);
+      } catch (e) {
+        // Audio policy ignore
+      }
+    }
+
+    function playWinSound() {
+      try {
+        if (!audioCtx) return;
+        const chords = [523.25, 659.25, 783.99, 1046.50]; // C Major arpeggio
+        chords.forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.08);
+          gain.gain.setValueAtTime(0.15, audioCtx.currentTime + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.08 + 0.5);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(audioCtx.currentTime + idx * 0.08);
+          osc.stop(audioCtx.currentTime + idx * 0.08 + 0.5);
+        });
+      } catch (e) {}
+    }
+
+    // Modern color palette for wheel segments
+    const PALETTE = [
+      '#EF4444', '#F97316', '#F59E0B', '#10B981', 
+      '#06B6D4', '#3B82F6', '#6366F1', '#8B5CF6', 
+      '#EC4899', '#14B8A6', '#84CC16', '#D946EF'
+    ];
+
+    // State Variables
+    let items = [
+      "Straight",
+      "Gay or Lesbian",
+      "Bisexual",
+      "Pansexual",
+      "Asexual",
+      "Demisexual",
+      "Graysexual ",
+      "Cupiosexual",
+      "Abrosexual",
+      "Polysexual",
+      "Omnisexual",
+      "Androsexual",
+      "Gynosexual",
+      "Skoliosexual",
+      "Queer",
+      "Questioning",
+      "Heteroflexible",
+      "Homoflexible",
+      "Sapiosexual",
+      "Lithsexual",
+      "Fraysexual",
+      "Reciprosexual",
+      "Autochorissexual",
+      "Aegosexual",
+      "Aliquasexual",
+      "Aroflux",
+      "Arospike",
+      "Aromantic"
+    ];
+
+    let currentAngle = 0;       // Wheel current angle in radians
+    let angularVelocity = 0;   // Current angular velocity
+    let isSpinning = false;
+    let lastSegmentIndex = -1;
+
+    // DOM Elements
+    const canvas = document.getElementById('wheelCanvas');
+    const ctx = canvas.getContext('2d');
+    const spinBtn = document.getElementById('spinBtn');
+    const itemsInput = document.getElementById('itemsInput');
+    const optionsDrawer = document.getElementById('optionsDrawer');
+    const togglePanelBtn = document.getElementById('togglePanelBtn');
+    const closePanelBtn = document.getElementById('closePanelBtn');
+    const shuffleBtn = document.getElementById('shuffleBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const winnerModal = document.getElementById('winnerModal');
+    const winnerModalContent = document.getElementById('winnerModalContent');
+    const winnerText = document.getElementById('winnerText');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const spinAgainBtn = document.getElementById('spinAgainBtn');
+    const pointerWrapper = document.getElementById('pointerWrapper');
+
+    // Populate initial text
+    itemsInput.value = items.join('\n');
+
+    // Responsive Canvas Resizing
+    let centerX = 0;
+    let centerY = 0;
+    let wheelRadius = 0;
+
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.scale(dpr, dpr);
+
+      centerX = width / 2;
+      centerY = height / 2;
+      // Fit comfortably within the viewport
+      wheelRadius = Math.min(width, height) * 0.44;
+      drawWheel();
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
+    // Textarea handling
+    itemsInput.addEventListener('input', () => {
+      const parsed = itemsInput.value
+        .split('\n')
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+      items = parsed.length > 0 ? parsed : ["Empty"];
+      drawWheel();
+    });
+
+    // Panel Toggles
+    function openDrawer() {
+      optionsDrawer.classList.remove('-translate-x-full');
+    }
+    function closeDrawer() {
+      optionsDrawer.classList.add('-translate-x-full');
+    }
+    togglePanelBtn.addEventListener('click', openDrawer);
+    closePanelBtn.addEventListener('click', closeDrawer);
+
+    // Shuffle & Clear
+    shuffleBtn.addEventListener('click', () => {
+      for (let i = items.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [items[i], items[j]] = [items[j], items[i]];
+      }
+      itemsInput.value = items.join('\n');
+      drawWheel();
+    });
+
+    clearBtn.addEventListener('click', () => {
+      itemsInput.value = '';
+      items = ["Type options..."];
+      drawWheel();
+    });
+
+    // Winner Modal Handling
+    function showWinner(item) {
+      winnerText.textContent = item;
+      winnerModal.classList.remove('opacity-0', 'pointer-events-none');
+      winnerModalContent.classList.remove('scale-90');
+      winnerModalContent.classList.add('scale-100');
+      playWinSound();
+    }
+
+    function hideWinner() {
+      winnerModal.classList.add('opacity-0', 'pointer-events-none');
+      winnerModalContent.classList.remove('scale-100');
+      winnerModalContent.classList.add('scale-90');
+    }
+
+    closeModalBtn.addEventListener('click', hideWinner);
+    spinAgainBtn.addEventListener('click', () => {
+      hideWinner();
+      startSpin();
+    });
+
+    // Drawing Routine
+    function drawWheel() {
+      const count = items.length;
+      const step = (Math.PI * 2) / count;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate(currentAngle);
+
+      // Draw slices
+      for (let i = 0; i < count; i++) {
+        const startRad = i * step;
+        const endRad = startRad + step;
+        const color = PALETTE[i % PALETTE.length];
+
+        // Slice path
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, wheelRadius, startRad, endRad);
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.fill();
+
+        // Edge separator
+        ctx.strokeStyle = 'rgba(15, 23, 42, 0.4)';
+        ctx.lineWidth = Math.max(1.5, wheelRadius * 0.008);
+        ctx.stroke();
+
+        // Label text rendering
+        ctx.save();
+        ctx.rotate(startRad + step / 2);
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#FFFFFF';
+        
+        // Dynamic font sizing based on wheel scale & segment count
+        const fontSize = Math.max(12, Math.min(wheelRadius * 0.09, 280 / count));
+        ctx.font = `600 ${fontSize}px -apple-system, sans-serif`;
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+        ctx.shadowBlur = 4;
+
+        // Truncate text if segment width is too small
+        const text = items[i];
+        const maxTextWidth = wheelRadius * 0.72;
+        let displayText = text;
+        if (ctx.measureText(displayText).width > maxTextWidth) {
+          while (ctx.measureText(displayText + '...').width > maxTextWidth && displayText.length > 0) {
+            displayText = displayText.slice(0, -1);
+          }
+          displayText += '...';
+        }
+
+        ctx.fillText(displayText, wheelRadius * 0.88, 0);
+        ctx.restore();
+      }
+
+      // Outer Rim Glow & Border
+      ctx.beginPath();
+      ctx.arc(0, 0, wheelRadius, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.lineWidth = 8;
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    // Pointer Ticker Trigger Check
+    function checkTicker() {
+      const count = items.length;
+      const step = (Math.PI * 2) / count;
+
+      // Pointer is located at top: -PI/2
+      // Calculate active index at top relative to wheel rotation
+      const pointerAngle = (3 * Math.PI / 2);
+      const normalizedAngle = (pointerAngle - currentAngle) % (Math.PI * 2);
+      const positiveAngle = normalizedAngle < 0 ? normalizedAngle + Math.PI * 2 : normalizedAngle;
+      const currentIndex = Math.floor(positiveAngle / step) % count;
+
+      if (currentIndex !== lastSegmentIndex) {
+        lastSegmentIndex = currentIndex;
+        playTickSound();
+        pointerWrapper.classList.remove('ticker-shake');
+        void pointerWrapper.offsetWidth; // Force CSS reflow
+        pointerWrapper.classList.add('ticker-shake');
+      }
+      return currentIndex;
+    }
+
+    // Physics Animation Loop
+    let friction = 0.988;
+
+    function animate() {
+      if (!isSpinning) return;
+
+      currentAngle += angularVelocity;
+      currentAngle %= (Math.PI * 2);
+
+      // Decelerate
+      angularVelocity *= friction;
+
+      checkTicker();
+      drawWheel();
+
+      // Stop condition
+      if (angularVelocity < 0.0015) {
+        isSpinning = false;
+        angularVelocity = 0;
+        const winnerIndex = checkTicker();
+        setTimeout(() => {
+          showWinner(items[winnerIndex]);
+        }, 200);
+      } else {
+        requestAnimationFrame(animate);
+      }
+    }
+
+    function startSpin() {
+      if (isSpinning) return;
+      initAudio();
+      hideWinner();
+      closeDrawer();
+
+      // Give a random forceful initial speed
+      angularVelocity = 0.28 + Math.random() * 0.22;
+      // Slight variation in friction for suspense
+      friction = 0.985 + Math.random() * 0.004;
+      isSpinning = true;
+      requestAnimationFrame(animate);
+    }
+
+    // Spin triggers
+    spinBtn.addEventListener('click', startSpin);
+    canvas.addEventListener('click', (e) => {
+      // Allow tapping wheel background to spin if not clicking center
+      if (!isSpinning) startSpin();
+    });
+
+    // Initialize layout
+    window.onload = () => {
+      resizeCanvas();
+    };
+  </script>
+</body>
+</html>
