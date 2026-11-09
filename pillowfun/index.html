@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pillow Drop: The Ultimate Fluff</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: radial-gradient(circle at center, #3b0764 0%, #180532 100%);
+            color: #f3e8ff;
+            font-family: system-ui, -apple-system, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            user-select: none;
+            touch-action: manipulation;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .header h1 {
+            font-size: 1.65rem;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+            color: #ec4899;
+            text-shadow: 0 0 15px rgba(236, 72, 153, 0.4);
+        }
+        .header p {
+            font-size: 0.75rem;
+            color: #d8b4fe;
+            margin-top: 2px;
+        }
+        .stage-wrapper {
+            position: relative;
+            border: 4px solid rgba(147, 51, 234, 0.5);
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 0 35px rgba(88, 28, 135, 0.5);
+            background: linear-gradient(to bottom, #1e1b4b, #2e1065, #4c0519);
+        }
+        canvas {
+            display: block;
+            cursor: pointer;
+        }
+        .hud {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            right: 16px;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+            font-size: 0.875rem;
+            font-weight: 700;
+            z-index: 10;
+        }
+        .hud-badge {
+            background: rgba(59, 7, 100, 0.85);
+            padding: 6px 14px;
+            border-radius: 9999px;
+            border: 1px solid rgba(236, 72, 153, 0.3);
+            color: #f472b6;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            backdrop-filter: blur(4px);
+        }
+        .modal {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.82);
+            backdrop-filter: blur(5px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal h2 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #f43f5e;
+            text-shadow: 0 0 20px rgba(244, 63, 94, 0.6);
+            margin-bottom: 4px;
+        }
+        .modal p {
+            color: #e9d5ff;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+        .modal .score-display {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #f472b6;
+            margin-bottom: 20px;
+        }
+        .btn-action {
+            background: linear-gradient(135deg, #e11d48 0%, #9333ea 100%);
+            color: #ffffff;
+            font-weight: 700;
+            padding: 10px 24px;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(244, 114, 182, 0.4);
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(147, 51, 234, 0.4);
+            transition: transform 0.15s ease, filter 0.15s ease;
+        }
+        .btn-action:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+        .footer-hint {
+            margin-top: 10px;
+            font-size: 0.7rem;
+            color: rgba(216, 180, 254, 0.7);
+        }
+        .footer-hint kbd {
+            background: rgba(76, 29, 149, 0.8);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(147, 51, 234, 0.6);
+            color: #f472b6;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>PILLOW DROP: THE ULTIMATE FLUFF</h1>
+        <p>Tap or Click to drop soft feather bed pillows! Stack carefully!</p>
+    </div>
+
+    <div class="stage-wrapper">
+        <canvas id="stage" width="400" height="600"></canvas>
+        
+        <div class="hud">
+            <div class="hud-badge">Height: <span id="heightMeter">0</span> cm</div>
+        </div>
+
+        <div id="endModal" class="modal">
+            <h2>COLLAPSE!</h2>
+            <p>Your feather bed tower tipped over!</p>
+            <div class="score-display">Final Height: <span id="finalHeight">0</span> cm</div>
+            <button class="btn-action" id="retryBtn">Fluff Again</button>
+        </div>
+    </div>
+
+    <div class="footer-hint">
+        Controls: <kbd>Click / Tap Screen</kbd> or <kbd>Spacebar</kbd> to Drop
+    </div>
+
+<script>
+    const elCanvas = document.getElementById('stage');
+    const ctx = elCanvas.getContext('2d');
+    const elHeight = document.getElementById('heightMeter');
+    const elFinal = document.getElementById('finalHeight');
+    const elModal = document.getElementById('endModal');
+    const elRetry = document.getElementById('retryBtn');
+
+    let audioCtx = null;
+    function playTone(type) {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        const t = audioCtx.currentTime;
+
+        if (type === 'drop') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(320, t);
+            osc.frequency.exponentialRampToValueAtTime(120, t + 0.15);
+            gain.gain.setValueAtTime(0.08, t);
+            gain.gain.linearRampToValueAtTime(0.001, t + 0.15);
+            osc.start(t);
+            osc.stop(t + 0.15);
+        } else if (type === 'land') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(180, t);
+            osc.frequency.exponentialRampToValueAtTime(50, t + 0.2);
+            gain.gain.setValueAtTime(0.15, t);
+            gain.gain.linearRampToValueAtTime(0.001, t + 0.2);
+            osc.start(t);
+            osc.stop(t + 0.2);
+        }
+    }
+
+    let active = true;
+    let tumbling = false;
+    let score = 0;
+    let camY = 0;
+    let targetCamY = 0;
+    let camZoom = 1;
+    let targetZoom = 1;
+    let slideTheta = 0;
+
+    let tower = [];
+    let activePillow = null;
+    let FX = [];
+
+    const STYLES = [
+        { w: 95, h: 42, fill: '#e11d48', shadow: '#881337' },
+        { w: 125, h: 38, fill: '#9333ea', shadow: '#581c87' },
+        { w: 75, h: 52, fill: '#f43f5e', shadow: '#9f1239' },
+        { w: 105, h: 46, fill: '#7c3aed', shadow: '#4c1d95' }
+    ];
+
+    class Sparkle {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            this.vx = (Math.random() - 0.5) * 3;
+            this.vy = (Math.random() - 0.8) * -2 - 0.5;
+            this.r = Math.random() * 5 + 3;
+            this.alpha = 1.0;
+            this.decay = Math.random() * 0.02 + 0.015;
+            this.theta = Math.random() * Math.PI * 2;
+            this.spin = Math.random() * 0.1 + 0.05;
+        }
+        step() {
+            this.theta += this.spin;
+            this.x += this.vx + Math.sin(this.theta) * 0.8;
+            this.y += this.vy;
+            this.vy += 0.03;
+            this.alpha -= this.decay;
+        }
+        paint() {
+            ctx.save();
+            ctx.fillStyle = '#fbcfe8';
+            ctx.globalAlpha = Math.max(0, this.alpha);
+            ctx.beginPath();
+            ctx.ellipse(this.x, this.y, this.r, this.r * 0.6, this.theta, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+    }
+
+    class Pillow {
+        constructor(x, y, data) {
+            this.x = x;
+            this.y = y;
+            this.w = data.w;
+            this.h = data.h;
+            this.fill = data.fill;
+            this.shadow = data.shadow;
+            this.vx = 0;
+            this.vy = 0;
+            this.rot = 0;
+            this.spin = 0;
+            this.dropped = false;
+            this.sx = 1;
+            this.sy = 1;
+            this.dir = 1;
+        }
+
+        tickSlider() {
+            slideTheta += 0.04;
+            this.x = elCanvas.width / 2 + Math.sin(slideTheta) * 120;
+        }
+
+        tickFall() {
+            this.vy += 0.22;
+            this.y += this.vy;
+            this.x += this.vx;
+            this.rot += this.spin;
+
+            this.sx += (1 - this.sx) * 0.1;
+            this.sy += (1 - this.sy) * 0.1;
+
+            if (this.x - this.w / 2 < 15) {
+                this.x = 15 + this.w / 2;
+                this.vx *= -0.2;
+            }
+            if (this.x + this.w / 2 > elCanvas.width - 15) {
+                this.x = elCanvas.width - 15 - this.w / 2;
+                this.vx *= -0.2;
+            }
+
+            const floor = 525;
+            for (let item of tower) {
+                if (item !== this && Math.abs(this.x - item.x) < (this.w + item.w) / 2 * 0.85) {
+                    const topEdge = item.y - item.h / 2 - this.h / 2 + 8;
+                    if (this.y >= topEdge && this.y - this.vy <= topEdge + 18) {
+                        this.y = topEdge;
+                        if (!tumbling) {
+                            this.land(item);
+                            return;
+                        } else {
+                            this.vy *= -0.15;
+                        }
+                    }
+                }
+            }
+
+            if (this.y >= floor - this.h / 2) {
+                this.y = floor - this.h / 2;
+                if (!tumbling) {
+                    this.land(null);
+                } else {
+                    this.vy = 0;
+                    this.vx *= 0.8;
+                }
+            }
+
+            if (!tumbling && this.y > elCanvas.height + 150) {
+                triggerGameOver();
+            }
+        }
+
+        land(base) {
+            this.dropped = false;
+            this.vy = 0;
+            this.vx = 0;
+            this.sx = 1.4;
+            this.sy = 0.6;
+            playTone('land');
+
+            for (let i = 0; i < 16; i++) {
+                FX.push(new Sparkle(this.x + (Math.random() - 0.5) * this.w, this.y));
+            }
+
+            if (base) {
+                const shift = (this.x - base.x) / base.w;
+                const lean = Math.abs(shift) < 0.08 ? 0 : shift * 0.5;
+                this.rot = base.rot + lean;
+                base.sy = 0.8;
+                base.sx = 1.15;
+            } else {
+                this.rot = 0;
+            }
+
+            tower.push(this);
+
+            const stackTop = 525 - (this.y - this.h / 2);
+            if (stackTop > score * 10) {
+                score++;
+                elHeight.innerText = score * 10;
+            }
+
+            let minY = 525;
+            for (let item of tower) {
+                if (item.y - item.h / 2 < minY) minY = item.y - item.h / 2;
+            }
+            targetCamY = Math.max(0, 525 - minY - 250);
+
+            nextPillow();
+        }
+
+        paint() {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.rot);
+            ctx.scale(this.sx, this.sy);
+
+            ctx.shadowColor = this.shadow;
+            ctx.shadowBlur = 15;
+            ctx.shadowOffsetY = 6;
+
+            const grad = ctx.createLinearGradient(0, -this.h / 2, 0, this.h / 2);
+            grad.addColorStop(0, this.fill);
+            grad.addColorStop(1, this.shadow);
+            
+            ctx.fillStyle = grad;
+            drawRoundedRect(ctx, -this.w / 2, -this.h / 2, this.w, this.h, 22);
+            ctx.fill();
+
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetY = 0;
+
+            ctx.strokeStyle = 'rgba(255, 228, 230, 0.45)';
+            ctx.lineWidth = 2.5;
+            ctx.setLineDash([6, 4]);
+            drawRoundedRect(ctx, -this.w / 2 + 6, -this.h / 2 + 6, this.w - 12, this.h - 12, 16);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+            ctx.beginPath();
+            ctx.arc(0, 0, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+    }
+
+    function drawRoundedRect(c, x, y, w, h, r) {
+        c.beginPath();
+        c.moveTo(x + r, y);
+        c.lineTo(x + w - r, y);
+        c.quadraticCurveTo(x + w, y, x + w, y + r);
+        c.lineTo(x + w, y + h - r);
+        c.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        c.lineTo(x + r, y + h);
+        c.quadraticCurveTo(x, y + h, x, y + h - r);
+        c.lineTo(x, y + r);
+        c.quadraticCurveTo(x, y, x + r, y);
+        c.closePath();
+    }
+
+    function nextPillow() {
+        const type = STYLES[Math.floor(Math.random() * STYLES.length)];
+        activePillow = new Pillow(elCanvas.width / 2, 70 - camY, type);
+    }
+
+    function releasePillow() {
+        playTone('drop');
+        if (activePillow && !activePillow.dropped && active && !tumbling) {
+            activePillow.vx = 0;
+            activePillow.dropped = true;
+        }
+    }
+
+    function resetSession() {
+        active = true;
+        tumbling = false;
+        score = 0;
+        camY = 0;
+        targetCamY = 0;
+        camZoom = 1;
+        targetZoom = 1;
+        slideTheta = 0;
+        tower = [];
+        FX = [];
+        elHeight.innerText = '0';
+        elModal.classList.remove('active');
+        nextPillow();
+    }
+
+    function triggerGameOver() {
+        if (!active || tumbling) return;
+        tumbling = true;
+        activePillow = null;
+
+        for (let item of tower) {
+            item.dropped = true;
+            item.vy = -2 - Math.random() * 2;
+            item.vx = (Math.random() - 0.5) * 6;
+            item.spin = (Math.random() - 0.5) * 0.15;
+        }
+
+        setTimeout(() => {
+            active = false;
+            if (tower.length > 0) {
+                let high = tower[0], low = tower[0];
+                for (let item of tower) {
+                    if (item.y < high.y) high = item;
+                    if (item.y > low.y) low = item;
+                }
+                const span = (525 + low.h) - high.y;
+                if (span > 450) {
+                    targetZoom = Math.max(0.38, 450 / span);
+                    targetCamY = Math.max(0, (525 - high.y) / 2 - 100);
+                }
+            }
+            elFinal.innerText = score * 10;
+            elModal.classList.add('active');
+        }, 2200);
+    }
+
+    elCanvas.addEventListener('pointerdown', releasePillow);
+    window.addEventListener('keydown', e => {
+        if (e.code === 'Space' || e.code === 'ArrowDown' || e.code === 'KeyS') {
+            e.preventDefault();
+            releasePillow();
+        }
+    });
+    elRetry.addEventListener('click', e => {
+        e.stopPropagation();
+        resetSession();
+    });
+
+    function mainLoop() {
+        camY += (targetCamY - camY) * 0.08;
+        camZoom += (targetZoom - camZoom) * 0.08;
+
+        if (active && !tumbling && tower.length >= 3) {
+            for (let item of tower) {
+                if (Math.abs(item.rot) > 0.35) {
+                    triggerGameOver();
+                    break;
+                }
+            }
+        }
+
+        ctx.fillStyle = '#22093d';
+        ctx.fillRect(0, 0, elCanvas.width, elCanvas.height);
+
+        ctx.save();
+        ctx.translate(elCanvas.width / 2, elCanvas.height);
+        ctx.scale(camZoom, camZoom);
+        ctx.translate(-elCanvas.width / 2, -elCanvas.height);
+
+        ctx.save();
+        ctx.translate(0, camY);
+
+        ctx.fillStyle = 'rgba(219, 39, 119, 0.06)';
+        ctx.fillRect(15, -400, elCanvas.width - 30, 1200);
+
+        ctx.fillStyle = '#9f1239';
+        ctx.fillRect(15, 525, elCanvas.width - 30, 20);
+        ctx.fillStyle = '#f43f5e';
+        ctx.fillRect(15, 525, elCanvas.width - 30, 5);
+
+        if (active) {
+            for (let i = FX.length - 1; i >= 0; i--) {
+                FX[i].step();
+                FX[i].paint();
+                if (FX[i].alpha <= 0) FX.splice(i, 1);
+            }
+
+            for (let item of tower) {
+                if (tumbling) {
+                    item.tickFall();
+                    item.rot += item.spin || 0.02;
+                }
+                item.sx += (1 - item.sx) * 0.1;
+                item.sy += (1 - item.sy) * 0.1;
+                item.paint();
+            }
+
+            if (activePillow && !tumbling) {
+                if (!activePillow.dropped) {
+                    activePillow.y = 70 - camY;
+                    activePillow.tickSlider();
+                } else {
+                    activePillow.tickFall();
+                }
+                activePillow.paint();
+
+                if (!activePillow.dropped) {
+                    ctx.strokeStyle = 'rgba(244, 63, 94, 0.4)';
+                    ctx.setLineDash([5, 5]);
+                    ctx.beginPath();
+                    ctx.moveTo(activePillow.x, activePillow.y + activePillow.h / 2);
+                    ctx.lineTo(activePillow.x, 525);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+            }
+        } else {
+            for (let item of tower) {
+                item.paint();
+            }
+        }
+
+        ctx.restore();
+        ctx.restore();
+
+        requestAnimationFrame(mainLoop);
+    }
+
+    nextPillow();
+    requestAnimationFrame(mainLoop);
+</script>
+
+</body>
+</html>
