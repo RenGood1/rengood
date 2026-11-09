@@ -149,7 +149,7 @@
 
         <div id="endModal" class="modal">
             <h2>COLLAPSE!</h2>
-            <p>Your feather bed tower tipped over!</p>
+            <p>Your pillows couldn't handle the pressure!</p>
             <div class="score-display">Final Height: <span id="finalHeight">0</span> cm</div>
             <button class="btn-action" id="retryBtn">Fluff Again</button>
         </div>
@@ -260,7 +260,9 @@
             this.dropped = false;
             this.sx = 1;
             this.sy = 1;
-            this.dir = 1;
+            
+            // Hand opening animation progress (0 = gripping tightly, 1 = fully open & faded)
+            this.releaseProgress = 0;
         }
 
         tickSlider() {
@@ -269,6 +271,11 @@
         }
 
         tickFall() {
+            // Animate hands opening and sliding outward smoothly upon drop
+            if (this.dropped && this.releaseProgress < 1) {
+                this.releaseProgress += 0.08;
+            }
+
             this.vy += 0.22;
             this.y += this.vy;
             this.x += this.vx;
@@ -361,6 +368,31 @@
             ctx.translate(this.x, this.y);
             ctx.rotate(this.rot);
             ctx.scale(this.sx, this.sy);
+
+            // Draw opening hands while sliding or releasing
+            if (this.releaseProgress < 1) {
+                ctx.save();
+                ctx.fillStyle = '#fbcfe8';
+                ctx.strokeStyle = '#be123c';
+                ctx.lineWidth = 2;
+                ctx.globalAlpha = Math.max(0, 1 - this.releaseProgress);
+
+                const openOffset = this.releaseProgress * 30; // Hands slide outward smoothly
+
+                // Left Hand
+                ctx.beginPath();
+                ctx.arc(-this.w / 2 - 8 - openOffset, 0, 9, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Right Hand
+                ctx.beginPath();
+                ctx.arc(this.w / 2 + 8 + openOffset, 0, 9, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.restore();
+            }
 
             ctx.shadowColor = this.shadow;
             ctx.shadowBlur = 15;
