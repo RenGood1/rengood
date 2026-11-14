@@ -1,0 +1,1749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>The 1,000 Ring-Pop Rodeo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Rye&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            touch-action: none;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100dvh;
+            overflow: hidden;
+            overscroll-behavior: none;
+            font-family: 'Fredoka', sans-serif;
+            background: #2b0924;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+        .western-title {
+            font-family: 'Rye', 'Fredoka', serif;
+        }
+        .rodeo-card {
+            background: rgba(255, 250, 245, 0.94);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 4px solid #fff;
+            box-shadow: 0 16px 40px rgba(157, 23, 77, 0.35), inset 0 2px 8px rgba(255, 255, 255, 0.95);
+        }
+        .rodeo-btn {
+            background: linear-gradient(180deg, #ff5e9c 0%, #db2777 100%);
+            border: 3px solid #fff;
+            box-shadow: 0 6px 0 #831843, 0 12px 24px rgba(219, 39, 119, 0.45);
+            transition: transform 0.08s ease, box-shadow 0.08s ease;
+        }
+        .rodeo-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #831843, 0 4px 10px rgba(219, 39, 119, 0.45);
+        }
+        .hud-pill {
+            background: rgba(255, 255, 255, 0.92);
+            border: 2px solid #fff;
+            box-shadow: 0 4px 14px rgba(131, 24, 67, 0.22);
+        }
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        .animate-pulse-slow {
+            animation: pulseGlow 2.4s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="relative w-full h-[100dvh] overflow-hidden">
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="hud" class="absolute top-0 left-0 right-0 pt-2 px-2 sm:p-4 flex flex-col gap-1.5 pointer-events-none z-10">
+        <div class="flex flex-wrap sm:flex-nowrap items-center justify-between gap-1.5 sm:gap-2 max-w-5xl mx-auto w-full">
+            <div class="flex items-center gap-1.5 shrink-0 order-1">
+                <div class="hud-pill rounded-2xl px-2.5 py-1 sm:px-3.5 sm:py-2 flex flex-col items-start">
+                    <div id="heartsContainer" class="flex items-center gap-0.5 text-sm sm:text-base leading-none"></div>
+                    <div class="flex items-center gap-1.5 mt-1 w-full">
+                        <span class="text-[9px] font-extrabold uppercase tracking-wider text-rose-600">Waste</span>
+                        <div class="flex-1 h-1.5 bg-rose-100 rounded-full overflow-hidden border border-rose-200 min-w-[36px]">
+                            <div id="wasteBar" class="h-full bg-rose-500 transition-all duration-150" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hud-pill rounded-2xl px-2.5 py-1 sm:px-3.5 sm:py-2 flex items-center gap-1">
+                    <span class="text-sm sm:text-lg">🔥</span>
+                    <div>
+                        <div class="text-[8px] sm:text-[10px] font-bold uppercase tracking-wider text-amber-600 leading-none">Combo</div>
+                        <div id="comboDisplay" class="text-xs sm:text-lg font-extrabold text-pink-600 leading-tight">1x</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-1.5 pointer-events-auto shrink-0 order-2 sm:order-3">
+                <div class="hud-pill rounded-2xl px-2.5 py-1 sm:px-3 sm:py-1.5 text-center hidden md:block">
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-purple-500 leading-none">Time</div>
+                    <div id="timerDisplay" class="text-base font-extrabold text-purple-700 leading-tight">0:00</div>
+                </div>
+
+                <button id="muteBtn" aria-label="Toggle Sound" class="hud-pill w-9 h-9 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center text-pink-600 hover:bg-white active:scale-95 transition cursor-pointer">
+                    <svg id="soundOnIcon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                    </svg>
+                    <svg id="soundOffIcon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6 hidden text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="hud-pill rounded-2xl px-3 py-1 sm:px-4 sm:py-2 w-full sm:w-auto sm:flex-1 sm:max-w-md order-3 sm:order-2">
+                <div class="flex justify-between items-baseline mb-0.5 sm:mb-1">
+                    <span class="text-[10px] sm:text-xs font-extrabold uppercase tracking-wider text-pink-700 truncate">
+                        💍 <span id="waveBadge" class="text-amber-600">Wave 1</span> · Endless Rodeo
+                    </span>
+                    <span id="progressText" class="text-xs sm:text-base font-extrabold text-purple-700 ml-1">
+                        0 💍 · Best: 0
+                    </span>
+                </div>
+                <div class="w-full h-2 sm:h-3 bg-pink-100 rounded-full overflow-hidden border border-pink-300 p-0.5">
+                    <div id="progressBar" class="h-full rounded-full bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 transition-all duration-150" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="powerupBanner" class="hidden self-center px-3.5 py-0.5 sm:px-4 sm:py-1 rounded-full bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 text-white font-extrabold text-[11px] sm:text-sm tracking-wide shadow-lg border-2 border-white text-center">
+            🎸 ACOUSTIC ENCORE ACTIVE!
+        </div>
+    </div>
+
+    <div id="startModal" class="fixed inset-0 z-30 flex items-center justify-center p-3 sm:p-4 bg-pink-950/45 backdrop-blur-sm">
+        <div class="rodeo-card max-w-md w-full rounded-3xl p-5 sm:p-7 text-center animate-pulse-slow max-h-[92dvh] overflow-y-auto">
+            <div class="inline-block px-3 py-0.5 rounded-full bg-amber-100 text-amber-800 font-extrabold text-[11px] uppercase tracking-widest mb-1.5 border border-amber-300">
+                🤠 Endless Ring-Pop Rodeo 🎸
+            </div>
+            <h1 class="western-title text-2xl sm:text-3xl text-pink-600 mb-1.5 drop-shadow-sm leading-tight">
+                The Endless Ring-Pop Rodeo
+            </h1>
+            <p class="text-slate-600 text-xs sm:text-sm font-medium mb-3.5 leading-relaxed">
+                Starts chill and ramps up <span class="text-pink-600 font-extrabold">forever</span>—see how many Ring-Pops you can deliver before running out of hearts!
+            </p>
+
+           
+
+            <button id="startBtn" class="rodeo-btn w-full py-3.5 rounded-2xl text-white font-extrabold text-base sm:text-lg tracking-wide cursor-pointer">
+                START ENDLESS RODEO 💍🤠
+            </button>
+        </div>
+    </div>
+
+    <div id="gameOverModal" class="hidden fixed inset-0 z-30 flex items-center justify-center p-3 sm:p-4 bg-rose-950/65 backdrop-blur-sm">
+        <div class="rodeo-card max-w-md w-full rounded-3xl p-5 sm:p-7 text-center relative overflow-hidden">
+            <div id="newRecordBadge" class="hidden inline-block px-3 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-pink-500 text-white font-extrabold text-[11px] uppercase tracking-widest mb-1.5 shadow">
+                🏆 NEW PERSONAL BEST! 🏆
+            </div>
+            <div id="regularLoseBadge" class="inline-block px-3 py-0.5 rounded-full bg-rose-100 text-rose-700 font-extrabold text-[11px] uppercase tracking-widest mb-1.5 border border-rose-300">
+                💔 Rodeo Heartbreak 💔
+            </div>
+            <h2 class="western-title text-2xl sm:text-3xl text-rose-600 mb-1">
+                Rodeo Run Complete!
+            </h2>
+            <p id="gameOverReason" class="text-slate-600 text-xs sm:text-sm font-bold mb-3">
+                The Rodeo Ended!
+            </p>
+
+            <div class="bg-gradient-to-br from-rose-50 via-amber-50 to-pink-50 rounded-2xl p-3.5 mb-4 border-2 border-rose-200 shadow-inner">
+                <p id="gameOverQuip" class="text-slate-700 italic text-xs sm:text-sm font-semibold mb-3">
+                    "She went back to her pillow fort with her guitar—better reload that Ring-Pop sack!"
+                </p>
+                <div class="grid grid-cols-3 gap-2 text-center">
+                    <div class="bg-white/90 rounded-xl p-2 border border-pink-200">
+                        <div class="text-[10px] font-bold text-pink-400 uppercase">Delivered</div>
+                        <div id="loseDeliveredText" class="text-sm sm:text-base font-extrabold text-pink-600">0</div>
+                    </div>
+                    <div class="bg-white/90 rounded-xl p-2 border border-amber-200">
+                        <div class="text-[10px] font-bold text-amber-500 uppercase">Best Score</div>
+                        <div id="loseBestText" class="text-sm sm:text-base font-extrabold text-amber-600">0</div>
+                    </div>
+                    <div class="bg-white/90 rounded-xl p-2 border border-purple-200">
+                        <div class="text-[10px] font-bold text-purple-400 uppercase">Wave</div>
+                        <div id="loseWaveText" class="text-sm sm:text-base font-extrabold text-purple-600">1</div>
+                    </div>
+                </div>
+            </div>
+
+            <button id="retryBtn" class="rodeo-btn w-full py-3.5 rounded-2xl text-white font-extrabold text-base sm:text-lg tracking-wide cursor-pointer">
+                BEAT YOUR RECORD 🤠💍
+            </button>
+        </div>
+    </div>
+
+    <button id="mobileShootBtn" aria-label="Shoot Ring-Pop" class="hidden md:hidden fixed bottom-4 right-4 z-20 w-20 h-20 rounded-full rodeo-btn flex flex-col items-center justify-center text-white font-extrabold text-xs tracking-wider shadow-2xl cursor-pointer">
+        <span class="text-2xl leading-none">💍</span>
+        <span class="mt-0.5">SHOOT</span>
+    </button>
+
+    <script>
+        const FLAVORS = [
+            { name: 'Strawberry', main: '#ff2a7a', light: '#ff85b3', dark: '#9d174d', facet: '#ffe4e6' },
+            { name: 'Blue Raspberry', main: '#00b4ff', light: '#7ce0ff', dark: '#0369a1', facet: '#e0f2fe' },
+            { name: 'Grape Fizz', main: '#a855f7', light: '#d8b4fe', dark: '#6b21a8', facet: '#f3e8ff' },
+            { name: 'Texas Peach', main: '#fb7185', light: '#fed7aa', dark: '#c2410c', facet: '#ffedd5' },
+            { name: 'Green Apple', main: '#10b981', light: '#6ee7b7', dark: '#047857', facet: '#d1fae5' }
+        ];
+
+        const OUTFITS = [
+            { hatColor: '#f472b6', hatBand: '#fef08a', outfitColor: '#ec4899', prop: 'guitar', pillowColor: '#fbcfe8' },
+            { hatColor: '#d97706', hatBand: '#38bdf8', outfitColor: '#0284c7', prop: 'singing', pillowColor: '#bae6fd' },
+            { hatColor: '#ffffff', hatBand: '#f43f5e', outfitColor: '#9333ea', prop: 'pillow', pillowColor: '#e9d5ff' },
+            { hatColor: '#be185d', hatBand: '#fde047', outfitColor: '#f59e0b', prop: 'guitar', pillowColor: '#fef3c7' }
+        ];
+
+        const BARK_LINES = [
+            "Yeehaw, more bling! 🤠",
+            "My guitar hand is heavy! 🎸",
+            "Keep 'em coming! 💍",
+            "All of them for me?! 😍",
+            "Howdy, sugar-bling! ✨",
+            "Texas-sized sparkle! ⭐",
+            "Can't strum, too iced out! 💅",
+            "Best pillows ever! 🛏️"
+        ];
+
+        const GAME_OVER_LINES = [
+            "She went back to her pillow fort with her guitar—better reload that Ring-Pop sack!",
+            "Even Texas legends drop a few Ring-Pops! Ready for another round at the rodeo?",
+            "Too many tumbleweeds and sour lemons! Dust off your boots and try again!"
+        ];
+
+        const POWERUP_META = {
+            encore: { bg: '#ec4899', icon: '🎸' },
+            pillow: { bg: '#0284c7', icon: '🛏️' },
+            spurs:  { bg: '#eab308', icon: '⚡' },
+            lasso:  { bg: '#f97316', icon: '🤠' },
+            potion: { bg: '#e11d48', icon: '💗' },
+            crate:  { bg: '#9333ea', icon: '🎁' }
+        };
+
+        class SoundBank {
+            constructor() {
+                this.ctx = null;
+                this.muted = false;
+            }
+
+            unlock() {
+                if (!this.ctx) {
+                    const Ctx = window.AudioContext || window.webkitAudioContext;
+                    if (Ctx) this.ctx = new Ctx();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume().catch(() => {});
+                }
+            }
+
+            toggle() {
+                this.muted = !this.muted;
+                return this.muted;
+            }
+
+            tone(type, f0, f1, dur, vol, delay = 0) {
+                if (this.muted || !this.ctx) return;
+                const t = this.ctx.currentTime + delay;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(f0, t);
+                if (f1 !== f0) osc.frequency.exponentialRampToValueAtTime(f1, t + dur);
+                gain.gain.setValueAtTime(vol, t);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + dur + 0.01);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(t);
+                osc.stop(t + dur + 0.02);
+            }
+
+            pop() {
+                this.tone('sine', 320, 740, 0.08, 0.11);
+            }
+
+            chime(streak = 1) {
+                const k = Math.pow(1.045, Math.min(streak, 15));
+                [587.33, 880, 1174.66].forEach((f, i) => this.tone('triangle', f * k, f * k, 0.22, 0.13, i * 0.035));
+            }
+
+            strum() {
+                if (this.muted || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                [146.83, 220, 293.66, 369.99, 440].forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const filter = this.ctx.createBiquadFilter();
+                    const gain = this.ctx.createGain();
+                    const start = now + i * 0.035;
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(freq, start);
+                    filter.type = 'lowpass';
+                    filter.frequency.setValueAtTime(2200, start);
+                    filter.frequency.exponentialRampToValueAtTime(550, start + 0.75);
+                    gain.gain.setValueAtTime(0.001, start);
+                    gain.gain.linearRampToValueAtTime(0.09, start + 0.015);
+                    gain.gain.exponentialRampToValueAtTime(0.001, start + 0.8);
+                    osc.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(start);
+                    osc.stop(start + 0.82);
+                });
+            }
+
+            bounce() {
+                this.tone('sine', 190, 420, 0.14, 0.14);
+            }
+
+            lasso() {
+                if (this.muted || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(280, now);
+                osc.frequency.exponentialRampToValueAtTime(980, now + 0.16);
+                osc.frequency.exponentialRampToValueAtTime(520, now + 0.28);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.31);
+            }
+
+            heal() {
+                [523.25, 659.25, 1046.5].forEach((f, i) => this.tone('sine', f, f, 0.26, 0.14, i * 0.06));
+            }
+
+            hurt() {
+                [311.13, 233.08].forEach((f, i) => this.tone('sawtooth', f, f * 0.85, 0.18, 0.13, i * 0.11));
+            }
+
+            thud() {
+                this.tone('triangle', 150, 65, 0.12, 0.14);
+            }
+
+            gameOver() {
+                if (this.muted || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                const notes = [293.66, 277.18, 261.63, 246.94, 196.0];
+                const offsets = [0, 0.22, 0.44, 0.66, 0.92];
+                const durs = [0.2, 0.2, 0.2, 0.24, 0.75];
+                notes.forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    const t = now + offsets[i];
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(freq, t);
+                    if (i === 4) osc.frequency.linearRampToValueAtTime(182, t + 0.7);
+                    gain.gain.setValueAtTime(0.12, t);
+                    gain.gain.exponentialRampToValueAtTime(0.001, t + durs[i]);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(t);
+                    osc.stop(t + durs[i] + 0.02);
+                });
+            }
+        }
+
+        const sfx = new SoundBank();
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const dom = {
+            hearts: document.getElementById('heartsContainer'),
+            waste: document.getElementById('wasteBar'),
+            wave: document.getElementById('waveBadge'),
+            combo: document.getElementById('comboDisplay'),
+            progressText: document.getElementById('progressText'),
+            progressBar: document.getElementById('progressBar'),
+            timer: document.getElementById('timerDisplay'),
+            banner: document.getElementById('powerupBanner'),
+            startModal: document.getElementById('startModal'),
+            overModal: document.getElementById('gameOverModal'),
+            newRecord: document.getElementById('newRecordBadge'),
+            regLose: document.getElementById('regularLoseBadge'),
+            reason: document.getElementById('gameOverReason'),
+            quip: document.getElementById('gameOverQuip'),
+            loseDelivered: document.getElementById('loseDeliveredText'),
+            loseBest: document.getElementById('loseBestText'),
+            loseWave: document.getElementById('loseWaveText'),
+            shootBtn: document.getElementById('mobileShootBtn')
+        };
+
+        let W = window.innerWidth;
+        let H = window.innerHeight;
+        let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+        const game = {
+            mode: 'START',
+            score: 0,
+            best: parseInt(localStorage.getItem('ringPopRodeoHighScore') || '0', 10),
+            hearts: 4,
+            maxHearts: 4,
+            misses: 0,
+            missLimit: 2,
+            wave: 1,
+            pace: 0,
+            loseReason: '',
+            streak: 0,
+            maxStreak: 0,
+            mult: 1,
+            time: 0,
+            hurtFlash: 0,
+            lassoFlash: 0,
+            timers: { encore: 0, shield: 0, spurs: 0 },
+            spawns: { cowgirl: 0.4, hazard: 2.6, item: 5.0 },
+            input: { left: false, right: false, fire: false, shootBtn: false },
+            hero: { x: W * 0.5, y: H - 74, targetX: W * 0.5, speed: 480, cooldown: 0, rate: 0.21, recoil: 0 },
+            rings: [],
+            cowgirls: [],
+            hazards: [],
+            items: [],
+            sparks: [],
+            popups: [],
+            bubbles: [],
+            clouds: []
+        };
+
+        const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+        const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
+        function resize() {
+            W = window.innerWidth;
+            H = window.innerHeight;
+            dpr = Math.min(window.devicePixelRatio || 1, 2);
+            canvas.width = Math.max(1, W * dpr);
+            canvas.height = Math.max(1, H * dpr);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            const bottomPad = H < 560 ? 42 : (W < 640 ? 54 : 74);
+            game.hero.y = H - bottomPad;
+            game.hero.x = clamp(game.hero.x || W * 0.5, 55, W - 55);
+        }
+
+        function calcMultiplier(streak) {
+            if (streak >= 25) return 25;
+            if (streak >= 16) return 15;
+            if (streak >= 10) return 10;
+            if (streak >= 6) return 5;
+            if (streak >= 3) return 2;
+            return 1;
+        }
+
+        function laneY(idx) {
+            const top = W < 640 ? Math.min(118, H * 0.24) : 118;
+            const bottom = game.hero.y - (H < 560 ? 85 : 115);
+            const span = Math.max(105, bottom - top);
+            return top + idx * Math.min(74, span / 2.35);
+        }
+
+        function addPopup(x, y, text, color = '#ec4899', size = 20) {
+            game.popups.push({ x, y, text, color, size, vy: -65, life: 1, max: 1 });
+        }
+
+        function addSparks(x, y, color, count = 12, speed = 180) {
+            for (let i = 0; i < count; i++) {
+                const a = Math.random() * Math.PI * 2;
+                const s = 40 + Math.random() * speed;
+                game.sparks.push({
+                    x, y,
+                    vx: Math.cos(a) * s,
+                    vy: Math.sin(a) * s - 30,
+                    color,
+                    size: 4 + Math.random() * 5,
+                    life: 0.55 + Math.random() * 0.35,
+                    max: 0.9,
+                    rot: Math.random() * Math.PI * 2,
+                    spin: (Math.random() - 0.5) * 10
+                });
+            }
+        }
+
+        function syncRecord() {
+            if (game.score > game.best) {
+                game.best = game.score;
+                localStorage.setItem('ringPopRodeoHighScore', String(game.best));
+                return true;
+            }
+            return false;
+        }
+
+        function renderHUD() {
+            game.wave = 1 + Math.floor(game.score / 100);
+            game.pace = (game.score / 120) + (game.time / 45);
+
+            let hearts = '';
+            for (let i = 0; i < game.maxHearts; i++) {
+                hearts += i < game.hearts ? '<span>❤️</span>' : '<span class="opacity-25 grayscale">🖤</span>';
+            }
+            if (game.timers.shield > 0) {
+                hearts += '<span class="ml-0.5 text-xs sm:text-sm" title="Pillow Shield Active">🛡️</span>';
+            }
+            dom.hearts.innerHTML = hearts;
+
+            dom.waste.style.width = `${(game.misses / game.missLimit) * 100}%`;
+            dom.wave.textContent = `Wave ${game.wave}`;
+            dom.combo.textContent = `${game.mult}x`;
+            dom.progressText.textContent = `${game.score.toLocaleString()} 💍 · Best: ${game.best.toLocaleString()}`;
+            dom.progressBar.style.width = `${game.score % 100}%`;
+
+            const mins = Math.floor(game.time / 60);
+            const secs = String(Math.floor(game.time % 60)).padStart(2, '0');
+            dom.timer.textContent = `${mins}:${secs}`;
+
+            const active = [];
+            if (game.timers.encore > 0) active.push(`🎸 ENCORE (${game.timers.encore.toFixed(1)}s)`);
+            if (game.timers.spurs > 0) active.push(`⚡ RAPID (${game.timers.spurs.toFixed(1)}s)`);
+            if (game.timers.shield > 0) active.push(`🛏️ SHIELD (${game.timers.shield.toFixed(1)}s)`);
+
+            if (active.length) {
+                dom.banner.classList.remove('hidden');
+                dom.banner.textContent = active.join('  •  ');
+            } else {
+                dom.banner.classList.add('hidden');
+            }
+        }
+
+        function damageHero(reason, x = W * 0.5, y = H * 0.5) {
+            if (game.mode !== 'PLAYING') return;
+
+            if (game.timers.shield > 0) {
+                game.timers.shield = 0;
+                sfx.bounce();
+                addPopup(x, y - 20, 'PILLOW SHIELD SAVED HEART! 🛏️🛡️', '#0284c7', W < 640 ? 15 : 19);
+                addSparks(x, y, '#38bdf8', 18, 220);
+                renderHUD();
+                return;
+            }
+
+            game.hearts = Math.max(0, game.hearts - 1);
+            game.streak = 0;
+            game.mult = 1;
+            game.hurtFlash = 0.45;
+            game.loseReason = reason;
+            sfx.hurt();
+
+            addPopup(x, y - 16, `${reason} (-1 ❤️)`, '#e11d48', W < 640 ? 16 : 21);
+            addSparks(x, y, '#f43f5e', 18, 210);
+            renderHUD();
+
+            if (game.hearts <= 0) endRun();
+        }
+
+        function endRun() {
+            game.mode = 'GAMEOVER';
+            sfx.gameOver();
+
+            const brokeRecord = syncRecord();
+            dom.reason.textContent = game.loseReason || 'Out of Hearts!';
+            dom.loseDelivered.textContent = `${game.score.toLocaleString()} 💍`;
+            dom.loseBest.textContent = `${game.best.toLocaleString()} 💍`;
+            dom.loseWave.textContent = `Wave ${game.wave}`;
+
+            const showNew = brokeRecord && game.score > 0;
+            dom.newRecord.classList.toggle('hidden', !showNew);
+            dom.regLose.classList.toggle('hidden', showNew);
+
+            dom.quip.textContent = `"${pick(GAME_OVER_LINES)}"`;
+            dom.overModal.classList.remove('hidden');
+            dom.shootBtn.classList.add('hidden');
+        }
+
+        function startRun() {
+            sfx.unlock();
+            Object.assign(game, {
+                mode: 'PLAYING',
+                score: 0,
+                hearts: game.maxHearts,
+                misses: 0,
+                wave: 1,
+                pace: 0,
+                loseReason: '',
+                streak: 0,
+                maxStreak: 0,
+                mult: 1,
+                time: 0,
+                hurtFlash: 0,
+                lassoFlash: 0,
+                timers: { encore: 0, shield: 0, spurs: 0 },
+                spawns: { cowgirl: 0.4, hazard: 2.6, item: 5.0 },
+                rings: [],
+                cowgirls: [],
+                hazards: [],
+                items: [],
+                sparks: [],
+                popups: [],
+                bubbles: []
+            });
+            game.hero.x = W * 0.5;
+            game.hero.targetX = W * 0.5;
+
+            dom.startModal.classList.add('hidden');
+            dom.overModal.classList.add('hidden');
+            dom.shootBtn.classList.remove('hidden');
+
+            spawnCowgirl(0, false);
+            spawnCowgirl(1, false);
+            renderHUD();
+        }
+
+        function spawnCowgirl(forcedLane = null, forceVip = false) {
+            const lane = forcedLane !== null ? forcedLane : Math.floor(Math.random() * 3);
+            const fromLeft = Math.random() < 0.5;
+            const p = game.pace;
+            const speed = (82 + Math.random() * 44) * (0.58 + p * 0.16);
+            const vipProb = clamp((p - 0.45) * 0.08, 0, 0.45);
+            const isVip = forceVip || Math.random() < vipProb;
+            const needed = (isVip && p >= 2.2 && Math.random() < 0.45) ? 2 : 1;
+            const hScale = H < 560 ? 0.82 : (W < 640 ? 0.9 : 1.0);
+            const y = laneY(lane);
+
+            game.cowgirls.push({
+                x: fromLeft ? -65 : W + 65,
+                y,
+                baseY: y,
+                lane,
+                vx: fromLeft ? speed : -speed,
+                bob: Math.random() * Math.PI * 2,
+                swapIn: p >= 1.8 ? 2.2 + Math.random() * 2.5 : 999,
+                style: pick(OUTFITS),
+                isVip,
+                needed,
+                got: 0,
+                worn: [],
+                scale: (isVip ? 1.05 : 0.96) * hScale
+            });
+        }
+
+        function spawnHazard() {
+            const p = game.pace;
+            const roll = Math.random();
+
+            if (p >= 1.2 && roll < Math.min(0.42, 0.16 + p * 0.04)) {
+                game.hazards.push({
+                    type: 'lemon',
+                    x: 45 + Math.random() * (W - 90),
+                    y: 70,
+                    vx: (Math.random() - 0.5) * (45 + p * 15),
+                    vy: 115 + p * 26,
+                    r: W < 640 ? 22 : 25,
+                    rot: 0,
+                    spin: (Math.random() < 0.5 ? 1 : -1) * 4.5
+                });
+                return;
+            }
+
+            const breaker = p >= 0.65 && roll < 0.58;
+            const fromLeft = Math.random() < 0.5;
+            const y = laneY(Math.floor(Math.random() * 3)) + 12;
+            const spd = (breaker ? 110 : 125) * (0.65 + p * 0.17);
+
+            game.hazards.push({
+                type: breaker ? 'heartbreaker' : 'tumbleweed',
+                x: fromLeft ? -45 : W + 45,
+                y,
+                baseY: y,
+                vx: fromLeft ? spd : -spd,
+                r: breaker ? 23 : Math.min(34, 21 + p * 1.6),
+                rot: 0,
+                spin: (fromLeft ? 1 : -1) * (4.5 + p * 0.8),
+                hop: Math.random() * Math.PI * 2
+            });
+        }
+
+        function spawnItem() {
+            const margin = W < 640 ? 45 : 75;
+            game.items.push({
+                type: pick(Object.keys(POWERUP_META)),
+                x: margin + Math.random() * (W - margin * 2),
+                y: 85,
+                vy: 95 + Math.random() * 40,
+                sway: Math.random() * Math.PI * 2,
+                r: 26
+            });
+        }
+
+        function shoot() {
+            const h = game.hero;
+            h.recoil = 1;
+            sfx.pop();
+
+            const flavor = pick(FLAVORS);
+            const count = game.mult >= 15 ? 3 : (game.mult >= 5 ? 2 : 1);
+            const spd = 700;
+
+            for (let i = 0; i < count; i++) {
+                const spread = count === 2 ? (i === 0 ? -0.075 : 0.075) : (count === 3 ? (i - 1) * 0.1 : 0);
+                game.rings.push({
+                    x: h.x + 12,
+                    y: h.y - 42,
+                    vx: Math.sin(spread) * spd,
+                    vy: -Math.cos(spread) * spd,
+                    flavor,
+                    rot: spread,
+                    trail: []
+                });
+            }
+        }
+
+        function useLasso() {
+            sfx.lasso();
+            game.lassoFlash = 0.45;
+            addPopup(W * 0.5, H * 0.34, '🤠 GOLDEN LASSO ROUNDUP! 🤠', '#f59e0b', W < 640 ? 18 : 24);
+
+            let caught = 0;
+            for (let i = game.cowgirls.length - 1; i >= 0; i--) {
+                const cg = game.cowgirls[i];
+                if (cg.x > 10 && cg.x < W - 10) {
+                    caught++;
+                    cg.worn.push(FLAVORS[i % FLAVORS.length]);
+                    cg.got++;
+
+                    game.streak++;
+                    game.maxStreak = Math.max(game.maxStreak, game.streak);
+                    game.mult = calcMultiplier(game.streak);
+
+                    const pts = 10 * game.mult;
+                    game.score += pts;
+                    syncRecord();
+
+                    addSparks(cg.x, cg.y - 12, '#fbbf24', 14, 210);
+                    addPopup(cg.x, cg.y - 42, `ROPED! +${pts} 💍`, '#d97706', 18);
+
+                    if (cg.got >= cg.needed) game.cowgirls.splice(i, 1);
+                }
+            }
+
+            if (!caught) {
+                game.score += 30;
+                syncRecord();
+                addPopup(W * 0.5, H * 0.42, '+30 LASSO BONUS! 💍', '#f59e0b', 18);
+            }
+            renderHUD();
+        }
+
+        function applyItem(item) {
+            switch (item.type) {
+                case 'encore':
+                    game.timers.encore = 6.5;
+                    sfx.strum();
+                    addPopup(item.x, item.y - 20, '🎸 ACOUSTIC MAGNET!', '#ec4899', 20);
+                    addSparks(item.x, item.y, '#f472b6', 18, 200);
+                    break;
+                case 'pillow':
+                    game.timers.shield = 8.0;
+                    sfx.bounce();
+                    addPopup(item.x, item.y - 20, '🛏️ PILLOW HEART SHIELD!', '#0284c7', 20);
+                    addSparks(item.x, item.y, '#38bdf8', 18, 200);
+                    break;
+                case 'spurs':
+                    game.timers.spurs = 7.0;
+                    sfx.chime(5);
+                    addPopup(item.x, item.y - 20, '⚡ RAPID-FIRE SPURS!', '#eab308', 20);
+                    addSparks(item.x, item.y, '#facc15', 18, 200);
+                    break;
+                case 'lasso':
+                    useLasso();
+                    break;
+                case 'potion':
+                    sfx.heal();
+                    if (game.hearts < game.maxHearts) {
+                        game.hearts++;
+                        game.misses = 0;
+                        addPopup(item.x, item.y - 20, '💗 +1 HEART RESTORED!', '#e11d48', 20);
+                    } else {
+                        game.score += 50;
+                        syncRecord();
+                        addPopup(item.x, item.y - 20, '💗 FULL HEARTS! +50 💍', '#e11d48', 20);
+                    }
+                    addSparks(item.x, item.y, '#fb7185', 20, 220);
+                    break;
+                case 'crate':
+                    game.score += 100;
+                    syncRecord();
+                    sfx.chime(8);
+                    addPopup(item.x, item.y - 20, '🎁 +100 MEGA CRATE! 💍', '#d97706', 22);
+                    addSparks(item.x, item.y, '#fbbf24', 24, 240);
+                    break;
+            }
+            renderHUD();
+        }
+
+        // Input bindings
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') game.input.left = true;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') game.input.right = true;
+            if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+                game.input.fire = true;
+                if (game.mode === 'PLAYING') e.preventDefault();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') game.input.left = false;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') game.input.right = false;
+            if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') game.input.fire = false;
+        });
+
+        let dragging = false;
+        let dragTouchId = null;
+        let dragOriginX = 0;
+        let heroOriginX = 0;
+
+        function beginDrag(clientX, isTouch = false) {
+            if (game.mode !== 'PLAYING') return;
+            sfx.unlock();
+            dragging = true;
+            if (!isTouch) game.input.fire = true;
+            dragOriginX = clientX;
+            heroOriginX = game.hero.x;
+        }
+
+        function moveDrag(clientX) {
+            if (!dragging || game.mode !== 'PLAYING') return;
+            game.hero.targetX = heroOriginX + (clientX - dragOriginX) * 1.25;
+        }
+
+        function endDrag() {
+            dragging = false;
+            dragTouchId = null;
+            game.input.fire = false;
+        }
+
+        canvas.addEventListener('mousedown', (e) => beginDrag(e.clientX, false));
+        window.addEventListener('mousemove', (e) => { if (dragging && dragTouchId === null) moveDrag(e.clientX); });
+        window.addEventListener('mouseup', () => { if (dragTouchId === null) endDrag(); });
+
+        canvas.addEventListener('touchstart', (e) => {
+            if (e.changedTouches.length && dragTouchId === null) {
+                e.preventDefault();
+                const t = e.changedTouches[0];
+                dragTouchId = t.identifier;
+                beginDrag(t.clientX, true);
+            }
+        }, { passive: false });
+
+        window.addEventListener('touchmove', (e) => {
+            if (!dragging || dragTouchId === null) return;
+            for (const t of e.changedTouches) {
+                if (t.identifier === dragTouchId) {
+                    e.preventDefault();
+                    moveDrag(t.clientX);
+                    break;
+                }
+            }
+        }, { passive: false });
+
+        window.addEventListener('touchend', (e) => {
+            for (const t of e.changedTouches) {
+                if (t.identifier === dragTouchId) {
+                    endDrag();
+                    break;
+                }
+            }
+        });
+
+        window.addEventListener('touchcancel', endDrag);
+
+        dom.shootBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (game.mode !== 'PLAYING') return;
+            sfx.unlock();
+            game.input.shootBtn = true;
+        }, { passive: false });
+
+        const releaseShootBtn = (e) => {
+            e.preventDefault();
+            game.input.shootBtn = false;
+        };
+        dom.shootBtn.addEventListener('touchend', releaseShootBtn);
+        dom.shootBtn.addEventListener('touchcancel', releaseShootBtn);
+        dom.shootBtn.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            if (game.mode === 'PLAYING') game.input.shootBtn = true;
+        });
+        window.addEventListener('mouseup', () => { game.input.shootBtn = false; });
+
+        function tick(dt) {
+            if (!game.clouds.length) {
+                for (let i = 0; i < 6; i++) {
+                    game.clouds.push({
+                        x: Math.random() * W,
+                        y: 65 + Math.random() * (H * 0.25),
+                        scale: 0.6 + Math.random() * 0.7,
+                        spd: 12 + Math.random() * 14
+                    });
+                }
+            }
+            for (const c of game.clouds) {
+                c.x += c.spd * dt;
+                if (c.x > W + 140) c.x = -140;
+            }
+
+            if (game.mode !== 'PLAYING') return;
+
+            game.time += dt;
+            game.wave = 1 + Math.floor(game.score / 100);
+            game.pace = (game.score / 120) + (game.time / 45);
+            const p = game.pace;
+
+            if (game.hurtFlash > 0) game.hurtFlash = Math.max(0, game.hurtFlash - dt);
+            if (game.lassoFlash > 0) game.lassoFlash = Math.max(0, game.lassoFlash - dt);
+
+            if (game.timers.encore > 0) {
+                game.timers.encore = Math.max(0, game.timers.encore - dt);
+                for (const cg of game.cowgirls) {
+                    for (const ring of game.rings) {
+                        const dx = cg.x - ring.x;
+                        const dy = cg.y - ring.y;
+                        const d = Math.hypot(dx, dy);
+                        if (d > 1 && d < 240) {
+                            ring.vx += (dx / d) * 1900 * dt;
+                            ring.vy += (dy / d) * 1900 * dt;
+                        }
+                    }
+                }
+            }
+            if (game.timers.shield > 0) game.timers.shield = Math.max(0, game.timers.shield - dt);
+            if (game.timers.spurs > 0) game.timers.spurs = Math.max(0, game.timers.spurs - dt);
+
+            const h = game.hero;
+            if (game.input.left) h.targetX -= h.speed * dt;
+            if (game.input.right) h.targetX += h.speed * dt;
+
+            const pad = W < 640 ? 44 : 72;
+            h.targetX = clamp(h.targetX, pad, W - pad);
+            h.x += (h.targetX - h.x) * Math.min(1, dt * 18);
+            if (h.recoil > 0) h.recoil = Math.max(0, h.recoil - dt * 6);
+
+            const rate = game.timers.spurs > 0 ? h.rate * 0.48 : h.rate;
+            h.cooldown -= dt;
+            if ((game.input.fire || game.input.shootBtn) && h.cooldown <= 0) {
+                shoot();
+                h.cooldown = rate;
+            }
+
+            game.spawns.cowgirl -= dt;
+            const cap = Math.min(7, 3 + Math.floor(p * 0.75));
+            if (game.spawns.cowgirl <= 0 && game.cowgirls.length < cap) {
+                spawnCowgirl();
+                game.spawns.cowgirl = Math.max(0.65, 1.95 - p * 0.16);
+            }
+
+            game.spawns.hazard -= dt;
+            if (game.spawns.hazard <= 0) {
+                spawnHazard();
+                game.spawns.hazard = Math.max(0.85, 3.0 - p * 0.24);
+            }
+
+            game.spawns.item -= dt;
+            if (game.spawns.item <= 0) {
+                spawnItem();
+                game.spawns.item = 5.2 + Math.random() * 2.5;
+            }
+
+            for (let i = game.cowgirls.length - 1; i >= 0; i--) {
+                const cg = game.cowgirls[i];
+                cg.x += cg.vx * dt;
+                cg.bob += dt * 5.2;
+
+                cg.swapIn -= dt;
+                if (cg.swapIn <= 0) {
+                    cg.swapIn = 3.0 + Math.random() * 2.5;
+                    cg.lane = (cg.lane + 1) % 3;
+                    cg.baseY = laneY(cg.lane);
+                }
+                cg.y += (cg.baseY - cg.y) * Math.min(1, dt * 4) + Math.sin(cg.bob) * 0.5;
+
+                if ((cg.vx > 0 && cg.x > W + 85) || (cg.vx < 0 && cg.x < -85)) {
+                    if (cg.isVip && cg.got < cg.needed) {
+                        damageHero('VIP ENCORE MISSED! 👑', clamp(cg.x, 70, W - 70), cg.y);
+                    }
+                    game.cowgirls.splice(i, 1);
+                }
+            }
+
+            for (let i = game.hazards.length - 1; i >= 0; i--) {
+                const hz = game.hazards[i];
+                hz.rot += hz.spin * dt;
+
+                if (hz.type === 'lemon') {
+                    hz.x += hz.vx * dt;
+                    hz.y += hz.vy * dt;
+                    if (hz.x < 25 || hz.x > W - 25) hz.vx *= -1;
+
+                    if (Math.hypot(hz.x - h.x, hz.y - (h.y - 20)) < hz.r + 28) {
+                        damageHero('SOUR LEMON BOMB! 🍋💥', hz.x, hz.y);
+                        game.hazards.splice(i, 1);
+                        continue;
+                    }
+                    if (hz.y > H + 40) game.hazards.splice(i, 1);
+                } else {
+                    hz.x += hz.vx * dt;
+                    hz.hop += dt * 7;
+                    hz.y = hz.baseY + Math.abs(Math.sin(hz.hop)) * -18;
+                    if ((hz.vx > 0 && hz.x > W + 65) || (hz.vx < 0 && hz.x < -65)) {
+                        game.hazards.splice(i, 1);
+                    }
+                }
+            }
+
+            for (let i = game.items.length - 1; i >= 0; i--) {
+                const it = game.items[i];
+                it.y += it.vy * dt;
+                it.sway += dt * 4;
+                it.x += Math.sin(it.sway) * 35 * dt;
+
+                if (Math.hypot(it.x - h.x, it.y - (h.y - 20)) < it.r + 36) {
+                    applyItem(it);
+                    game.items.splice(i, 1);
+                    continue;
+                }
+                if (it.y > H + 50) game.items.splice(i, 1);
+            }
+
+            for (let i = game.rings.length - 1; i >= 0; i--) {
+                const ring = game.rings[i];
+                ring.trail.push({ x: ring.x, y: ring.y });
+                if (ring.trail.length > 8) ring.trail.shift();
+
+                ring.x += ring.vx * dt;
+                ring.y += ring.vy * dt;
+                ring.rot += 6 * dt;
+
+                let used = false;
+
+                for (let k = game.items.length - 1; k >= 0; k--) {
+                    const it = game.items[k];
+                    if (Math.hypot(ring.x - it.x, ring.y - it.y) < it.r + 16) {
+                        applyItem(it);
+                        game.items.splice(k, 1);
+                        game.rings.splice(i, 1);
+                        used = true;
+                        break;
+                    }
+                }
+                if (used) continue;
+
+                for (let k = game.hazards.length - 1; k >= 0; k--) {
+                    const hz = game.hazards[k];
+                    if (Math.hypot(ring.x - hz.x, ring.y - hz.y) < hz.r + 14) {
+                        if (hz.type === 'heartbreaker') {
+                            game.hazards.splice(k, 1);
+                            game.rings.splice(i, 1);
+                            damageHero('SHOT A HEARTBREAKER! 💔', hz.x, hz.y);
+                        } else if (hz.type === 'lemon') {
+                            game.hazards.splice(k, 1);
+                            game.rings.splice(i, 1);
+                            sfx.chime(2);
+                            addSparks(hz.x, hz.y, '#fde047', 12, 160);
+                            addPopup(hz.x, hz.y - 12, 'LEMON BLASTED! 🍋✨', '#ca8a04', 17);
+                        } else {
+                            sfx.thud();
+                            ring.vy = Math.abs(ring.vy) * 0.65;
+                            ring.vx = (ring.x < hz.x ? -1 : 1) * 240;
+                            addSparks(ring.x, ring.y, '#d97706', 8, 120);
+                            addPopup(hz.x, hz.y - 18, 'BLOCKED! 🌵', '#b45309', 16);
+                        }
+                        used = true;
+                        break;
+                    }
+                }
+                if (used) continue;
+
+                for (let j = game.cowgirls.length - 1; j >= 0; j--) {
+                    const cg = game.cowgirls[j];
+                    if (Math.hypot(ring.x - cg.x, ring.y - (cg.y - 6)) < 42 * cg.scale) {
+                        game.streak++;
+                        game.maxStreak = Math.max(game.maxStreak, game.streak);
+                        game.mult = calcMultiplier(game.streak);
+
+                        const pts = (cg.isVip ? 15 : 5) * game.mult;
+                        game.score += pts;
+                        syncRecord();
+
+                        cg.worn.push(ring.flavor);
+                        cg.got++;
+
+                        sfx.chime(game.streak);
+                        addSparks(cg.x, cg.y - 12, ring.flavor.main, 16, 210);
+
+                        const incomplete = cg.got < cg.needed;
+                        const tag = incomplete
+                            ? `VIP 1/2! +${pts} 👑`
+                            : `+${pts} 💍${game.mult > 1 ? ` (${game.mult}x!)` : ''}`;
+                        addPopup(cg.x, cg.y - 42, tag, cg.isVip ? '#d97706' : ring.flavor.main, cg.isVip ? 22 : 19);
+
+                        if (!incomplete && Math.random() < 0.32 && game.bubbles.length < 2) {
+                            game.bubbles.push({ x: cg.x, y: cg.y - 68, text: pick(BARK_LINES), life: 1.4 });
+                        }
+
+                        if (!incomplete) {
+                            game.cowgirls.splice(j, 1);
+                            if (game.cowgirls.length < 2) spawnCowgirl();
+                        }
+
+                        game.rings.splice(i, 1);
+                        used = true;
+                        renderHUD();
+                        break;
+                    }
+                }
+                if (used) continue;
+
+                if (ring.y < -25 || ring.x < -40 || ring.x > W + 40 || ring.y > H + 40) {
+                    if (ring.y < -25) {
+                        game.misses++;
+                        game.streak = 0;
+                        game.mult = 1;
+                        if (game.misses >= game.missLimit) {
+                            game.misses = 0;
+                            damageHero('WASTED RING-POPS!', clamp(ring.x, 65, W - 65), 85);
+                        } else {
+                            addPopup(clamp(ring.x, 55, W - 55), 78, 'MISS! (1/2 WASTE)', '#fb7185', 15);
+                            renderHUD();
+                        }
+                    }
+                    game.rings.splice(i, 1);
+                }
+            }
+
+            for (let i = game.sparks.length - 1; i >= 0; i--) {
+                const s = game.sparks[i];
+                s.x += s.vx * dt;
+                s.y += s.vy * dt;
+                s.vy += 280 * dt;
+                s.rot += s.spin * dt;
+                s.life -= dt;
+                if (s.life <= 0) game.sparks.splice(i, 1);
+            }
+
+            for (let i = game.popups.length - 1; i >= 0; i--) {
+                const p = game.popups[i];
+                p.y += p.vy * dt;
+                p.life -= dt;
+                if (p.life <= 0) game.popups.splice(i, 1);
+            }
+
+            for (let i = game.bubbles.length - 1; i >= 0; i--) {
+                const b = game.bubbles[i];
+                b.y -= 18 * dt;
+                b.life -= dt;
+                if (b.life <= 0) game.bubbles.splice(i, 1);
+            }
+
+            renderHUD();
+        }
+
+        function drawRingPop(x, y, flavor, scale = 1, rot = 0) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(rot);
+            ctx.scale(scale, scale);
+
+            ctx.beginPath();
+            ctx.ellipse(0, 10, 11, 8, 0, 0, Math.PI * 2);
+            ctx.lineWidth = 4.5;
+            ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+            ctx.stroke();
+
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.roundRect(-8, -1, 16, 5, 2.5);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(-8, -14);
+            ctx.lineTo(8, -14);
+            ctx.lineTo(14, -6);
+            ctx.lineTo(0, 4);
+            ctx.lineTo(-14, -6);
+            ctx.closePath();
+
+            const grad = ctx.createLinearGradient(-12, -14, 12, 4);
+            grad.addColorStop(0, flavor.light);
+            grad.addColorStop(0.5, flavor.main);
+            grad.addColorStop(1, flavor.dark);
+            ctx.fillStyle = grad;
+            ctx.fill();
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = '#fff';
+            ctx.stroke();
+
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.ellipse(-4, -9, 3.5, 1.8, -0.35, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawHero() {
+            const h = game.hero;
+            const recoilY = h.recoil * 6;
+            const scale = H < 560 ? 0.84 : (W < 640 ? 0.92 : 1.0);
+
+            ctx.save();
+            ctx.translate(h.x, h.y + recoilY);
+            ctx.scale(scale, scale);
+
+            if (game.timers.shield > 0) {
+                ctx.save();
+                ctx.strokeStyle = 'rgba(56, 189, 248, 0.85)';
+                ctx.fillStyle = 'rgba(186, 230, 253, 0.22)';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.arc(0, -18, 62 + Math.sin(game.time * 8) * 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // Burlap sack of 1,000 Ring-Pops
+            ctx.save();
+            ctx.translate(-44, 8);
+            ctx.fillStyle = '#d97706';
+            ctx.beginPath();
+            ctx.ellipse(0, 6, 25, 22, -0.1, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#92400e';
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillRect(-10, -12, 20, 5);
+            drawRingPop(-6, -18, FLAVORS[0], 0.55, -0.3);
+            drawRingPop(7, -17, FLAVORS[1], 0.55, 0.35);
+
+            ctx.fillStyle = '#fef3c7';
+            ctx.font = '800 8px "Fredoka", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('1,000', 0, 5);
+            ctx.fillText('POPS', 0, 14);
+            ctx.restore();
+
+            // Shirt
+            ctx.fillStyle = '#1e3a8a';
+            ctx.beginPath();
+            ctx.roundRect(-28, -8, 56, 36, 16);
+            ctx.fill();
+            ctx.strokeStyle = '#60a5fa';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Bald head
+            const skin = ctx.createRadialGradient(-6, -38, 4, 0, -32, 26);
+            skin.addColorStop(0, '#ffedd5');
+            skin.addColorStop(0.65, '#fed7aa');
+            skin.addColorStop(1, '#fdba74');
+            ctx.fillStyle = skin;
+            ctx.beginPath();
+            ctx.ellipse(0, -32, 21, 24, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+            ctx.beginPath();
+            ctx.ellipse(-7, -46, 7, 3.5, -0.35, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Beard & mustache
+            ctx.fillStyle = '#451a03';
+            ctx.beginPath();
+            ctx.arc(0, -27, 20.5, 0.12 * Math.PI, 0.88 * Math.PI);
+            ctx.quadraticCurveTo(-18, -14, 0, -9);
+            ctx.quadraticCurveTo(18, -14, 20.5 * Math.cos(0.12 * Math.PI), -27 + 20.5 * Math.sin(0.12 * Math.PI));
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#5c2407';
+            ctx.beginPath();
+            ctx.ellipse(-6, -22, 7.5, 3.2, -0.15, 0, Math.PI * 2);
+            ctx.ellipse(6, -22, 7.5, 3.2, 0.15, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(0, -19, 5.5, 0, Math.PI);
+            ctx.fill();
+
+            // Blue eyes
+            [-7.5, 7.5].forEach((ex) => {
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(ex, -33, 4.4, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#0284c7';
+                ctx.beginPath();
+                ctx.arc(ex, -33, 2.7, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#0f172a';
+                ctx.beginPath();
+                ctx.arc(ex, -33, 1.3, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(ex - 0.9, -34, 0.9, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Candy cannon
+            ctx.save();
+            ctx.translate(22, -24 + recoilY * 0.6);
+            const barrel = ctx.createLinearGradient(-10, -24, 10, 12);
+            barrel.addColorStop(0, '#ff85b3');
+            barrel.addColorStop(1, '#db2777');
+            ctx.fillStyle = barrel;
+            ctx.beginPath();
+            ctx.roundRect(-10, -24, 20, 32, 8);
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+
+            ctx.fillStyle = '#fde047';
+            ctx.fillRect(-11, -20, 22, 5);
+            ctx.restore();
+
+            ctx.restore();
+        }
+
+        function drawCowgirl(cg) {
+            ctx.save();
+            ctx.translate(cg.x, cg.y);
+            ctx.scale(cg.scale, cg.scale);
+
+            const dir = cg.vx >= 0 ? 1 : -1;
+
+            if (cg.isVip) {
+                ctx.save();
+                ctx.strokeStyle = 'rgba(250, 204, 21, 0.85)';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([5, 4]);
+                ctx.beginPath();
+                ctx.arc(0, -6, 44, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+
+                ctx.font = '700 13px "Fredoka", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#fef08a';
+                ctx.strokeStyle = '#92400e';
+                ctx.lineWidth = 3;
+                const label = cg.needed > 1 ? `👑 ${cg.got}/${cg.needed}` : '👑 VIP';
+                ctx.strokeText(label, 0, -48);
+                ctx.fillText(label, 0, -48);
+            }
+
+            // Back hair
+            ctx.fillStyle = '#1c1017';
+            ctx.beginPath();
+            ctx.moveTo(-18, -22);
+            ctx.quadraticCurveTo(-28, 6, -22, 26);
+            ctx.quadraticCurveTo(0, 32, 22, 26);
+            ctx.quadraticCurveTo(28, 6, 18, -22);
+            ctx.closePath();
+            ctx.fill();
+
+            // Outfit
+            ctx.fillStyle = cg.style.outfitColor;
+            ctx.beginPath();
+            ctx.roundRect(-16, -2, 32, 26, 10);
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Head & front strands
+            ctx.fillStyle = '#fde6d8';
+            ctx.beginPath();
+            ctx.arc(0, -16, 14, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#27151f';
+            ctx.beginPath();
+            ctx.ellipse(-12, -8, 4.5, 16, 0.12, 0, Math.PI * 2);
+            ctx.ellipse(12, -8, 4.5, 16, -0.12, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#fb7185';
+            ctx.globalAlpha = 0.55;
+            ctx.beginPath();
+            ctx.arc(-7, -13, 3, 0, Math.PI * 2);
+            ctx.arc(7, -13, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            ctx.fillStyle = '#1e1b4b';
+            ctx.beginPath();
+            ctx.arc(-5, -16, 2, 0, Math.PI * 2);
+            ctx.arc(5, -16, 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#be185d';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(0, -12, 4, 0.15 * Math.PI, 0.85 * Math.PI);
+            ctx.stroke();
+
+            // Cowboy hat
+            ctx.save();
+            ctx.translate(0, -27);
+            ctx.fillStyle = cg.style.hatColor;
+            ctx.beginPath();
+            ctx.ellipse(0, 2, 26, 6.5, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(-13, 2);
+            ctx.quadraticCurveTo(-11, -13, -4, -11);
+            ctx.quadraticCurveTo(0, -9, 4, -11);
+            ctx.quadraticCurveTo(11, -13, 13, 2);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = cg.style.hatBand;
+            ctx.fillRect(-12, -2, 24, 3.5);
+            ctx.restore();
+
+            // Prop
+            if (cg.style.prop === 'guitar') {
+                ctx.save();
+                ctx.translate(dir * 6, 10);
+                ctx.rotate(dir * -0.35);
+                ctx.fillStyle = '#d97706';
+                ctx.beginPath();
+                ctx.ellipse(-6, 0, 10, 8, 0, 0, Math.PI * 2);
+                ctx.ellipse(5, 0, 8, 6.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#78350f';
+                ctx.beginPath();
+                ctx.arc(-5, 0, 3.2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillRect(10, -2, 16, 4);
+                ctx.restore();
+            } else if (cg.style.prop === 'pillow') {
+                ctx.save();
+                ctx.translate(dir * 14, 10);
+                ctx.fillStyle = cg.style.pillowColor;
+                ctx.beginPath();
+                ctx.roundRect(-12, -10, 24, 20, 6);
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.restore();
+            } else {
+                const noteY = -28 + Math.sin(game.time * 6 + cg.bob) * 4;
+                ctx.fillStyle = '#fde047';
+                ctx.font = '700 15px "Fredoka", sans-serif';
+                ctx.fillText('♪', dir * 22, noteY);
+            }
+
+            if (cg.worn.length) {
+                drawRingPop(dir * -18, 6, cg.worn[cg.worn.length - 1], 0.68, -0.3);
+            }
+
+            ctx.restore();
+        }
+
+        function drawHazard(hz) {
+            ctx.save();
+            ctx.translate(hz.x, hz.y);
+            ctx.rotate(hz.rot);
+
+            if (hz.type === 'tumbleweed') {
+                ctx.strokeStyle = '#92400e';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(0, 0, hz.r, 0, Math.PI * 2);
+                ctx.stroke();
+
+                ctx.strokeStyle = '#b45309';
+                ctx.lineWidth = 2;
+                for (let k = 0; k < 5; k++) {
+                    ctx.rotate(Math.PI / 2.5);
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, hz.r * 0.88, hz.r * 0.45, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            } else if (hz.type === 'heartbreaker') {
+                ctx.fillStyle = '#1e1b4b';
+                ctx.beginPath();
+                ctx.arc(0, 0, hz.r, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#f43f5e';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                ctx.rotate(-hz.rot);
+                ctx.font = '700 18px "Fredoka", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('💔', 0, 1);
+            } else {
+                ctx.fillStyle = '#facc15';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, hz.r, hz.r * 0.78, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+
+                ctx.rotate(-hz.rot);
+                ctx.font = '700 18px "Fredoka", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('🍋', 0, 1);
+            }
+
+            ctx.restore();
+        }
+
+        function drawItem(it) {
+            const meta = POWERUP_META[it.type] || { bg: '#ec4899', icon: '✨' };
+            ctx.save();
+            ctx.translate(it.x, it.y);
+
+            const glow = ctx.createRadialGradient(0, 0, 4, 0, 0, it.r + 10);
+            glow.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+            glow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = glow;
+            ctx.beginPath();
+            ctx.arc(0, 0, it.r + 10, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = meta.bg;
+            ctx.beginPath();
+            ctx.arc(0, 0, it.r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            ctx.font = '700 22px "Fredoka", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(meta.icon, 0, 2);
+
+            ctx.restore();
+        }
+
+        function drawBackdrop() {
+            const sky = ctx.createLinearGradient(0, 0, 0, H);
+            sky.addColorStop(0, '#4c1d95');
+            sky.addColorStop(0.38, '#db2777');
+            sky.addColorStop(0.72, '#fb923c');
+            sky.addColorStop(1, '#fde047');
+            ctx.fillStyle = sky;
+            ctx.fillRect(0, 0, W, H);
+
+            const sunY = H * 0.64;
+            const sunR = Math.min(W, H) * 0.34;
+            const sun = ctx.createRadialGradient(W * 0.5, sunY, 15, W * 0.5, sunY, sunR);
+            sun.addColorStop(0, 'rgba(254, 249, 195, 0.95)');
+            sun.addColorStop(0.6, 'rgba(253, 224, 71, 0.45)');
+            sun.addColorStop(1, 'rgba(253, 224, 71, 0)');
+            ctx.fillStyle = sun;
+            ctx.beginPath();
+            ctx.arc(W * 0.5, sunY, sunR, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+            for (const c of game.clouds) {
+                ctx.save();
+                ctx.translate(c.x, c.y);
+                ctx.scale(c.scale, c.scale);
+                ctx.beginPath();
+                ctx.arc(0, 0, 28, 0, Math.PI * 2);
+                ctx.arc(24, -6, 34, 0, Math.PI * 2);
+                ctx.arc(54, 0, 26, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            const compact = H < 560;
+            const ridgeY = H - (compact ? 74 : 110);
+            ctx.fillStyle = '#831843';
+            ctx.beginPath();
+            ctx.moveTo(0, H);
+            ctx.lineTo(0, ridgeY + 12);
+            ctx.quadraticCurveTo(W * 0.25, ridgeY - 26, W * 0.5, ridgeY + 8);
+            ctx.quadraticCurveTo(W * 0.78, ridgeY + 34, W, ridgeY - 12);
+            ctx.lineTo(W, H);
+            ctx.closePath();
+            ctx.fill();
+
+            [W * 0.08, W * 0.92].forEach((cx, idx) => {
+                ctx.save();
+                ctx.translate(cx, ridgeY + (idx === 0 ? 4 : -4));
+                ctx.fillStyle = '#059669';
+                ctx.beginPath();
+                ctx.roundRect(-8, -46, 16, 52, 8);
+                ctx.roundRect(-22, -32, 16, 10, 5);
+                ctx.roundRect(-22, -44, 9, 20, 4.5);
+                ctx.roundRect(6, -26, 16, 10, 5);
+                ctx.roundRect(13, -38, 9, 20, 4.5);
+                ctx.fill();
+                drawRingPop(0, -52, FLAVORS[4], 0.55, 0);
+                ctx.restore();
+            });
+
+            const floorY = H - (compact ? 56 : 88);
+            ctx.strokeStyle = '#78350f';
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(0, floorY - 18);
+            ctx.lineTo(W, floorY - 18);
+            ctx.moveTo(0, floorY - 6);
+            ctx.lineTo(W, floorY - 6);
+            ctx.stroke();
+
+            for (let fx = 24; fx < W; fx += 72) {
+                ctx.fillStyle = '#92400e';
+                ctx.fillRect(fx - 4, floorY - 28, 8, 32);
+            }
+
+            const sand = ctx.createLinearGradient(0, floorY, 0, H);
+            sand.addColorStop(0, '#f59e0b');
+            sand.addColorStop(1, '#b45309');
+            ctx.fillStyle = sand;
+            ctx.fillRect(0, floorY, W, H - floorY);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, W, H);
+            drawBackdrop();
+
+            if (game.lassoFlash > 0) {
+                ctx.save();
+                ctx.strokeStyle = `rgba(250, 204, 21, ${game.lassoFlash * 2})`;
+                ctx.lineWidth = 8;
+                ctx.beginPath();
+                ctx.ellipse(W * 0.5, H * 0.32, W * 0.44, 95, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            game.cowgirls.forEach(drawCowgirl);
+            game.hazards.forEach(drawHazard);
+            game.items.forEach(drawItem);
+
+            for (const ring of game.rings) {
+                if (ring.trail.length > 1) {
+                    for (let t = 1; t < ring.trail.length; t++) {
+                        ctx.strokeStyle = ring.flavor.light;
+                        ctx.globalAlpha = (t / ring.trail.length) * 0.4;
+                        ctx.lineWidth = (t / ring.trail.length) * 8;
+                        ctx.lineCap = 'round';
+                        ctx.beginPath();
+                        ctx.moveTo(ring.trail[t - 1].x, ring.trail[t - 1].y);
+                        ctx.lineTo(ring.trail[t].x, ring.trail[t].y);
+                        ctx.stroke();
+                    }
+                    ctx.globalAlpha = 1;
+                }
+                drawRingPop(ring.x, ring.y, ring.flavor, 0.92, ring.rot);
+            }
+
+            drawHero();
+
+            for (const s of game.sparks) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, s.life / s.max);
+                ctx.translate(s.x, s.y);
+                ctx.rotate(s.rot);
+                ctx.fillStyle = s.color;
+                ctx.fillRect(-s.size * 0.5, -s.size * 0.5, s.size, s.size);
+                ctx.restore();
+            }
+
+            for (const b of game.bubbles) {
+                ctx.save();
+                ctx.globalAlpha = Math.min(1, b.life * 1.5);
+                ctx.font = '700 12px "Fredoka", sans-serif';
+                const boxW = ctx.measureText(b.text).width + 18;
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.roundRect(b.x - boxW * 0.5, b.y - 14, boxW, 24, 12);
+                ctx.fill();
+                ctx.strokeStyle = '#f472b6';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.fillStyle = '#be185d';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(b.text, b.x, b.y - 2);
+                ctx.restore();
+            }
+
+            for (const p of game.popups) {
+                ctx.save();
+                ctx.globalAlpha = Math.min(1, (p.life / p.max) * 1.6);
+                ctx.font = `800 ${p.size}px "Fredoka", sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = '#fff';
+                ctx.strokeText(p.text, p.x, p.y);
+                ctx.fillStyle = p.color;
+                ctx.fillText(p.text, p.x, p.y);
+                ctx.restore();
+            }
+
+            if (game.hurtFlash > 0) {
+                ctx.fillStyle = `rgba(225, 29, 72, ${game.hurtFlash * 0.45})`;
+                ctx.fillRect(0, 0, W, H);
+            }
+        }
+
+        let prevFrame = performance.now();
+        function frame(now) {
+            const dt = Math.min((now - prevFrame) / 1000, 0.05);
+            prevFrame = now;
+            tick(dt);
+            draw();
+            requestAnimationFrame(frame);
+        }
+
+        document.getElementById('startBtn').addEventListener('click', startRun);
+        document.getElementById('retryBtn').addEventListener('click', startRun);
+        document.getElementById('muteBtn').addEventListener('click', () => {
+            sfx.unlock();
+            const muted = sfx.toggle();
+            document.getElementById('soundOnIcon').classList.toggle('hidden', muted);
+            document.getElementById('soundOffIcon').classList.toggle('hidden', !muted);
+        });
+
+        window.addEventListener('resize', resize);
+        window.onload = () => {
+            resize();
+            renderHUD();
+            prevFrame = performance.now();
+            requestAnimationFrame(frame);
+        };
+    </script>
+</body>
+</html>
