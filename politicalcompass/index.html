@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Global Political Compass & Values Assessment</title>
+    <!-- Load Tailwind CSS for clean, modern, responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            max-width: 100%;
+            -webkit-text-size-adjust: 100%;
+        }
+        body {
+            min-height: 100dvh;
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
+        /* Mobile touch ergonomics */
+        button, label, [role="button"], .likert-pill {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        /* Hide scrollbars on horizontal pill strips while keeping smooth scrolling */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Smooth transitions for interactive elements */
+        .fade-in {
+            animation: fadeIn 0.35s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulseRing {
+            0% { transform: scale(0.9); opacity: 0.7; }
+            70% { transform: scale(1.6); opacity: 0; }
+            100% { transform: scale(1.6); opacity: 0; }
+        }
+        .pulse-marker {
+            transform-box: fill-box;
+            transform-origin: center;
+            animation: pulseRing 2.2s infinite ease-out;
+        }
+        /* Custom styling for touch-friendly 5-point Likert pill buttons */
+        .likert-pill div {
+            min-height: 48px;
+            transition: transform 0.1s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .likert-pill:active div {
+            transform: scale(0.98);
+        }
+        .likert-pill[aria-checked="true"] div {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+            color: #1d4ed8;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.18);
+        }
+        @media (prefers-color-scheme: dark) {
+            .likert-pill[aria-checked="true"] div {
+                border-color: #3b82f6;
+                background-color: #1e3a8a;
+                color: #dbeafe;
+            }
+        }
+        /* Highlight unanswered question card on validation */
+        .unanswered-highlight {
+            border-color: #f59e0b !important;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+        }
+        /* Safe-area bottom padding for sticky mobile footer */
+        .pb-safe {
+            padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+        }
+        .pt-safe {
+            padding-top: max(0.65rem, env(safe-area-inset-top));
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 flex flex-col justify-between transition-colors duration-200">
+
+    <!-- Compact Sticky Header with Safe-Area Support & Mobile Section Stepper -->
+    <header class="w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 shadow-sm pt-safe">
+        <div class="max-w-5xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2">
+            <div class="flex items-center space-x-2.5 min-w-0">
+                <!-- Compass SVG Icon -->
+                <div class="p-1.5 rounded-xl bg-blue-600/10 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400 shrink-0">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" stroke-width="2"></circle>
+                        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" stroke-width="2" fill="currentColor" fill-opacity="0.2"></polygon>
+                    </svg>
+                </div>
+                <div class="min-w-0">
+                    <h1 class="text-sm sm:text-lg font-bold tracking-tight leading-tight truncate">Global Political Compass</h1>
+                    <p class="hidden sm:block text-xs text-slate-500 dark:text-slate-400">Multi-Dimensional Values & Governance Assessment</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+                <span id="section-badge" class="hidden text-[11px] sm:text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                    1 / 6
+                </span>
+                <span id="progress-badge" class="hidden text-[11px] sm:text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300">
+                    0 / 36
+                </span>
+            </div>
+        </div>
+
+        <!-- Horizontally Scrollable Compact Section Pill Stepper (Visible during Quiz) -->
+        <div id="header-stepper-wrap" class="hidden border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/70 dark:bg-slate-900/70">
+            <div id="header-section-pills" class="max-w-5xl mx-auto px-3 sm:px-4 py-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                <!-- Section pills injected dynamically -->
+            </div>
+        </div>
+
+        <!-- Top thin progress indicator -->
+        <div id="header-progress-wrap" class="hidden w-full bg-slate-200 dark:bg-slate-800 h-1">
+            <div id="progress-bar" class="bg-blue-600 h-1 transition-all duration-300" style="width: 0%"></div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main id="main-content" class="flex-grow max-w-5xl w-full mx-auto px-3 sm:px-4 py-5 sm:py-10">
+
+        <!-- Intro Screen -->
+        <section id="intro-screen" class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-5 sm:p-10 fade-in">
+            <div class="max-w-3xl mx-auto text-center space-y-5 sm:space-y-6">
+                <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 text-[11px] sm:text-xs font-semibold uppercase tracking-wider">
+                    <span>International Civic & Moral Framework</span>
+                </div>
+                <h2 class="text-xl sm:text-4xl font-bold text-slate-900 dark:text-white tracking-tight leading-snug">
+                    Map Your Political Compass & Core Moral Values
+                </h2>
+                <p class="text-slate-600 dark:text-slate-300 text-sm sm:text-lg leading-relaxed">
+                    Simple left-right labels rarely capture how people actually think about economics, state authority, cultural norms, global cooperation, and emerging technology. This assessment evaluates your positions across <strong>6 thematic domains</strong> without single-country partisan framing.
+                </p>
+
+                <!-- 6 Thematic Pillars Preview -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-3.5 text-left pt-1">
+                    <div class="p-3.5 sm:p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80">
+                        <div class="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-1">01 · Economics</div>
+                        <h3 class="font-semibold text-slate-900 dark:text-white text-sm mb-1">Markets & Redistribution</h3>
+                        <p class="text-xs text-slate-600 dark:text-slate-400">Public utilities, taxation, monopolies, gig labor protections, and universal basic services.</p>
+                    </div>
+                    <div class="p-3.5 sm:p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80">
+                        <div class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-1">02 · Governance</div>
+                        <h3 class="font-semibold text-slate-900 dark:text-white text-sm mb-1">Authority & Law</h3>
+                        <p class="text-xs text-slate-600 dark:text-slate-400">Emergency powers, judicial checks, decentralization, surveillance, and justice philosophy.</p>
+                    </div>
+                    <div class="p-3.5 sm:p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80">
+                        <div class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1">03 · Civil Liberties</div>
+                        <h3 class="font-semibold text-slate-900 dark:text-white text-sm mb-1">Personal Autonomy</h3>
+                        <p class="text-xs text-slate-600 dark:text-slate-400">Free expression, bodily autonomy, encryption privacy, protest rights, and state secularism.</p>
+                    </div>
+                    <div class="p-3.5 sm:p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80">
+                        <div class="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-1">04 · Culture & Morality</div>
+                        <h3 class="font-semibold text-slate-900 dark:text-white text-sm mb-1">Social Cohesion</h3>
+                        <p class="text-xs text-slate-600 dark:text-slate-400">Pluralism vs. assimilation, family norms, moral universalism, equity, and heritage.</p>
+                    </div>
+                    <div class="p-3.5 sm:p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80">
+                        <div class="text-xs font-bold uppercase tracking-wider text-cyan-600 dark:text-cyan-400 mb-1">05 · Global Order</div>
+                        <h3 class="font-semibold text-slate-900 dark:text-white text-sm mb-1">Borders & Sovereignty</h3>
+                        <p class="text-xs text-slate-600 dark:text-slate-400">Supranational treaties, asylum obligations, trade tariffs, climate finance, and global taxes.</p>
+                    </div>
+                    <div class="p-3.5 sm:p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80">
+                        <div class="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 mb-1">06 · Science & Ecology</div>
+                        <h3 class="font-semibold text-slate-900 dark:text-white text-sm mb-1">Tech & Future Ethics</h3>
+                        <p class="text-xs text-slate-600 dark:text-slate-400">AI governance, green transition, bioethics, patent commons, and personal data ownership.</p>
+                    </div>
+                </div>
+
+                <!-- Assessment Mode Selection -->
+                <div class="pt-3 max-w-xl mx-auto space-y-3">
+                    <button id="start-full-btn" class="w-full min-h-[56px] px-4 sm:px-7 py-3.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-150 cursor-pointer flex items-center justify-between gap-3">
+                        <div class="text-left">
+                            <div class="text-sm sm:text-lg font-bold leading-snug">Full 36-Question Assessment</div>
+                            <div class="text-xs text-blue-100 font-normal">6 thematic sections · Highest precision across all 4 spectrums</div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-lg bg-blue-500 text-[11px] font-bold uppercase tracking-wide shrink-0">Recommended</span>
+                    </button>
+
+                    <button id="start-quick-btn" class="w-full min-h-[48px] px-4 sm:px-6 py-3 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-slate-800 dark:text-slate-200 font-medium rounded-xl border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer flex items-center justify-between gap-2 text-xs sm:text-sm">
+                        <span class="text-left">Quick 18-Question Mode (3 per section)</span>
+                        <span class="text-slate-500 dark:text-slate-400 text-xs shrink-0">~3 mins →</span>
+                    </button>
+                </div>
+
+                <p class="text-xs text-slate-400 dark:text-slate-500">
+                    100% client-side and private. Desktop shortcut: press <strong>1–5</strong> to answer focused questions.
+                </p>
+            </div>
+        </section>
+
+        <!-- Quiz Screen (Grouped by Thematic Section) -->
+        <section id="quiz-screen" class="hidden space-y-4 sm:space-y-6 pb-24 sm:pb-6 fade-in">
+            <!-- Section Header Card -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-4 sm:p-8">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+                    <span id="section-kicker" class="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                        Section 1 of 6
+                    </span>
+                    <div class="flex space-x-1.5" id="section-dots">
+                        <!-- Step dots rendered via JS -->
+                    </div>
+                </div>
+                <h2 id="section-title" class="text-lg sm:text-2xl font-bold text-slate-900 dark:text-white leading-snug">
+                    Economic Structure & Markets
+                </h2>
+                <p id="section-desc" class="text-xs sm:text-base text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                    How society should organize production, property, taxation, and economic security.
+                </p>
+            </div>
+
+            <!-- Questions List Container -->
+            <div id="questions-list" class="space-y-3.5 sm:space-y-4">
+                <!-- Question Cards Injected Dynamically -->
+            </div>
+
+            <!-- Validation Banner -->
+            <div id="validation-msg" class="hidden p-4 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-start sm:items-center gap-2.5">
+                    <svg class="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5 sm:mt-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    <span id="validation-text">Please answer all highlighted questions in this section before continuing.</span>
+                </div>
+                <button id="scroll-unanswered-btn" class="self-start sm:self-center min-h-[38px] px-3.5 py-1.5 rounded-lg bg-amber-200/90 dark:bg-amber-800/80 text-xs font-semibold hover:bg-amber-300 dark:hover:bg-amber-700 transition-colors cursor-pointer shrink-0">
+                    Jump to Unanswered
+                </button>
+            </div>
+
+            <!-- Desktop Inline Section Navigation Footer -->
+            <div class="hidden sm:flex bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-5 items-center justify-between gap-4">
+                <button id="prev-btn" class="min-h-[44px] px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none transition-colors cursor-pointer">
+                    ← Previous Section
+                </button>
+                <span id="section-counter-footer" class="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                    Section 1 of 6
+                </span>
+                <button id="next-btn" class="min-h-[44px] px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm transition-colors cursor-pointer">
+                    Next Section →
+                </button>
+            </div>
+        </section>
+
+        <!-- Detailed Results Dashboard -->
+        <section id="results-screen" class="hidden space-y-5 sm:space-y-6 fade-in">
+
+            <!-- Top Overview & 2D Compass Card -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-4 sm:p-10">
+                <div class="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
+                    <span class="inline-block text-[11px] sm:text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 mb-2.5">
+                        Assessment Complete
+                    </span>
+                    <h2 class="text-xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-2 leading-tight">
+                        Your Political Compass & Values Profile
+                    </h2>
+                    <p class="text-slate-600 dark:text-slate-300 text-xs sm:text-base leading-relaxed">
+                        Plotted across the primary two-dimensional political compass and broken down into four underlying philosophical spectrums.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
+                    <!-- Left Column: Fluid Interactive SVG Compass -->
+                    <div class="lg:col-span-5 flex flex-col items-center w-full">
+                        <div class="w-full max-w-[380px] mx-auto">
+                            <svg id="compass-svg" viewBox="0 0 420 420" class="w-full h-auto block rounded-2xl shadow-inner border border-slate-300 dark:border-slate-700 bg-white">
+                                <!-- Quadrant Backgrounds -->
+                                <!-- Top-Left: Authoritarian Left -->
+                                <rect x="48" y="48" width="162" height="162" fill="#fee2e2" />
+                                <!-- Top-Right: Authoritarian Right -->
+                                <rect x="210" y="48" width="162" height="162" fill="#dbeafe" />
+                                <!-- Bottom-Left: Libertarian Left -->
+                                <rect x="48" y="210" width="162" height="162" fill="#dcfce7" />
+                                <!-- Bottom-Right: Libertarian Right -->
+                                <rect x="210" y="210" width="162" height="162" fill="#fef3c7" />
+
+                                <!-- Grid Lines (Generated via JS) -->
+                                <g id="grid-lines" stroke="#94a3b8" stroke-opacity="0.38" stroke-width="1"></g>
+
+                                <!-- Main Axes -->
+                                <line x1="210" y1="48" x2="210" y2="372" stroke="#334155" stroke-width="2" />
+                                <line x1="48" y1="210" x2="372" y2="210" stroke="#334155" stroke-width="2" />
+
+                                <!-- Outer Border -->
+                                <rect x="48" y="48" width="324" height="324" fill="none" stroke="#64748b" stroke-width="1.5" />
+
+                                <!-- Crisp, Mobile-Legible Axis Labels -->
+                                <text x="210" y="29" text-anchor="middle" font-size="13" font-weight="800" fill="#1e293b" letter-spacing="0.6">AUTHORITARIAN</text>
+                                <text x="210" y="401" text-anchor="middle" font-size="13" font-weight="800" fill="#1e293b" letter-spacing="0.6">LIBERTARIAN</text>
+                                <text x="22" y="210" text-anchor="middle" font-size="13" font-weight="800" fill="#1e293b" letter-spacing="0.6" transform="rotate(-90 22 210)">ECONOMIC LEFT</text>
+                                <text x="398" y="210" text-anchor="middle" font-size="13" font-weight="800" fill="#1e293b" letter-spacing="0.6" transform="rotate(90 398 210)">ECONOMIC RIGHT</text>
+
+                                <!-- Quadrant Watermarks -->
+                                <text x="129" y="123" text-anchor="middle" font-size="12" font-weight="700" fill="#991b1b" fill-opacity="0.65">Authoritarian</text>
+                                <text x="129" y="138" text-anchor="middle" font-size="12" font-weight="700" fill="#991b1b" fill-opacity="0.65">Left</text>
+
+                                <text x="291" y="123" text-anchor="middle" font-size="12" font-weight="700" fill="#1e40af" fill-opacity="0.65">Authoritarian</text>
+                                <text x="291" y="138" text-anchor="middle" font-size="12" font-weight="700" fill="#1e40af" fill-opacity="0.65">Right</text>
+
+                                <text x="129" y="285" text-anchor="middle" font-size="12" font-weight="700" fill="#166534" fill-opacity="0.65">Libertarian</text>
+                                <text x="129" y="300" text-anchor="middle" font-size="12" font-weight="700" fill="#166534" fill-opacity="0.65">Left</text>
+
+                                <text x="291" y="285" text-anchor="middle" font-size="12" font-weight="700" fill="#92400e" fill-opacity="0.65">Libertarian</text>
+                                <text x="291" y="300" text-anchor="middle" font-size="12" font-weight="700" fill="#92400e" fill-opacity="0.65">Right</text>
+
+                                <!-- Crosshair Guide Lines -->
+                                <line id="crosshair-x" x1="48" y1="210" x2="372" y2="210" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="4,3" stroke-opacity="0.65" />
+                                <line id="crosshair-y" x1="210" y1="48" x2="210" y2="372" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="4,3" stroke-opacity="0.65" />
+
+                                <!-- User Result Marker -->
+                                <circle id="result-pulse" class="pulse-marker" cx="210" cy="210" r="15" fill="#dc2626" fill-opacity="0.35" />
+                                <circle id="result-dot" cx="210" cy="210" r="8" fill="#dc2626" stroke="#ffffff" stroke-width="2.5" />
+                            </svg>
+                        </div>
+
+                        <!-- Coordinate Readout -->
+                        <div class="mt-3.5 flex items-center justify-center space-x-3 sm:space-x-4 px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm font-medium w-full max-w-[380px]">
+                            <span>Economic: <strong id="econ-score-display" class="text-blue-600 dark:text-blue-400">0.0</strong></span>
+                            <span class="text-slate-300 dark:text-slate-600">|</span>
+                            <span>Social/Gov: <strong id="social-score-display" class="text-blue-600 dark:text-blue-400">0.0</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Quadrant, Closest Archetype & Dynamic Synthesis -->
+                    <div class="lg:col-span-7 space-y-4 sm:space-y-5">
+                        <div class="p-4 sm:p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+                            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                                <span id="quadrant-badge" class="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-md bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-300">
+                                    Quadrant
+                                </span>
+                                <span class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">Closest Philosophical Tradition</span>
+                            </div>
+                            <h3 id="archetype-title" class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-2 leading-snug">
+                                Centrist Pragmatist
+                            </h3>
+                            <p id="archetype-desc" class="text-xs sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+                                Description of the closest global political philosophy tradition.
+                            </p>
+                        </div>
+
+                        <!-- Nuanced Multi-Dimensional Synthesis -->
+                        <div class="p-4 sm:p-6 rounded-2xl bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700 space-y-3">
+                            <h4 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                Nuanced Profile Synthesis
+                            </h4>
+                            <p id="nuanced-summary" class="text-xs sm:text-base text-slate-700 dark:text-slate-200 leading-relaxed">
+                                Dynamic analysis of where your economic, governance, cultural, and international values align or diverge.
+                            </p>
+                            <div id="tension-callout" class="hidden p-3.5 rounded-xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60 text-xs sm:text-sm text-amber-900 dark:text-amber-200 leading-relaxed">
+                                <!-- Highlighted cross-axis nuance -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4 Secondary Values Spectrums Card -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-4 sm:p-10">
+                <div class="mb-5 sm:mb-6">
+                    <h3 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">Four-Axis Values Breakdown</h3>
+                    <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">
+                        A granular look at your inclinations across economics, state authority, cultural norms, and global order.
+                    </p>
+                </div>
+
+                <div id="spectrums-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    <!-- 4 Spectrum Bars rendered via JS -->
+                </div>
+            </div>
+
+            <!-- Expandable Answer Review & Axis Filter Drawer -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+                <button id="toggle-review-btn" class="w-full min-h-[60px] p-4 sm:p-6 flex items-center justify-between gap-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer">
+                    <div>
+                        <h3 class="text-sm sm:text-lg font-bold text-slate-900 dark:text-white">
+                            Review Your Answers & Question Axis Mapping
+                        </h3>
+                        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                            Filter by ideological axis and inspect every statement you answered.
+                        </p>
+                    </div>
+                    <svg id="review-chevron" class="w-5 h-5 text-slate-500 transition-transform duration-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="review-drawer" class="hidden border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40">
+                    <!-- Horizontally Scrollable Filter Tabs -->
+                    <div id="review-filter-tabs" class="px-4 sm:px-6 pt-4 pb-2 flex items-center gap-2 overflow-x-auto no-scrollbar border-b border-slate-200/70 dark:border-slate-800/70">
+                        <!-- Filter buttons injected via JS -->
+                    </div>
+                    <div id="review-items-list" class="p-4 sm:p-6 space-y-3 sm:space-y-4">
+                        <!-- Populated dynamically on results generation -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+                <button id="copy-btn" class="w-full sm:w-auto min-h-[48px] px-7 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold shadow-sm transition-colors cursor-pointer flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+                    </svg>
+                    <span>Copy Result Summary</span>
+                </button>
+                <button id="retake-btn" class="w-full sm:w-auto min-h-[48px] px-7 py-3 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-medium transition-colors cursor-pointer">
+                    Retake Assessment
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Sticky Mobile Bottom Action Bar (Visible during Quiz on < 640px screens) -->
+    <div id="mobile-sticky-nav" class="hidden sm:hidden fixed bottom-0 inset-x-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur border-t border-slate-200 dark:border-slate-800 px-3 pt-2.5 pb-safe shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
+        <div class="flex items-center justify-between gap-2.5">
+            <button id="mobile-prev-btn" class="min-h-[46px] px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm font-medium active:bg-slate-100 dark:active:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none transition-colors cursor-pointer shrink-0">
+                ← Prev
+            </button>
+            <span id="mobile-section-progress" class="text-xs font-semibold text-slate-500 dark:text-slate-400 text-center truncate">
+                0/6 in section
+            </span>
+            <button id="mobile-next-btn" class="min-h-[46px] px-5 py-2.5 rounded-xl bg-blue-600 active:bg-blue-700 text-white text-sm font-semibold shadow-sm transition-colors cursor-pointer shrink-0">
+                Next →
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Notification for Clipboard Copy -->
+    <div id="toast-notification" class="fixed bottom-20 sm:bottom-6 inset-x-4 sm:inset-x-auto sm:right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none flex justify-center sm:justify-end">
+        <div class="px-4 py-3 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs sm:text-sm font-medium shadow-xl flex items-center space-x-2">
+            <svg class="w-4 h-4 text-emerald-400 dark:text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span>Result summary copied to clipboard!</span>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer id="app-footer" class="w-full border-t border-slate-200 dark:border-slate-800 py-6 text-center text-xs text-slate-500 dark:text-slate-400">
+        <div class="max-w-5xl mx-auto px-4">
+            <p>Educational political philosophy & moral values framework designed with balanced, international framing.</p>
+        </div>
+    </footer>
+
+    <script>
+        (function () {
+            "use strict";
+
+            /**
+             * 6 Thematic Sections Metadata
+             */
+            const sections = [
+                {
+                    id: 1,
+                    shortTitle: "01. Economics",
+                    title: "Economic Structure & Markets",
+                    description: "How society should allocate resources, regulate private enterprise, and balance wealth redistribution with market incentives."
+                },
+                {
+                    id: 2,
+                    shortTitle: "02. Governance",
+                    title: "Governance, Authority & Law",
+                    description: "How political power should be structured, checked, and exercised in maintaining public order and justice."
+                },
+                {
+                    id: 3,
+                    shortTitle: "03. Liberties",
+                    title: "Civil Liberties & Personal Autonomy",
+                    description: "Where individual rights and personal freedoms should be protected from state or societal restriction."
+                },
+                {
+                    id: 4,
+                    shortTitle: "04. Culture",
+                    title: "Social Cohesion, Culture & Morality",
+                    description: "How communities navigate cultural pluralism, moral norms, inherited privilege, and shared social identity."
+                },
+                {
+                    id: 5,
+                    shortTitle: "05. Global",
+                    title: "Global Order, Borders & Sovereignty",
+                    description: "How nations should balance domestic sovereignty with international law, trade, migration, and global cooperation."
+                },
+                {
+                    id: 6,
+                    shortTitle: "06. Tech & Eco",
+                    title: "Technology, Science & Ecology",
+                    description: "How society should govern artificial intelligence, ecological limits, bioethics, and intellectual property."
+                }
+            ];
+
+            /**
+             * 36 Internationally Framed Questions (6 per section)
+             */
+            const allQuestions = [
+                // ================= SECTION 1: ECONOMIC STRUCTURE & MARKETS =================
+                {
+                    id: 1, section: 1, quickMode: true,
+                    topic: "Public Utilities & Infrastructure",
+                    text: "Essential utilities such as water supply, power grids, and passenger rail networks are better operated as public services than as profit-seeking private corporations.",
+                    primaryAxis: "econ", primaryDir: -1,
+                    secondaryAxis: "econ", secondaryDir: -1
+                },
+                {
+                    id: 2, section: 1, quickMode: true,
+                    topic: "Progressive Taxation & Redistribution",
+                    text: "A fair economy requires steep progressive taxes on high incomes and large fortunes to fund universal healthcare, education, and social safety nets.",
+                    primaryAxis: "econ", primaryDir: -1,
+                    secondaryAxis: "econ", secondaryDir: -1
+                },
+                {
+                    id: 3, section: 1, quickMode: false,
+                    topic: "Corporate Monopolies & Antitrust",
+                    text: "Governments should actively break up dominant multinational corporations when their market share stifles smaller competitors, even if consumers currently enjoy low prices.",
+                    primaryAxis: "econ", primaryDir: -1,
+                    secondaryAxis: "econ", secondaryDir: -1
+                },
+                {
+                    id: 4, section: 1, quickMode: true,
+                    topic: "Labor Flexibility & Entrepreneurship",
+                    text: "Flexible employment laws that allow businesses to hire and restructure workforces easily ultimately encourage entrepreneurship and reduce long-term unemployment.",
+                    primaryAxis: "econ", primaryDir: 1,
+                    secondaryAxis: "econ", secondaryDir: 1
+                },
+                {
+                    id: 5, section: 1, quickMode: false,
+                    topic: "Gig Economy & Worker Protections",
+                    text: "Digital platform and gig workers should be legally guaranteed minimum wages, paid leave, and collective bargaining rights rather than being treated as independent contractors.",
+                    primaryAxis: "econ", primaryDir: -1,
+                    secondaryAxis: "econ", secondaryDir: -1
+                },
+                {
+                    id: 6, section: 1, quickMode: false,
+                    topic: "Market Competition vs. Universal Services",
+                    text: "Allowing private providers to compete in sectors like pension management and higher education leads to higher quality and better fiscal sustainability than state-run systems.",
+                    primaryAxis: "econ", primaryDir: 1,
+                    secondaryAxis: "econ", secondaryDir: 1
+                },
+
+                // ================= SECTION 2: GOVERNANCE, AUTHORITY & LAW =================
+                {
+                    id: 7, section: 2, quickMode: true,
+                    topic: "Executive Power in Crises",
+                    text: "During severe national emergencies, executive leaders should be empowered to act swiftly by decree without waiting for lengthy legislative or judicial approval.",
+                    primaryAxis: "social", primaryDir: 1,
+                    secondaryAxis: "gov", secondaryDir: 1
+                },
+                {
+                    id: 8, section: 2, quickMode: false,
+                    topic: "Judicial Independence",
+                    text: "Constitutional courts should have the authority to strike down laws passed by an elected parliament if those laws infringe upon minority or constitutional rights.",
+                    primaryAxis: "social", primaryDir: -1,
+                    secondaryAxis: "gov", secondaryDir: -1
+                },
+                {
+                    id: 9, section: 2, quickMode: true,
+                    topic: "Decentralization & Local Autonomy",
+                    text: "Political and fiscal decision-making should be devolved as much as possible to regional and municipal communities rather than concentrated in a central capital.",
+                    primaryAxis: "social", primaryDir: -1,
+                    secondaryAxis: "gov", secondaryDir: -1
+                },
+                {
+                    id: 10, section: 2, quickMode: false,
+                    topic: "Technocracy vs. Direct Democracy",
+                    text: "Complex long-term policies—such as central banking, energy grids, and public health—should be guided primarily by independent experts rather than popular referendums.",
+                    primaryAxis: "social", primaryDir: 1,
+                    secondaryAxis: "gov", secondaryDir: 1
+                },
+                {
+                    id: 11, section: 2, quickMode: true,
+                    topic: "Public Surveillance & Policing",
+                    text: "Expanding public camera networks and biometric policing tools is a worthwhile trade-off if it measurably lowers violent crime in urban areas.",
+                    primaryAxis: "social", primaryDir: 1,
+                    secondaryAxis: "gov", secondaryDir: 1
+                },
+                {
+                    id: 12, section: 2, quickMode: false,
+                    topic: "Criminal Justice Philosophy",
+                    text: "Justice systems should prioritize rehabilitating offenders and addressing social root causes over imposing strict punitive sentences for deterrence.",
+                    primaryAxis: "social", primaryDir: -1,
+                    secondaryAxis: "gov", secondaryDir: -1
+                },
+
+                // ================= SECTION 3: CIVIL LIBERTIES & PERSONAL AUTONOMY =================
+                {
+                    id: 13, section: 3, quickMode: true,
+                    topic: "Free Expression vs. Hate Speech",
+                    text: "Freedom of speech should protect offensive or unpopular political and religious ideas, provided they do not directly incite imminent physical violence.",
+                    primaryAxis: "social", primaryDir: -1,
+                    secondaryAxis: "gov", secondaryDir: -1
+                },
+                {
+                    id: 14, section: 3, quickMode: true,
+                    topic: "Bodily Autonomy & End-of-Life Choices",
+                    text: "Mentally competent adults should have the legal right to make autonomous decisions regarding reproductive healthcare and voluntary medical aid in dying.",
+                    primaryAxis: "social", primaryDir: -1,
+                    secondaryAxis: "culture", secondaryDir: -1
+                },
+                {
+                    id: 15, section: 3, quickMode: true,
+                    topic: "Digital Privacy & Encryption",
+                    text: "Citizens have a fundamental right to end-to-end encrypted communications that neither governments nor technology companies can unlock.",
+                    primaryAxis: "social", primaryDir: -1,
+                    secondaryAxis: "gov", secondaryDir: -1
+                },
+                {
+                    id: 16, section: 3, quickMode: false,
+                    topic: "Civil Disobedience & Protest",
+                    text: "Non-violent protests and strikes remain legitimate democratic tools even when they temporarily block infrastructure or disrupt commercial activity.",
+                    primaryAxis: "social", primaryDir: -1,
+                    secondaryAxis: "gov", secondaryDir: -1
+                },
+                {
+                    id: 17, section: 3, quickMode: false,
+                    topic: "Secularism & Public Institutions",
+                    text: "State institutions, public schools, and legal codes should remain strictly secular rather than reflecting the religious traditions of the majority population.",
+                    primaryAxis: "social", primaryDir: -1,
+                    secondaryAxis: "culture", secondaryDir: -1
+                },
+                {
+                    id: 18, section: 3, quickMode: false,
+                    topic: "Civilian Firearm Regulation",
+                    text: "Strict licensing, background checks, and limits on civilian firearm ownership are necessary responsibilities of the state to protect public safety.",
+                    primaryAxis: "social", primaryDir: 1,
+                    secondaryAxis: "gov", secondaryDir: 1
+                },
+
+                // ================= SECTION 4: SOCIAL COHESION, CULTURE & MORALITY =================
+                {
+                    id: 19, section: 4, quickMode: true,
+                    topic: "Pluralism vs. Civic Assimilation",
+                    text: "Social harmony is stronger when newcomers integrate into a shared national language and civic culture rather than maintaining separate cultural enclaves.",
+                    primaryAxis: "social", primaryDir: 1,
+                    secondaryAxis: "culture", secondaryDir: 1
+                },
+                {
+                    id: 20, section: 4, quickMode: true,
+                    topic: "Family Structures & Social Norms",
+                    text: "Society thrives best when public policy actively encourages traditional family structures rather than treating all household arrangements as equally beneficial.",
+                    primaryAxis: "social", primaryDir: 1,
+                    secondaryAxis: "culture", secondaryDir: 1
+                },
+                {
+                    id: 21, section: 4, quickMode: false,
+                    topic: "Universal Human Rights vs. Local Customs",
+                    text: "Universal human rights standards should take precedence over local cultural or religious customs whenever the two come into conflict.",
+                    primaryAxis: "social", primaryDir: -1,
+                    secondaryAxis: "culture", secondaryDir: -1
+                },
+                {
+                    id: 22, section: 4, quickMode: true,
+                    topic: "Meritocracy vs. Systemic Equity",
+                    text: "Institutions should focus on equalizing outcomes and correcting historical group disparities rather than relying solely on individual merit-based selection.",
+                    primaryAxis: "econ", primaryDir: -1,
+                    secondaryAxis: "culture", secondaryDir: -1
+                },
+                {
+                    id: 23, section: 4, quickMode: false,
+                    topic: "Inheritance & Intergenerational Wealth",
+                    text: "Parents should be free to pass on the full value of their accumulated property and wealth to their children without heavy inheritance taxes.",
+                    primaryAxis: "econ", primaryDir: 1,
+                    secondaryAxis: "culture", secondaryDir: 1
+                },
+                {
+                    id: 24, section: 4, quickMode: false,
+                    topic: "Cultural Heritage & Public Funding",
+                    text: "Governments should fund the preservation of national monuments, classical arts, and historical heritage even when they attract limited commercial audiences.",
+                    primaryAxis: "econ", primaryDir: -1,
+                    secondaryAxis: "culture", secondaryDir: 1
+                },
+
+                // ================= SECTION 5: GLOBAL ORDER, BORDERS & SOVEREIGNTY =================
+                {
+                    id: 25, section: 5, quickMode: true,
+                    topic: "Supranational Institutions & Treaties",
+                    text: "Nations should accept binding rulings from international courts and multilateral bodies on issues like trade, human rights, and climate agreements.",
+                    primaryAxis: "social", primaryDir: -1,
+                    secondaryAxis: "global", secondaryDir: -1
+                },
+                {
+                    id: 26, section: 5, quickMode: true,
+                    topic: "Asylum & Humanitarian Migration",
+                    text: "Wealthier nations have a moral and legal duty to accept refugees fleeing conflict or persecution, even when doing so strains domestic public services.",
+                    primaryAxis: "social", primaryDir: -1,
+                    secondaryAxis: "global", secondaryDir: -1
+                },
+                {
+                    id: 27, section: 5, quickMode: true,
+                    topic: "Strategic Protectionism vs. Free Trade",
+                    text: "Countries should use tariffs and industrial subsidies to protect strategic domestic manufacturing and agriculture from cheaper foreign imports.",
+                    primaryAxis: "econ", primaryDir: -1,
+                    secondaryAxis: "global", secondaryDir: 1
+                },
+                {
+                    id: 28, section: 5, quickMode: false,
+                    topic: "Global Climate & Development Finance",
+                    text: "Industrialized nations bear historical responsibility for emissions and should transfer significant financial resources to help developing countries build clean infrastructure.",
+                    primaryAxis: "econ", primaryDir: -1,
+                    secondaryAxis: "global", secondaryDir: -1
+                },
+                {
+                    id: 29, section: 5, quickMode: false,
+                    topic: "Sovereignty vs. Humanitarian Intervention",
+                    text: "The international community is justified in intervening—through sanctions or peacekeepers—when a sovereign government commits severe abuses against its own citizens.",
+                    primaryAxis: "social", primaryDir: 1,
+                    secondaryAxis: "global", secondaryDir: -1
+                },
+                {
+                    id: 30, section: 5, quickMode: false,
+                    topic: "Global Minimum Corporate Taxation",
+                    text: "Countries should establish a binding global minimum tax rate on multinational corporations so companies cannot shift profits to low-tax jurisdictions.",
+                    primaryAxis: "econ", primaryDir: -1,
+                    secondaryAxis: "global", secondaryDir: -1
+                },
+
+                // ================= SECTION 6: TECHNOLOGY, SCIENCE & ECOLOGY =================
+                {
+                    id: 31, section: 6, quickMode: true,
+                    topic: "AI Governance & Algorithmic Audits",
+                    text: "Frontier artificial intelligence models should undergo mandatory government safety testing and algorithmic transparency audits before public deployment.",
+                    primaryAxis: "social", primaryDir: 1,
+                    secondaryAxis: "gov", secondaryDir: 1
+                },
+                {
+                    id: 32, section: 6, quickMode: true,
+                    topic: "Ecological Limits vs. Economic Growth",
+                    text: "Protecting biodiversity and meeting strict carbon reduction targets must take priority over maximizing short-term GDP and industrial growth.",
+                    primaryAxis: "econ", primaryDir: -1,
+                    secondaryAxis: "econ", secondaryDir: -1
+                },
+                {
+                    id: 33, section: 6, quickMode: false,
+                    topic: "Bioethics & Human Genetic Editing",
+                    text: "Strict international bans should prohibit heritable human germline editing, even if the technology could eliminate severe congenital diseases.",
+                    primaryAxis: "social", primaryDir: 1,
+                    secondaryAxis: "culture", secondaryDir: 1
+                },
+                {
+                    id: 34, section: 6, quickMode: false,
+                    topic: "Intellectual Property vs. Public Commons",
+                    text: "Patents on essential medicines and green energy technologies should be shortened or waived during crises so knowledge can be shared globally.",
+                    primaryAxis: "econ", primaryDir: -1,
+                    secondaryAxis: "global", secondaryDir: -1
+                },
+                {
+                    id: 35, section: 6, quickMode: false,
+                    topic: "Nuclear Energy & Technological Risk",
+                    text: "Expanding modern nuclear power and large-scale engineering solutions is essential to decarbonize reliably without rationing energy consumption.",
+                    primaryAxis: "econ", primaryDir: 1,
+                    secondaryAxis: "econ", secondaryDir: 1
+                },
+                {
+                    id: 36, section: 6, quickMode: true,
+                    topic: "Personal Data Ownership",
+                    text: "Individuals should hold strict property rights over their personal behavioral data, barring tech platforms from monetizing it without explicit opt-in consent.",
+                    primaryAxis: "social", primaryDir: -1,
+                    secondaryAxis: "gov", secondaryDir: -1
+                }
+            ];
+
+            // 5-Point Likert Scale Options
+            const likertOptions = [
+                { short: "Strongly Disagree", value: -2 },
+                { short: "Disagree", value: -1 },
+                { short: "Neutral", value: 0 },
+                { short: "Agree", value: 1 },
+                { short: "Strongly Agree", value: 2 }
+            ];
+
+            // Application State
+            let activeQuestions = [];
+            let currentSectionIndex = 0;
+            let answers = {};
+            let focusedQuestionId = null;
+            let currentReviewFilter = "all";
+
+            // DOM Elements
+            const introScreen = document.getElementById("intro-screen");
+            const quizScreen = document.getElementById("quiz-screen");
+            const resultsScreen = document.getElementById("results-screen");
+            const sectionBadge = document.getElementById("section-badge");
+            const progressBadge = document.getElementById("progress-badge");
+            const headerStepperWrap = document.getElementById("header-stepper-wrap");
+            const headerSectionPills = document.getElementById("header-section-pills");
+            const headerProgressWrap = document.getElementById("header-progress-wrap");
+            const progressBar = document.getElementById("progress-bar");
+
+            const sectionKicker = document.getElementById("section-kicker");
+            const sectionDots = document.getElementById("section-dots");
+            const sectionTitle = document.getElementById("section-title");
+            const sectionDesc = document.getElementById("section-desc");
+            const questionsList = document.getElementById("questions-list");
+            const validationMsg = document.getElementById("validation-msg");
+            const prevBtn = document.getElementById("prev-btn");
+            const nextBtn = document.getElementById("next-btn");
+            const sectionCounterFooter = document.getElementById("section-counter-footer");
+
+            const mobileStickyNav = document.getElementById("mobile-sticky-nav");
+            const mobilePrevBtn = document.getElementById("mobile-prev-btn");
+            const mobileNextBtn = document.getElementById("mobile-next-btn");
+            const mobileSectionProgress = document.getElementById("mobile-section-progress");
+            const appFooter = document.getElementById("app-footer");
+
+            function buildSvgGrid() {
+                const gridGroup = document.getElementById("grid-lines");
+                if (!gridGroup) return;
+                gridGroup.innerHTML = "";
+                for (let step = -10; step <= 10; step++) {
+                    if (step === 0) continue;
+                    const pos = 210 + (step * 16.2);
+                    const vLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    vLine.setAttribute("x1", String(pos));
+                    vLine.setAttribute("y1", "48");
+                    vLine.setAttribute("x2", String(pos));
+                    vLine.setAttribute("y2", "372");
+                    gridGroup.appendChild(vLine);
+
+                    const hLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    hLine.setAttribute("x1", "48");
+                    hLine.setAttribute("y1", String(pos));
+                    hLine.setAttribute("x2", "372");
+                    hLine.setAttribute("y2", String(pos));
+                    gridGroup.appendChild(hLine);
+                }
+            }
+
+            function startAssessment(isQuickMode) {
+                activeQuestions = isQuickMode
+                    ? allQuestions.filter(q => q.quickMode)
+                    : [...allQuestions];
+                answers = {};
+                currentSectionIndex = 0;
+                focusedQuestionId = activeQuestions.length > 0 ? activeQuestions[0].id : null;
+
+                introScreen.classList.add("hidden");
+                resultsScreen.classList.add("hidden");
+                quizScreen.classList.remove("hidden");
+                sectionBadge.classList.remove("hidden");
+                progressBadge.classList.remove("hidden");
+                headerStepperWrap.classList.remove("hidden");
+                headerProgressWrap.classList.remove("hidden");
+                mobileStickyNav.classList.remove("hidden");
+                appFooter.classList.add("pb-24", "sm:pb-6");
+
+                updateOverallProgress();
+                renderSection();
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+
+            document.getElementById("start-full-btn").addEventListener("click", function () {
+                startAssessment(false);
+            });
+            document.getElementById("start-quick-btn").addEventListener("click", function () {
+                startAssessment(true);
+            });
+
+            function renderHeaderStepper() {
+                headerSectionPills.innerHTML = "";
+                sections.forEach(function (sec, idx) {
+                    const secQs = activeQuestions.filter(q => q.section === sec.id);
+                    const answeredInSec = secQs.filter(q => answers[q.id] !== undefined).length;
+                    const isDone = answeredInSec === secQs.length && secQs.length > 0;
+                    const isCurrent = idx === currentSectionIndex;
+
+                    const pill = document.createElement("button");
+                    pill.type = "button";
+                    pill.className = "min-h-[34px] px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 flex items-center gap-1.5 cursor-pointer " + (
+                        isCurrent
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : isDone
+                                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+                                : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                    );
+
+                    const titleSpan = document.createElement("span");
+                    titleSpan.textContent = sec.shortTitle;
+
+                    const countSpan = document.createElement("span");
+                    countSpan.className = "text-[10px] opacity-80";
+                    countSpan.textContent = isDone ? "✓" : (answeredInSec + "/" + secQs.length);
+
+                    pill.appendChild(titleSpan);
+                    pill.appendChild(countSpan);
+
+                    pill.addEventListener("click", function () {
+                        currentSectionIndex = idx;
+                        updateOverallProgress();
+                        renderSection();
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                    });
+                    headerSectionPills.appendChild(pill);
+
+                    if (isCurrent) {
+                        requestAnimationFrame(function () {
+                            const targetScrollLeft = pill.offsetLeft - (headerSectionPills.clientWidth / 2) + (pill.offsetWidth / 2);
+                            headerSectionPills.scrollLeft = Math.max(0, targetScrollLeft);
+                        });
+                    }
+                });
+            }
+
+            function updateOverallProgress() {
+                const total = activeQuestions.length;
+                const answeredCount = Object.keys(answers).length;
+                const pct = total > 0 ? Math.round((answeredCount / total) * 100) : 0;
+
+                sectionBadge.textContent = "Sec " + (currentSectionIndex + 1) + "/" + sections.length;
+                progressBadge.textContent = answeredCount + " / " + total;
+                progressBar.style.width = pct + "%";
+
+                const sec = sections[currentSectionIndex];
+                if (sec) {
+                    const secQs = activeQuestions.filter(q => q.section === sec.id);
+                    const secAnswered = secQs.filter(q => answers[q.id] !== undefined).length;
+                    mobileSectionProgress.textContent = secAnswered + "/" + secQs.length + " answered";
+                }
+
+                renderHeaderStepper();
+            }
+
+            function renderSection() {
+                validationMsg.classList.add("hidden");
+                const sec = sections[currentSectionIndex];
+                const sectionQuestions = activeQuestions.filter(q => q.section === sec.id);
+
+                sectionKicker.textContent = "Section " + sec.id + " of " + sections.length;
+                sectionTitle.textContent = sec.title;
+                sectionDesc.textContent = sec.description;
+                sectionCounterFooter.textContent = "Section " + sec.id + " of " + sections.length;
+
+                sectionDots.innerHTML = "";
+                sections.forEach(function (s, idx) {
+                    const dot = document.createElement("span");
+                    const isCurrent = idx === currentSectionIndex;
+                    const secQs = activeQuestions.filter(q => q.section === s.id);
+                    const allDone = secQs.every(q => answers[q.id] !== undefined);
+                    dot.className = "h-2 rounded-full transition-all " + (
+                        isCurrent ? "w-6 bg-blue-600" : allDone ? "w-2.5 bg-emerald-500" : "w-2.5 bg-slate-300 dark:bg-slate-700"
+                    );
+                    sectionDots.appendChild(dot);
+                });
+
+                questionsList.innerHTML = "";
+                if (sectionQuestions.length > 0) {
+                    focusedQuestionId = sectionQuestions[0].id;
+                }
+
+                sectionQuestions.forEach(function (q) {
+                    const globalIndex = activeQuestions.findIndex(item => item.id === q.id) + 1;
+                    const card = document.createElement("div");
+                    card.id = "q-card-" + q.id;
+                    card.tabIndex = 0;
+                    card.className = "bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-4 sm:p-7 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/40";
+
+                    card.addEventListener("focusin", function () {
+                        focusedQuestionId = q.id;
+                    });
+
+                    const headerDiv = document.createElement("div");
+                    headerDiv.className = "flex items-center justify-between gap-2 mb-2";
+
+                    const topicSpan = document.createElement("span");
+                    topicSpan.className = "text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400";
+                    topicSpan.textContent = "Q" + globalIndex + " · " + q.topic;
+
+                    const statusSpan = document.createElement("span");
+                    statusSpan.id = "q-status-" + q.id;
+                    const isAnswered = answers[q.id] !== undefined;
+                    statusSpan.className = "text-[11px] sm:text-xs font-medium shrink-0 " + (isAnswered ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400");
+                    statusSpan.textContent = isAnswered ? "✓ Answered" : "Unanswered";
+
+                    headerDiv.appendChild(topicSpan);
+                    headerDiv.appendChild(statusSpan);
+
+                    const questionTextP = document.createElement("p");
+                    questionTextP.className = "text-[15px] sm:text-lg font-medium text-slate-900 dark:text-white leading-relaxed mb-4 sm:mb-5";
+                    questionTextP.textContent = q.text;
+
+                    const optionsGrid = document.createElement("div");
+                    optionsGrid.className = "grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-2.5";
+                    optionsGrid.setAttribute("role", "radiogroup");
+
+                    likertOptions.forEach(function (opt, optIdx) {
+                        const isChecked = answers[q.id] === opt.value;
+                        const btn = document.createElement("button");
+                        btn.type = "button";
+                        btn.setAttribute("role", "radio");
+                        btn.setAttribute("aria-checked", isChecked ? "true" : "false");
+                        btn.dataset.qId = String(q.id);
+                        btn.dataset.val = String(opt.value);
+                        const spanClass = opt.value === 0 ? "min-[400px]:col-span-2 sm:col-span-1" : "";
+                        btn.className = "likert-pill cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 rounded-xl " + spanClass;
+
+                        const pillBox = document.createElement("div");
+                        pillBox.className = "w-full h-full px-3 py-3 sm:px-2.5 sm:py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/90 dark:bg-slate-800/60 hover:border-blue-400 dark:hover:border-blue-500 flex items-center justify-between sm:flex-col sm:justify-center text-left sm:text-center";
+
+                        const labelSpan = document.createElement("span");
+                        labelSpan.className = "text-xs sm:text-xs leading-snug";
+                        labelSpan.textContent = opt.short;
+
+                        const keySpan = document.createElement("span");
+                        keySpan.className = "text-[10px] opacity-50 sm:mt-1 font-mono";
+                        keySpan.textContent = "[" + (optIdx + 1) + "]";
+
+                        pillBox.appendChild(labelSpan);
+                        pillBox.appendChild(keySpan);
+                        btn.appendChild(pillBox);
+
+                        btn.addEventListener("click", function () {
+                            answers[q.id] = opt.value;
+                            focusedQuestionId = q.id;
+                            optionsGrid.querySelectorAll('[role="radio"]').forEach(function (el) {
+                                el.setAttribute("aria-checked", el === btn ? "true" : "false");
+                            });
+                            card.classList.remove("unanswered-highlight");
+                            const statusEl = document.getElementById("q-status-" + q.id);
+                            if (statusEl) {
+                                statusEl.textContent = "✓ Answered";
+                                statusEl.className = "text-[11px] sm:text-xs font-medium shrink-0 text-emerald-600 dark:text-emerald-400";
+                            }
+                            updateOverallProgress();
+                            const remaining = sectionQuestions.filter(item => answers[item.id] === undefined);
+                            if (remaining.length === 0) {
+                                validationMsg.classList.add("hidden");
+                            }
+                        });
+
+                        optionsGrid.appendChild(btn);
+                    });
+
+                    card.appendChild(headerDiv);
+                    card.appendChild(questionTextP);
+                    card.appendChild(optionsGrid);
+                    questionsList.appendChild(card);
+                });
+
+                const isFirst = currentSectionIndex === 0;
+                const isLast = currentSectionIndex === sections.length - 1;
+
+                prevBtn.disabled = isFirst;
+                mobilePrevBtn.disabled = isFirst;
+
+                nextBtn.textContent = isLast ? "Calculate Results →" : "Next Section →";
+                mobileNextBtn.textContent = isLast ? "See Results →" : "Next →";
+            }
+
+            document.addEventListener("keydown", function (e) {
+                if (quizScreen.classList.contains("hidden")) return;
+                if (["1", "2", "3", "4", "5"].includes(e.key)) {
+                    const sec = sections[currentSectionIndex];
+                    const sectionQuestions = activeQuestions.filter(q => q.section === sec.id);
+                    const targetQ = sectionQuestions.find(q => q.id === focusedQuestionId)
+                        || sectionQuestions.find(q => answers[q.id] === undefined)
+                        || sectionQuestions[0];
+
+                    if (targetQ) {
+                        const optIndex = parseInt(e.key, 10) - 1;
+                        const optVal = likertOptions[optIndex].value;
+                        const optionBtn = document.querySelector('button[role="radio"][data-q-id="' + targetQ.id + '"][data-val="' + optVal + '"]');
+                        if (optionBtn) {
+                            optionBtn.click();
+                            const nextUnanswered = sectionQuestions.find(q => answers[q.id] === undefined);
+                            if (nextUnanswered) {
+                                focusedQuestionId = nextUnanswered.id;
+                            }
+                        }
+                    }
+                }
+            });
+
+            function goPreviousSection() {
+                if (currentSectionIndex > 0) {
+                    currentSectionIndex--;
+                    updateOverallProgress();
+                    renderSection();
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+            }
+
+            function goNextSection() {
+                const sec = sections[currentSectionIndex];
+                const sectionQuestions = activeQuestions.filter(q => q.section === sec.id);
+                const unanswered = sectionQuestions.filter(q => answers[q.id] === undefined);
+
+                if (unanswered.length > 0) {
+                    sectionQuestions.forEach(function (q) {
+                        const card = document.getElementById("q-card-" + q.id);
+                        if (answers[q.id] === undefined) {
+                            card.classList.add("unanswered-highlight");
+                        } else {
+                            card.classList.remove("unanswered-highlight");
+                        }
+                    });
+                    document.getElementById("validation-text").textContent =
+                        "Please answer the remaining " + unanswered.length + " highlighted question" + (unanswered.length > 1 ? "s" : "") + " in this section.";
+                    validationMsg.classList.remove("hidden");
+
+                    const firstCard = document.getElementById("q-card-" + unanswered[0].id);
+                    if (firstCard) {
+                        firstCard.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }
+                    return;
+                }
+
+                if (currentSectionIndex < sections.length - 1) {
+                    currentSectionIndex++;
+                    updateOverallProgress();
+                    renderSection();
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                } else {
+                    calculateAndShowResults();
+                }
+            }
+
+            prevBtn.addEventListener("click", goPreviousSection);
+            mobilePrevBtn.addEventListener("click", goPreviousSection);
+            nextBtn.addEventListener("click", goNextSection);
+            mobileNextBtn.addEventListener("click", goNextSection);
+
+            document.getElementById("scroll-unanswered-btn").addEventListener("click", function () {
+                const sec = sections[currentSectionIndex];
+                const firstUnanswered = activeQuestions.find(q => q.section === sec.id && answers[q.id] === undefined);
+                if (firstUnanswered) {
+                    const card = document.getElementById("q-card-" + firstUnanswered.id);
+                    if (card) {
+                        card.scrollIntoView({ behavior: "smooth", block: "center" });
+                        card.focus();
+                    }
+                }
+            });
+
+            function calculateAndShowResults() {
+                let econRaw = 0;
+                let econMax = 0;
+                let socialRaw = 0;
+                let socialMax = 0;
+
+                const secTotals = {
+                    econ: { raw: 0, max: 0 },
+                    gov: { raw: 0, max: 0 },
+                    culture: { raw: 0, max: 0 },
+                    global: { raw: 0, max: 0 }
+                };
+
+                activeQuestions.forEach(function (q) {
+                    const ans = answers[q.id] !== undefined ? answers[q.id] : 0;
+
+                    if (q.primaryAxis === "econ") {
+                        econRaw += ans * q.primaryDir;
+                        econMax += 2;
+                    } else {
+                        socialRaw += ans * q.primaryDir;
+                        socialMax += 2;
+                    }
+
+                    if (secTotals[q.secondaryAxis]) {
+                        secTotals[q.secondaryAxis].raw += ans * q.secondaryDir;
+                        secTotals[q.secondaryAxis].max += 2;
+                    }
+                });
+
+                const econScore = Number(((econRaw / econMax) * 10).toFixed(1));
+                const socialScore = Number(((socialRaw / socialMax) * 10).toFixed(1));
+
+                const spectrumScores = {
+                    econ: secTotals.econ.max ? Math.round(((secTotals.econ.raw / secTotals.econ.max) + 1) * 50) : 50,
+                    gov: secTotals.gov.max ? Math.round(((secTotals.gov.raw / secTotals.gov.max) + 1) * 50) : 50,
+                    culture: secTotals.culture.max ? Math.round(((secTotals.culture.raw / secTotals.culture.max) + 1) * 50) : 50,
+                    global: secTotals.global.max ? Math.round(((secTotals.global.raw / secTotals.global.max) + 1) * 50) : 50
+                };
+
+                quizScreen.classList.add("hidden");
+                sectionBadge.classList.add("hidden");
+                progressBadge.classList.add("hidden");
+                headerStepperWrap.classList.add("hidden");
+                headerProgressWrap.classList.add("hidden");
+                mobileStickyNav.classList.add("hidden");
+                appFooter.classList.remove("pb-24", "sm:pb-6");
+                resultsScreen.classList.remove("hidden");
+
+                const plotX = 210 + (econScore * 16.2);
+                const plotY = 210 - (socialScore * 16.2);
+
+                document.getElementById("result-dot").setAttribute("cx", String(plotX));
+                document.getElementById("result-dot").setAttribute("cy", String(plotY));
+                document.getElementById("result-pulse").setAttribute("cx", String(plotX));
+                document.getElementById("result-pulse").setAttribute("cy", String(plotY));
+
+                const cxLine = document.getElementById("crosshair-x");
+                cxLine.setAttribute("y1", String(plotY));
+                cxLine.setAttribute("y2", String(plotY));
+
+                const cyLine = document.getElementById("crosshair-y");
+                cyLine.setAttribute("x1", String(plotX));
+                cyLine.setAttribute("x2", String(plotX));
+
+                document.getElementById("econ-score-display").textContent = econScore > 0 ? "+" + econScore : String(econScore);
+                document.getElementById("social-score-display").textContent = socialScore > 0 ? "+" + socialScore : String(socialScore);
+
+                currentReviewFilter = "all";
+                populateArchetypeAndSynthesis(econScore, socialScore, spectrumScores);
+                renderFourSpectrums(spectrumScores);
+                renderReviewFilterTabs();
+                renderReviewDrawer();
+
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+
+            function populateArchetypeAndSynthesis(econ, social, specs) {
+                const qBadge = document.getElementById("quadrant-badge");
+                const aTitle = document.getElementById("archetype-title");
+                const aDesc = document.getElementById("archetype-desc");
+                const nSummary = document.getElementById("nuanced-summary");
+                const tCallout = document.getElementById("tension-callout");
+
+                let archetype = {
+                    quadrant: "Centrist",
+                    badgeClass: "bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200",
+                    name: "",
+                    desc: ""
+                };
+
+                if (Math.abs(econ) <= 1.8 && Math.abs(social) <= 1.8) {
+                    archetype = {
+                        quadrant: "Centrist / Balanced",
+                        badgeClass: "bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200",
+                        name: "Centrist Pragmatist",
+                        desc: "You favor a balanced mixed economy paired with constitutional checks and moderate social governance—seeking practical, incremental reforms over rigid ideological doctrines."
+                    };
+                } else if (econ <= 0 && social >= 0) {
+                    archetype.quadrant = "Authoritarian Left";
+                    archetype.badgeClass = "bg-red-100 text-red-800 dark:bg-red-950/80 dark:text-red-300";
+                    if (econ < -5 && social > 4.5) {
+                        archetype.name = "State Socialist";
+                        archetype.desc = "You strongly support collective or public ownership of key industries, robust economic planning, and strong centralized state authority to enforce social order and equality.";
+                    } else {
+                        archetype.name = "Communitarian Social Democrat";
+                        archetype.desc = "You favor strong public services, wealth redistribution, and market regulation combined with institutional stability, public order, and collective civic responsibility.";
+                    }
+                } else if (econ > 0 && social >= 0) {
+                    archetype.quadrant = "Authoritarian Right";
+                    archetype.badgeClass = "bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300";
+                    if (econ > 4.5 && social > 4.5) {
+                        archetype.name = "National Conservative";
+                        archetype.desc = "You combine support for private enterprise and property rights with strong national sovereignty, traditional social institutions, and decisive state authority.";
+                    } else {
+                        archetype.name = "Institutional Conservative / Christian Democrat";
+                        archetype.desc = "You support a market-oriented economy tempered by social cohesion, rule of law, cultural continuity, and established civic institutions.";
+                    }
+                } else if (econ <= 0 && social < 0) {
+                    archetype.quadrant = "Libertarian Left";
+                    archetype.badgeClass = "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300";
+                    if (econ < -5 && social < -4.5) {
+                        archetype.name = "Libertarian Socialist";
+                        archetype.desc = "You advocate for egalitarian wealth distribution, cooperative or public commons, and ecological stewardship alongside maximum civil liberties and decentralized governance.";
+                    } else if (econ >= -3.5) {
+                        archetype.name = "Social Liberal";
+                        archetype.desc = "You combine a regulated market economy and strong social safety nets with deep commitments to civil rights, personal autonomy, pluralism, and international cooperation.";
+                    } else {
+                        archetype.name = "Democratic Socialist / Green Progressivist";
+                        archetype.desc = "You prioritize economic equality, universal public services, and ecological sustainability while strongly defending individual civil liberties and democratic participation.";
+                    }
+                } else {
+                    archetype.quadrant = "Libertarian Right";
+                    archetype.badgeClass = "bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300";
+                    if (econ > 5 && social < -4.5) {
+                        archetype.name = "Market Libertarian";
+                        archetype.desc = "You favor minimal state intervention in both economic markets and personal life—championing free trade, property rights, deregulation, privacy, and individual autonomy.";
+                    } else {
+                        archetype.name = "Classical Liberal";
+                        archetype.desc = "You emphasize free-market enterprise, rule of law, limited government power, freedom of expression, and open international commerce.";
+                    }
+                }
+
+                qBadge.textContent = archetype.quadrant;
+                qBadge.className = "text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-md " + archetype.badgeClass;
+                aTitle.textContent = archetype.name;
+                aDesc.textContent = archetype.desc;
+
+                const econPhrase = specs.econ < 42
+                    ? "redistributive and public-stewardship economic policies"
+                    : specs.econ > 58
+                        ? "free-market enterprise and private-sector efficiency"
+                        : "a mixed economy balancing market incentives with public safeguards";
+
+                const govPhrase = specs.gov < 42
+                    ? "strong civil liberties, digital privacy, and decentralized governance"
+                    : specs.gov > 58
+                        ? "decisive state authority, institutional order, and public security"
+                        : "constitutional checks balanced with practical public order";
+
+                const cultPhrase = specs.culture < 42
+                    ? "culturally pluralist and progressive social norms"
+                    : specs.culture > 58
+                        ? "traditional social cohesion and shared civic continuity"
+                        : "a blend of evolving social freedoms and inherited civic traditions";
+
+                const globPhrase = specs.global < 42
+                    ? "cosmopolitan international cooperation and multilateral treaties"
+                    : specs.global > 58
+                        ? "national sovereignty and strategic domestic protection"
+                        : "pragmatic engagement with global institutions alongside national autonomy";
+
+                nSummary.textContent = "Across the full assessment, your responses pair " + econPhrase + " with " + govPhrase + ". On broader societal questions, you lean toward " + cultPhrase + ", while favoring " + globPhrase + " in international affairs.";
+
+                tCallout.classList.add("hidden");
+                if (specs.econ < 40 && specs.culture > 60) {
+                    tCallout.textContent = "Notable Cross-Axis Profile: Your results reflect a 'Communitarian Left' pattern—favoring economic redistribution and worker protections while valuing traditional social cohesion over rapid cultural individualism.";
+                    tCallout.classList.remove("hidden");
+                } else if (specs.econ > 60 && specs.culture < 40) {
+                    tCallout.textContent = "Notable Cross-Axis Profile: Your results reflect a 'Cosmopolitan Liberal' pattern—combining market-friendly economic views with socially progressive and pluralist cultural values.";
+                    tCallout.classList.remove("hidden");
+                } else if (specs.gov < 40 && specs.global > 60) {
+                    tCallout.textContent = "Notable Cross-Axis Profile: You strongly favor domestic civil liberties and local decentralization while remaining skeptical of supranational governance and binding international treaties.";
+                    tCallout.classList.remove("hidden");
+                }
+            }
+
+            function renderFourSpectrums(specs) {
+                const container = document.getElementById("spectrums-container");
+                container.innerHTML = "";
+
+                const bars = [
+                    {
+                        title: "Economic Philosophy",
+                        leftLabel: "Collective / Redistributive",
+                        rightLabel: "Market / Private",
+                        rightPct: specs.econ,
+                        color: "bg-blue-600"
+                    },
+                    {
+                        title: "Governance & Authority",
+                        leftLabel: "Civil Liberty / Local",
+                        rightLabel: "State Authority / Order",
+                        rightPct: specs.gov,
+                        color: "bg-indigo-600"
+                    },
+                    {
+                        title: "Cultural & Moral Outlook",
+                        leftLabel: "Progressive / Pluralist",
+                        rightLabel: "Traditional / Communitarian",
+                        rightPct: specs.culture,
+                        color: "bg-emerald-600"
+                    },
+                    {
+                        title: "Global & Border Orientation",
+                        leftLabel: "Cosmopolitan / Global",
+                        rightLabel: "Sovereign / Protectionist",
+                        rightPct: specs.global,
+                        color: "bg-amber-600"
+                    }
+                ];
+
+                bars.forEach(function (bar) {
+                    const leftPct = 100 - bar.rightPct;
+                    const el = document.createElement("div");
+                    el.className = "p-4 sm:p-5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 space-y-2.5";
+
+                    const topRow = document.createElement("div");
+                    topRow.className = "flex items-center justify-between gap-2";
+
+                    const titleSpan = document.createElement("span");
+                    titleSpan.className = "text-sm font-bold text-slate-900 dark:text-white";
+                    titleSpan.textContent = bar.title;
+
+                    const ratioSpan = document.createElement("span");
+                    ratioSpan.className = "text-xs font-semibold text-slate-500 dark:text-slate-400 shrink-0";
+                    ratioSpan.textContent = leftPct + "% / " + bar.rightPct + "%";
+
+                    topRow.appendChild(titleSpan);
+                    topRow.appendChild(ratioSpan);
+
+                    const labelsRow = document.createElement("div");
+                    labelsRow.className = "flex items-start justify-between gap-3 text-[11px] sm:text-xs text-slate-600 dark:text-slate-300 font-medium leading-tight";
+
+                    const leftSpan = document.createElement("span");
+                    leftSpan.className = "max-w-[48%]";
+                    leftSpan.textContent = bar.leftLabel + " (" + leftPct + "%)";
+
+                    const rightSpan = document.createElement("span");
+                    rightSpan.className = "max-w-[48%] text-right";
+                    rightSpan.textContent = bar.rightLabel + " (" + bar.rightPct + "%)";
+
+                    labelsRow.appendChild(leftSpan);
+                    labelsRow.appendChild(rightSpan);
+
+                    const track = document.createElement("div");
+                    track.className = "w-full h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden relative flex";
+
+                    const fill = document.createElement("div");
+                    fill.className = "h-full " + bar.color + " transition-all duration-500";
+                    fill.style.width = leftPct + "%";
+
+                    const divider = document.createElement("div");
+                    divider.className = "w-0.5 h-full bg-white dark:bg-slate-900 z-10";
+
+                    track.appendChild(fill);
+                    track.appendChild(divider);
+
+                    el.appendChild(topRow);
+                    el.appendChild(labelsRow);
+                    el.appendChild(track);
+                    container.appendChild(el);
+                });
+            }
+
+            function renderReviewFilterTabs() {
+                const tabsContainer = document.getElementById("review-filter-tabs");
+                tabsContainer.innerHTML = "";
+
+                const filters = [
+                    { id: "all", label: "All (" + activeQuestions.length + ")" },
+                    { id: "econ", label: "Economic" },
+                    { id: "gov", label: "Governance & Liberty" },
+                    { id: "culture", label: "Culture & Morality" },
+                    { id: "global", label: "Global & Borders" }
+                ];
+
+                filters.forEach(function (f) {
+                    const isActive = currentReviewFilter === f.id;
+                    const btn = document.createElement("button");
+                    btn.type = "button";
+                    btn.className = "min-h-[38px] px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 cursor-pointer " + (
+                        isActive
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    );
+                    btn.textContent = f.label;
+                    btn.addEventListener("click", function () {
+                        currentReviewFilter = f.id;
+                        renderReviewFilterTabs();
+                        renderReviewDrawer();
+                    });
+                    tabsContainer.appendChild(btn);
+                });
+            }
+
+            function getAnswerBadgeInfo(val) {
+                if (val === -2) {
+                    return { text: "Strongly Disagree", cls: "bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300" };
+                }
+                if (val === -1) {
+                    return { text: "Disagree", cls: "bg-orange-100 text-orange-800 dark:bg-orange-950/70 dark:text-orange-300" };
+                }
+                if (val === 1) {
+                    return { text: "Agree", cls: "bg-sky-100 text-sky-800 dark:bg-sky-950/70 dark:text-sky-300" };
+                }
+                if (val === 2) {
+                    return { text: "Strongly Agree", cls: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300" };
+                }
+                return { text: "Neutral / Unsure", cls: "bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-300" };
+            }
+
+            function renderReviewDrawer() {
+                const listContainer = document.getElementById("review-items-list");
+                listContainer.innerHTML = "";
+
+                const axisBadgeMap = {
+                    econ: "Economic Axis",
+                    gov: "Governance & Liberty",
+                    culture: "Culture & Morality",
+                    global: "Global & Sovereignty"
+                };
+
+                activeQuestions.forEach(function (q, idx) {
+                    if (currentReviewFilter !== "all" && q.secondaryAxis !== currentReviewFilter) return;
+
+                    const val = Number(answers[q.id] !== undefined ? answers[q.id] : 0);
+                    const badge = getAnswerBadgeInfo(val);
+
+                    const item = document.createElement("div");
+                    item.className = "p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3";
+
+                    const leftCol = document.createElement("div");
+                    leftCol.className = "space-y-1.5";
+
+                    const metaRow = document.createElement("div");
+                    metaRow.className = "flex flex-wrap items-center gap-1.5 text-xs";
+
+                    const qNumSpan = document.createElement("span");
+                    qNumSpan.className = "font-bold text-slate-500";
+                    qNumSpan.textContent = "Q" + (idx + 1);
+
+                    const axisSpan = document.createElement("span");
+                    axisSpan.className = "px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium";
+                    axisSpan.textContent = axisBadgeMap[q.secondaryAxis] || "";
+
+                    const topicSpan = document.createElement("span");
+                    topicSpan.className = "text-slate-400";
+                    topicSpan.textContent = "· " + q.topic;
+
+                    metaRow.appendChild(qNumSpan);
+                    metaRow.appendChild(axisSpan);
+                    metaRow.appendChild(topicSpan);
+
+                    const textP = document.createElement("p");
+                    textP.className = "text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed";
+                    textP.textContent = q.text;
+
+                    leftCol.appendChild(metaRow);
+                    leftCol.appendChild(textP);
+
+                    const badgeSpan = document.createElement("span");
+                    badgeSpan.className = "self-start sm:self-center shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg " + badge.cls;
+                    badgeSpan.textContent = badge.text;
+
+                    item.appendChild(leftCol);
+                    item.appendChild(badgeSpan);
+                    listContainer.appendChild(item);
+                });
+            }
+
+            document.getElementById("toggle-review-btn").addEventListener("click", function () {
+                const drawer = document.getElementById("review-drawer");
+                const chevron = document.getElementById("review-chevron");
+                drawer.classList.toggle("hidden");
+                chevron.classList.toggle("rotate-180");
+            });
+
+            document.getElementById("retake-btn").addEventListener("click", function () {
+                resultsScreen.classList.add("hidden");
+                document.getElementById("review-drawer").classList.add("hidden");
+                document.getElementById("review-chevron").classList.remove("rotate-180");
+                introScreen.classList.remove("hidden");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            });
+
+            document.getElementById("copy-btn").addEventListener("click", function () {
+                const archetype = document.getElementById("archetype-title").textContent;
+                const quadrant = document.getElementById("quadrant-badge").textContent;
+                const econText = document.getElementById("econ-score-display").textContent;
+                const socialText = document.getElementById("social-score-display").textContent;
+
+                const summaryText =
+                    "Global Political Compass & Values Result (" + activeQuestions.length + " Questions):\n" +
+                    "• Archetype: " + archetype + " (" + quadrant + ")\n" +
+                    "• Coordinates: Economic " + econText + " | Social/Governance " + socialText;
+
+                const tempInput = document.createElement("textarea");
+                tempInput.value = summaryText;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                try {
+                    document.execCommand("copy");
+                    showToast();
+                } catch (err) {
+                    console.error("Copy failed", err);
+                }
+                document.body.removeChild(tempInput);
+            });
+
+            function showToast() {
+                const toast = document.getElementById("toast-notification");
+                toast.classList.remove("translate-y-24", "opacity-0");
+                setTimeout(function () {
+                    toast.classList.add("translate-y-24", "opacity-0");
+                }, 3000);
+            }
+
+            buildSvgGrid();
+        })();
+    </script>
+</body>
+</html>
